@@ -4,117 +4,132 @@ import pybullet_data
 import numpy as np
 import math
 
-physicsClient = p.connect(p.GUI)
-p.setAdditionalSearchPath(pybullet_data.getDataPath())
-p.setGravity(0, 0, -10)
-planeId = p.loadURDF("plane.urdf")
-cubeStartPos = [0, 0, 1]
-cubeStartOrientation = p.getQuaternionFromEuler([0, 0, 0])
 
-colSphereId = p.createVisualShape(p.GEOM_SPHERE, radius=0.1)
+class LobsterScout:
 
-bodyId = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.2, height=2)
-headId = p.createCollisionShape(p.GEOM_SPHERE, radius=0.2)
-armId = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.05, height=1.5)
+    id = -1
+    motorPositions = [
+        [0.75, 0, -0.3],
+        [0, 0.75, -0.3],
+        [0, -0.75, -0.3],
+        [-0.75, 0, -0.3]
+    ]
 
-linkOrientations = [
-    [0, 0, 0, 1],
-    p.getQuaternionFromEuler([math.pi/2, 0, 0]),
-    p.getQuaternionFromEuler([0, math.pi/2, 0])
-]
-linkInertialFramePositions = [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]]
-linkVisualShapeIndices = [
-    -1,
-    -1,
-    -1
-]
-linkInertialFrameOrientations = [
-    [0, 0, 0, 1],
-    [0, 0, 0, 1],
-    [0, 0, 0, 1]
-]
+    thrustSliders = list()
+    thrusts = list()
 
-linkCollisionShapeIndices = [
-    headId,
-    armId,
-    armId
-]
+    buoyancyForceSlider = None
+    buoyancyXSlider = None
+    buoyancyYSlider = None
+    buoyancyZSlider = None
 
-indices = [
-    0,
-    0,
-    0
-]
+    totalThrustSlider = None
 
-linkVisualShapeIndices = [-1, -1, -1]
+    buoyancySphereShape = None
+    buoyancyPointIndicator = None
 
-linkPositions = [[0, 0, 1], [0, 0, -0.3], [0, 0, -0.3]]
 
-jointTypes = [p.JOINT_REVOLUTE,
-              p.JOINT_REVOLUTE,
-              p.JOINT_REVOLUTE]
+    def __init__(self):
+        bodyId = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.2, height=2)
+        headId = p.createCollisionShape(p.GEOM_SPHERE, radius=0.2)
+        armId = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.05, height=1.5)
 
-axis = [[0, 0, 1],
-        [0, 0, 1],
-        [0, 0, 1]]
+        linkOrientations = [
+            [0, 0, 0, 1],
+            p.getQuaternionFromEuler([math.pi / 2, 0, 0]),
+            p.getQuaternionFromEuler([0, math.pi / 2, 0])
+        ]
+        linkInertialFramePositions = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]]
+        linkVisualShapeIndices = [
+            -1,
+            -1,
+            -1
+        ]
+        linkInertialFrameOrientations = [
+            [0, 0, 0, 1],
+            [0, 0, 0, 1],
+            [0, 0, 0, 1]
+        ]
 
-lobsterScoutId = p.createMultiBody(
-    baseMass=10,
-    baseCollisionShapeIndex=bodyId,
-    basePosition=[2, 2, 2],
-    linkMasses=[2, 1, 1],
-    linkVisualShapeIndices=linkVisualShapeIndices,
-    linkPositions=linkPositions,
-    linkCollisionShapeIndices=linkCollisionShapeIndices,
-    linkOrientations=linkOrientations,
-    linkInertialFramePositions=linkInertialFramePositions,
-    linkInertialFrameOrientations=linkInertialFrameOrientations,
-    linkParentIndices=indices,
-    linkJointTypes=jointTypes,
-    linkJointAxis=axis)
+        linkCollisionShapeIndices = [
+            headId,
+            armId,
+            armId
+        ]
 
-# p.changeDynamics(boxId, -1, linearDamping=0.9, angularDamping=0.9)
+        indices = [
+            0,
+            0,
+            0
+        ]
 
-# p.setTimeStep(1./1440.)
+        linkVisualShapeIndices = [-1, -1, -1]
 
-buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 90)
-buoyancyXSlider = p.addUserDebugParameter("buoyancy x", -1, 1, 0)
-buoyancyYSlider = p.addUserDebugParameter("buoyancy y", -1, 1, 0)
-buoyancyZSlider = p.addUserDebugParameter("buoyancy z", -1, 1, 0)
+        linkPositions = [[0, 0, 1], [0, 0, -0.3], [0, 0, -0.3]]
 
-sphereUid = -1
+        jointTypes = [p.JOINT_REVOLUTE,
+                      p.JOINT_REVOLUTE,
+                      p.JOINT_REVOLUTE]
 
-sphereId = p.createMultiBody(0, -1, colSphereId, [0, 0, 0], useMaximalCoordinates=0)
+        axis = [[0, 0, 1],
+                [0, 0, 1],
+                [0, 0, 1]]
 
-secondsPassed=0
-lastSecondsPrinted = 0
-while(True):
-    cubePos, cubeOrn = p.getBasePositionAndOrientation(lobsterScoutId)
+        self.id = p.createMultiBody(
+            baseMass                        = 10,
+            baseCollisionShapeIndex         = bodyId,
+            basePosition                    =[2, 2, 2],
+            linkMasses                      =[2, 1, 1],
+            linkVisualShapeIndices          = linkVisualShapeIndices,
+            linkPositions                   = linkPositions,
+            linkCollisionShapeIndices       = linkCollisionShapeIndices,
+            linkOrientations                = linkOrientations,
+            linkInertialFramePositions      = linkInertialFramePositions,
+            linkInertialFrameOrientations   = linkInertialFrameOrientations,
+            linkParentIndices               = indices,
+            linkJointTypes                  = jointTypes,
+            linkJointAxis                   = axis)
 
-    buoyancy = p.readUserDebugParameter(buoyancyForceSlider)
+        p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        for i in range(4):
+            self.thrustSliders.append(p.addUserDebugParameter("motor" + str(i) + "Thrust", 0, 1000, 0))
+            self.thrusts.append(p.readUserDebugParameter(self.thrustSliders[i]))
 
-    buoyancyX = p.readUserDebugParameter(buoyancyXSlider)
-    buoyancyY = p.readUserDebugParameter(buoyancyYSlider)
-    buoyancyZ = p.readUserDebugParameter(buoyancyZSlider)
+        self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 90)
+        self.buoyancyXSlider = p.addUserDebugParameter("buoyancy x", -1, 1, 0)
+        self.buoyancyYSlider = p.addUserDebugParameter("buoyancy y", -1, 1, 0)
+        self.buoyancyZSlider = p.addUserDebugParameter("buoyancy z", -1, 1, 0)
 
-    buoyancyForcePos = np.reshape(np.array(p.getMatrixFromQuaternion(cubeOrn)), (3, 3)).dot(
-        np.array([buoyancyX, buoyancyY, buoyancyZ])) \
-                       + cubePos
+        self.totalThrustSlider = p.addUserDebugParameter("total thrust", 0, 1, 0)
 
-    # sphereUid = p.createMultiBody(0, -1, colSphereId, buoyancyForcePos, useMaximalCoordinates=0)
-    p.resetBasePositionAndOrientation(sphereId, np.array(buoyancyForcePos), cubeOrn)
+        self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 0.4])
+        self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0], useMaximalCoordinates=0)
 
-    p.applyExternalForce(objectUniqueId=lobsterScoutId, linkIndex=-1,
-                         forceObj=[0, 0, buoyancy], posObj=np.array(buoyancyForcePos), flags=p.WORLD_FRAME)
+    def update(self):
+        lobsterPos, lobsterOrn = p.getBasePositionAndOrientation(self.id)
 
-    p.stepSimulation()
-    time.sleep(1. / 240.)
-    secondsPassed += 1./240.
-    if (secondsPassed - lastSecondsPrinted > 100):
-        print(secondsPassed)
-        lastSecondsPrinted = secondsPassed
+        buoyancy = p.readUserDebugParameter(self.buoyancyForceSlider)
+        buoyancyX = p.readUserDebugParameter(self.buoyancyXSlider)
+        buoyancyY = p.readUserDebugParameter(self.buoyancyYSlider)
+        buoyancyZ = p.readUserDebugParameter(self.buoyancyZSlider)
 
-p.disconnect()
+        totalThrust = p.readUserDebugParameter(self.totalThrustSlider)
+
+        for i in range(4):
+            self.thrusts[i] = p.readUserDebugParameter(self.thrustSliders[i])
+            p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
+                                 forceObj=[0, 0, self.thrusts[i] * totalThrust], posObj=self.motorPositions[i],
+                                 flags=p.LINK_FRAME)
+
+        buoyancyForcePos = np.reshape(np.array(p.getMatrixFromQuaternion(lobsterOrn)), (3, 3)).dot(
+            np.array([buoyancyX, buoyancyY, buoyancyZ])) \
+                           + lobsterPos
+
+
+        p.resetBasePositionAndOrientation(self.buoyancyPointIndicator, np.array(buoyancyForcePos), lobsterOrn)
+
+        p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
+                             forceObj=[0, 0, buoyancy], posObj=np.array(buoyancyForcePos), flags=p.WORLD_FRAME)
