@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Loading some constants -->
+    <xacro:include filename="$(find uuv_descriptions)/urdf/common.urdf.xacro"/>
+    <!-- Loading the UUV simulator ROS plugin macros -->
+    <xacro:include filename="$(find uuv_gazebo_ros_plugins)/urdf/snippets.xacro"/>
+
+    <xacro:property name="visual_mesh_file" value="file://$(find lobster)/models/ptv/mesh/explorer.stl"/>
+
+    <xacro:property name="mass" value="48.191294"/>
+    <xacro:property name="length" value="1.98"/>
+    <xacro:property name="diameter" value="0.25"/>
+    <xacro:property name="radius" value="${diameter*0.5}"/>
+    <xacro:property name="volume" value="0.047"/><!-- just calculated from 48.20/1027 original is 0.029502 -->
+    <xacro:property name="area" value="3.237930"/>
+
+    <!-- Center of buoyancy -->
+    <xacro:property name="cob" value="0 0 0"/>
+    <xacro:property name="rho" value="1027.0"/>
+
+    <!-- Center of gravity -->
+    <xacro:property name="cog" value="0 0 0"/>
+
+    <!-- Vehicle macro -->
+    <xacro:macro name="robot_base" params="namespace debug inertial_reference_frame">
+        <link name="${namespace}/base_link">
+            <visual>
+                <!-- moved origin so the visuals are correct-->
+                <origin xyz="0.090 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="${visual_mesh_file}" scale="1 1 1"/>
+                </geometry>
+            </visual>
+
+            <collision>
+                <origin xyz="0.090 0 0" rpy="0 0 0"/>
+
+                <geometry>
+                    <mesh filename="${visual_mesh_file}" scale="1 1 1"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="${mass}"/>
+                <!--origin from stephan: <origin xyz="0.153499 0.000544 0.000594" rpy="0 0 0"/>-->
+                <!--origin offset is not used yet in the allocation so it is 0 until it is fixed-->
+
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <!--<inertia ixx="0.443334" ixy="0.005401" ixz="0.015042"-->
+                <!--iix="0.005401" iyy="11.643101" iyz="0.000088"-->
+                <!--izx="0.015042" izy="0.000088" izz="11.643124"/> -->
+                <!--old inertia -->
+                <!--<inertia ixx="0.443334" ixy="0.005401" ixz="0.015042"-->
+                <!--         iyy="11.643101" iyz="0.000088" izz="11.643124"/>-->
+               <!--inertia without weird rotations -->
+                <inertia ixx="0.443334" ixy="0" ixz="0"
+                        iyy="11.643101" iyz="0" izz="11.643124"/>
+            </inertial>
+
+        </link>
+        <!-- Set up hydrodynamic plugin -->
+
+        <gazebo>
+            <plugin name="${namespace}_uuv_plugin" filename="libuuv_underwater_object_ros_plugin.so">
+                <fluid_density>${rho}</fluid_density>
+                <flow_velocity_topic>hydrodynamics/current_velocity</flow_velocity_topic>
+                <debug>${debug}</debug>
+                <!-- Adding the hydrodynamic and hydrostatic parameters for the vehicle-->
+                <!-- List of hydrodynamic models this robot's links -->
+                <link name="${namespace}/base_link">
+                    <volume>${volume}</volume>
+                    <center_of_buoyancy>${cob}</center_of_buoyancy>
+                    <hydrodynamic_model>
+                        <type>fossen</type>
+                        <added_mass>
+                            0 0 0 0 0 0
+                            0 0 0 0 0 0
+                            0 0 0 0 0 0
+                            0 0 0 0.005 0 0
+                            0 0 0 0 1.3 0
+                            0 0 0 0 0 1.3
+                        </added_mass>
+                        <linear_damping>
+                            -12 0 0 0 0 0
+                            0 -23 0 0 0 0
+                            0 0 -23 0 0 0
+                            0 0 0 -2 0 0
+                            0 0 0 0 -9.7 0
+                            0 0 0 0 0 -9.7
+                        </linear_damping>
+                        <linear_damping_forward_speed>
+                            0 0 0 0 0 0
+                        </linear_damping_forward_speed>
+                        <quadratic_damping>
+                            -5 0 0 0 0 0
+                            0 -80 0 0 0 0
+                            0 0 -80 0 0 0
+                            0 0 0 -2 0 0
+                            0 0 0 0 -10 0
+                            0 0 0 0 0 -10
+                        </quadratic_damping>
+                    </hydrodynamic_model>
+                </link>
+            </plugin>
+        </gazebo>
+
+        <!-- Include the sensor modules -->
+        <xacro:include filename="$(find lobster)/models/ptv/urdf/ptv_actuators.xacro"/>
+        <xacro:include filename="$(find lobster)/models/ptv/urdf/ptv_sensors.xacro"/>
+
+    </xacro:macro>
+
+</robot>

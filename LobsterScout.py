@@ -49,7 +49,7 @@ indices = [
     0
 ]
 
-linkVisualShapeIndices=[-1, -1, -1]
+linkVisualShapeIndices = [-1, -1, -1]
 
 linkPositions = [[0, 0, 1], [0, 0, -0.3], [0, 0, -0.3]]
 
@@ -111,7 +111,7 @@ while(True):
                          forceObj=[0, 0, buoyancy], posObj=np.array(buoyancyForcePos), flags=p.WORLD_FRAME)
 
     p.stepSimulation()
-    # time.sleep(1. / 240.)
+    time.sleep(1. / 240.)
     secondsPassed += 1./240.
     if (secondsPassed - lastSecondsPrinted > 100):
         print(secondsPassed)
