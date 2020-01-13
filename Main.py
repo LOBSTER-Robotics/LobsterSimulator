@@ -28,7 +28,12 @@ def main():
     for i in range(6):
         thrust_sliders.append(p.addUserDebugParameter("motor" + str(i) + "Thrust", 0, 1, 0))
 
+    debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
+
     while True:
+
+        p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), replaceItemUniqueId=debugLine,
+                           lineWidth=5, lineColorRGB=[1, 0, 0])
 
         thrust_values = [p.readUserDebugParameter(thrust_slider) for thrust_slider in thrust_sliders]
         lobster.update_motors(thrust_values)
@@ -37,6 +42,8 @@ def main():
         p.stepSimulation()
         time.sleep(1. / 240.)
         move_camera_target(lobster.get_position())
+
+        # p.debug
 
     p.disconnect()
 
