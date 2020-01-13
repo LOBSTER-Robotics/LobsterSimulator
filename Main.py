@@ -1,9 +1,19 @@
 import pybullet as p
 import time
 import pybullet_data
-import numpy as np
 
 from LobsterScout import LobsterScout
+
+
+def move_camera_target(target):
+    camera_info = p.getDebugVisualizerCamera()
+
+    p.resetDebugVisualizerCamera(
+        cameraDistance=camera_info[10],
+        cameraYaw=camera_info[8],
+        cameraPitch=camera_info[9],
+        cameraTargetPosition=target
+    )
 
 
 def main():
@@ -12,14 +22,21 @@ def main():
     p.setGravity(0, 0, -10)
     planeId = p.loadURDF("plane.urdf")
 
-    lobster = LobsterScout()
+    lobster = LobsterScout(2, 0.2, 0.75, -0.3, -0.3)
 
-    while (True):
+    thrust_sliders = list()
+    for i in range(6):
+        thrust_sliders.append(p.addUserDebugParameter("motor" + str(i) + "Thrust", 0, 1, 0))
 
+    while True:
+
+        thrust_values = [p.readUserDebugParameter(thrust_slider) for thrust_slider in thrust_sliders]
+        lobster.update_motors(thrust_values)
         lobster.update()
 
         p.stepSimulation()
         time.sleep(1. / 240.)
+        move_camera_target(lobster.get_position())
 
     p.disconnect()
 
