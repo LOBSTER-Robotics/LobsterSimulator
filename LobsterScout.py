@@ -89,7 +89,7 @@ class LobsterScout:
         # Apply forces for upward facing motors
         for i in range(4, 6):
             p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=[0, self.thrusts[i] * 1000, 0], posObj=self.motorPositions[i],
+                                 forceObj=[0, self.thrusts[i] * total_thrust, 0], posObj=self.motorPositions[i],
                                  flags=p.LINK_FRAME)
 
         # Determine the point where the buoyancy force acts on the robot
@@ -110,3 +110,7 @@ class LobsterScout:
     def get_position(self):
         position, _ = self.get_position_and_orientation()
         return position
+
+    def get_orientation(self):
+        _, orientation = self.get_position_and_orientation()
+        return orientation
