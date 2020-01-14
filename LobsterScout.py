@@ -44,6 +44,7 @@ class LobsterScout:
 
         self.id = p.createMultiBody(
             baseMass                        = 10,
+            baseOrientation                 = p.getQuaternionFromEuler([-math.pi / 2, 0, 0]),
             baseCollisionShapeIndex         = body_id,
             basePosition                    = [2, 2, 2],
             baseInertialFramePosition       = [0, 0, center_of_mass],
@@ -64,8 +65,8 @@ class LobsterScout:
         for i in range(6):
             self.thrusts.append(0)
 
-        self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 90)
-        self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 0)
+        self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
+        self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 50)
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 0.4])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
