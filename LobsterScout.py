@@ -72,7 +72,7 @@ class LobsterScout:
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
 
-    def update_motors(self, thrust_values):
+    def set_thrust_values(self, thrust_values):
         self.thrusts = thrust_values
 
     def update(self):

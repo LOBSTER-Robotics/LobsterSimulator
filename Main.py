@@ -1,11 +1,11 @@
-import pybullet as p
 import time
-import pybullet_data
-import math
+
 import numpy as np
+import pybullet as p
+import pybullet_data
 
 from LobsterScout import LobsterScout
-from PID import PID
+from RateController import RateController
 
 
 def move_camera_target(target):
@@ -42,96 +42,56 @@ def main():
 
     debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
 
-    rate_pids = [PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1),  # PITCH
-                 PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1),  # ROLL
-                 PID(p=0.5, i=0.4, d=0.01, min_value=-1, max_value=1)  # YAW
-                 ]
+    rate_controller = RateController()
 
     while True:
 
+        # Add a line from the lobster to the origin
         p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), replaceItemUniqueId=debugLine,
                            lineWidth=5, lineColorRGB=[1, 0, 0])
 
-        thrust_values = [p.readUserDebugParameter(thrust_slider) for thrust_slider in thrust_sliders]
-
         velocity = p.getBaseVelocity(lobster.id)
 
-        # once we have that, we want to see what the world-frame rotations
-        # are translated via rot_around_z
+        # Translate world frame angular velocities to local frame angular velocities
         local_rotation = np.dot(
             np.linalg.inv(np.reshape(np.array(p.getMatrixFromQuaternion(lobster.get_orientation())), (3, 3))),
             velocity[1])
 
+        # Desired rates
         target_rates = [p.readUserDebugParameter(rate_sliders[PITCH]),
                         p.readUserDebugParameter(rate_sliders[ROLL]),
                         p.readUserDebugParameter(rate_sliders[YAW])]
 
-        rate_pids[PITCH].set_target(target_rates[PITCH])
-        rate_pids[ROLL].set_target(target_rates[ROLL])
-        rate_pids[YAW].set_target(target_rates[YAW])
-
-        # delta_rates = [local_rotation[0] - target_rates[0],
-        #                local_rotation[1] - target_rates[1],
-        #                local_rotation[2] - target_rates[2]]
+        rate_controller.set_desired_rates(target_rates)
 
         pitch_rate, yaw_rate, roll_rate = local_rotation
 
-        rate_pids[PITCH].update(pitch_rate, 1. / 240.)
-        rate_pids[ROLL].update(roll_rate, 1. / 240.)
-        rate_pids[YAW].update(yaw_rate, 1. / 240.)
+        rate_controller.update([pitch_rate, roll_rate, yaw_rate], 1. / 240.)
 
         print(end='\r')
-        print("pitch: {0:+0.2f}".format(pitch_rate), end='')
-        print(" roll: {0:+0.2f}".format(roll_rate), end='')
-        print(" yaw: {0:+0.2f}".format(yaw_rate), end='')
+        print("pitch: {0:+0.2f} roll: {1:+0.2f} yaw: {2:+0.2f}".format(pitch_rate, roll_rate, yaw_rate), end='')
 
-        print(["{0:+0.2f}".format(i) for i in rate_pids[YAW].get_terms()], end='')
+        print(["{0:+0.2f}".format(i) for i in rate_controller.rate_pids[YAW].get_terms()], end='')
 
         thrust_values = [0, 0, 0, 0, 0, 0]
 
-        thrust_values[0] = - rate_pids[YAW].output
-        thrust_values[1] =   rate_pids[YAW].output
+        thrust_values[0] = -rate_controller.rate_pids[YAW].output
+        thrust_values[1] =  rate_controller.rate_pids[YAW].output
 
-        thrust_values[2] = rate_pids[PITCH].output
-        thrust_values[3] = - rate_pids[PITCH].output
+        thrust_values[2] =  rate_controller.rate_pids[PITCH].output
+        thrust_values[3] = -rate_controller.rate_pids[PITCH].output
 
-        thrust_values[4] = rate_pids[ROLL].output
-        thrust_values[5] = - rate_pids[ROLL].output
+        thrust_values[4] =  rate_controller.rate_pids[ROLL].output
+        thrust_values[5] = -rate_controller.rate_pids[ROLL].output
 
-        # print(thrust_values, end='')
         print(["{0:+0.2f}".format(i) for i in thrust_values], end='')
 
-        #
-        # print(end='\r')
-        # print(["{0:+0.2f}".format(i / math.pi) for i in delta_angles], end='')
-        # # print(delta_angles[0] / math.pi, delta_angles[1] / math.pi, delta_angles[2] / math.pi, end='')
-        #
-        # if delta_angles[0] > 0:
-        #     thrust_values[3] = 10 * delta_angles[0] / math.pi
-        # else:
-        #     thrust_values[2] = -10 * delta_angles[0] / math.pi
-        # #
-        # if delta_angles[1] > 0:
-        #     thrust_values[0] = 10 * delta_angles[1] / math.pi
-        # else:
-        #     thrust_values[1] = -10 * delta_angles[1] / math.pi
-        #
-        # if delta_angles[2] > 0:
-        #     thrust_values[5] = 10 * delta_angles[2] / math.pi
-        # else:
-        #     thrust_values[4] = -10 * delta_angles[2] / math.pi
-
-
-
-        lobster.update_motors(thrust_values)
+        lobster.set_thrust_values(thrust_values)
         lobster.update()
 
         p.stepSimulation()
         time.sleep(1. / 240.)
-        # time.sleep(0.1)
         move_camera_target(lobster.get_position())
-
-        # p.debug
 
     p.disconnect()
 

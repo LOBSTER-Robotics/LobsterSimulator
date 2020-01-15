@@ -1,0 +1,3 @@
+PITCH = 0
+ROLL = 1
+YAW = 2
