@@ -14,7 +14,7 @@ class PID:
         self.previous_error = None
 
         self.int_error = 0.0
-        self.windup_guard = 20
+        self.windup_guard = 0.5
 
         self.min = min_value
         self.max = max_value
@@ -44,10 +44,13 @@ class PID:
 
         self.output = self.p_term + (self.ki * self.i_term) + (self.kd * self.d_term)
 
-        # if self.output > self.max:
-        #     self.output = self.max
-        # elif self.output < self.min:
-        #     self.output = self.min
+        if self.output > self.max:
+            self.output = self.max
+        elif self.output < self.min:
+            self.output = self.min
 
     def set_target(self, target):
         self.target = target
+
+    def get_terms(self):
+        return [self.p_term, (self.ki * self.i_term), (self.kd * self.d_term)]

@@ -66,7 +66,7 @@ class LobsterScout:
             self.thrusts.append(0)
 
         self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
-        self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 50)
+        self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 0.4])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],

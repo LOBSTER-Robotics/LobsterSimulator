@@ -36,15 +36,15 @@ def main():
         thrust_sliders.append(p.addUserDebugParameter("motor" + str(i) + "Thrust", 0, 1, 0))
 
     rate_sliders = list()
-    rate_sliders.append(p.addUserDebugParameter("rate PITCH", -1, 1, 0))
-    rate_sliders.append(p.addUserDebugParameter("rate ROLL", -1, 1, 0))
-    rate_sliders.append(p.addUserDebugParameter("rate YAW", -1, 1, 0))
+    rate_sliders.append(p.addUserDebugParameter("rate PITCH", -10, 10, 0))
+    rate_sliders.append(p.addUserDebugParameter("rate ROLL", -10, 10, 0))
+    rate_sliders.append(p.addUserDebugParameter("rate YAW", -10, 10, 0))
 
     debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
 
-    rate_pids = [PID(p=1, i=0, d=0, min_value=-1, max_value=1),  # PITCH
-                 PID(p=1, i=0, d=0, min_value=-1, max_value=1),  # ROLL
-                 PID(p=1, i=0, d=0, min_value=-1, max_value=1)  # YAW
+    rate_pids = [PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1),  # PITCH
+                 PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1),  # ROLL
+                 PID(p=0.5, i=0.4, d=0.01, min_value=-1, max_value=1)  # YAW
                  ]
 
     while True:
@@ -70,17 +70,22 @@ def main():
         rate_pids[ROLL].set_target(target_rates[ROLL])
         rate_pids[YAW].set_target(target_rates[YAW])
 
-        delta_rates = [local_rotation[0] - target_rates[0],
-                       local_rotation[1] - target_rates[1],
-                       local_rotation[2] - target_rates[2]]
+        # delta_rates = [local_rotation[0] - target_rates[0],
+        #                local_rotation[1] - target_rates[1],
+        #                local_rotation[2] - target_rates[2]]
 
-        rate_pids[PITCH].update(local_rotation[1], 1. / 240.)
-        rate_pids[ROLL].update(local_rotation[0], 1. / 240.)
-        rate_pids[YAW].update(local_rotation[1], 1. / 240.)
+        pitch_rate, yaw_rate, roll_rate = local_rotation
+
+        rate_pids[PITCH].update(pitch_rate, 1. / 240.)
+        rate_pids[ROLL].update(roll_rate, 1. / 240.)
+        rate_pids[YAW].update(yaw_rate, 1. / 240.)
 
         print(end='\r')
-        print("{0:+0.2f}".format(local_rotation[1]), end='')
-        print(["{0:+0.2f}".format(i / math.pi) for i in local_rotation], end='')
+        print("pitch: {0:+0.2f}".format(pitch_rate), end='')
+        print(" roll: {0:+0.2f}".format(roll_rate), end='')
+        print(" yaw: {0:+0.2f}".format(yaw_rate), end='')
+
+        print(["{0:+0.2f}".format(i) for i in rate_pids[YAW].get_terms()], end='')
 
         thrust_values = [0, 0, 0, 0, 0, 0]
 
@@ -89,11 +94,12 @@ def main():
 
         thrust_values[2] = rate_pids[PITCH].output
         thrust_values[3] = - rate_pids[PITCH].output
-        #
+
         thrust_values[4] = rate_pids[ROLL].output
         thrust_values[5] = - rate_pids[ROLL].output
 
-
+        # print(thrust_values, end='')
+        print(["{0:+0.2f}".format(i) for i in thrust_values], end='')
 
         #
         # print(end='\r')
@@ -115,7 +121,7 @@ def main():
         # else:
         #     thrust_values[4] = -10 * delta_angles[2] / math.pi
 
-        # print(thrust_values)
+
 
         lobster.update_motors(thrust_values)
         lobster.update()
