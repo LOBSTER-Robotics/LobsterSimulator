@@ -3,9 +3,11 @@ import time
 import numpy as np
 import pybullet as p
 import pybullet_data
+import math
 
 from LobsterScout import LobsterScout
 from RateController import RateController
+from PID import PID
 
 
 def move_camera_target(target):
@@ -44,6 +46,14 @@ def main():
 
     rate_controller = RateController()
 
+    orientation_pids = [
+        PID(p=1, i=0, d=0, min_value=-10, max_value=10),
+        PID(p=1, i=0, d=0, min_value=-10, max_value=10),
+        PID(p=1, i=0, d=0, min_value=-10, max_value=10)
+    ]
+
+    orientation_pids[PITCH].set_target(-1)
+
     while True:
 
         # Add a line from the lobster to the origin
@@ -62,6 +72,12 @@ def main():
                         p.readUserDebugParameter(rate_sliders[ROLL]),
                         p.readUserDebugParameter(rate_sliders[YAW])]
 
+        local_orientation = p.getEulerFromQuaternion(lobster.get_orientation())
+
+        orientation_pids[PITCH].update(local_orientation[0], 1. / 240.)
+
+        target_rates[PITCH] = orientation_pids[PITCH].output
+
         rate_controller.set_desired_rates(target_rates)
 
         pitch_rate, yaw_rate, roll_rate = local_rotation
@@ -69,7 +85,9 @@ def main():
         rate_controller.update([pitch_rate, roll_rate, yaw_rate], 1. / 240.)
 
         print(end='\r')
-        print("pitch: {0:+0.2f} roll: {1:+0.2f} yaw: {2:+0.2f}".format(pitch_rate, roll_rate, yaw_rate), end='')
+        print("orn : (pitch: {0:+0.2f} roll: {1:+0.2f} yaw: {2:+0.2f})".format(local_orientation[0]/ math.pi, local_orientation[1], local_orientation[2]),
+              end='')
+        print("rates : (pitch: {0:+0.2f} roll: {1:+0.2f} yaw: {2:+0.2f})".format(pitch_rate, roll_rate, yaw_rate), end='')
 
         print(["{0:+0.2f}".format(i) for i in rate_controller.rate_pids[YAW].get_terms()], end='')
 
