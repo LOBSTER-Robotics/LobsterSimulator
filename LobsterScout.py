@@ -2,6 +2,7 @@ import pybullet as p
 import numpy as np
 import math
 from Link import Link
+import Translation
 
 
 class LobsterScout:
@@ -44,7 +45,7 @@ class LobsterScout:
 
         self.id = p.createMultiBody(
             baseMass                        = 10,
-            baseOrientation                 = p.getQuaternionFromEuler([-math.pi / 2, 0, 0]),
+            baseOrientation                 = p.getQuaternionFromEuler([math.pi /2, 0, 0]),
             baseCollisionShapeIndex         = body_id,
             basePosition                    = [2, 2, 2],
             baseInertialFramePosition       = [0, 0, center_of_mass],
@@ -68,7 +69,7 @@ class LobsterScout:
         self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
         self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
 
-        self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 0.4])
+        self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
 
@@ -98,8 +99,11 @@ class LobsterScout:
             np.array([0, 0, -self.center_of_mass])) \
             + lobster_pos
 
+        # print(buoyancy_force_pos, Translation.vec3_local_to_world(lobster_pos, lobster_orn, [0, 0, -self.center_of_mass]))
+
+
         # Move the sphere that points to the position of the buoyancy force
-        p.resetBasePositionAndOrientation(self.buoyancyPointIndicator, np.array(buoyancy_force_pos), lobster_orn)
+        # p.resetBasePositionAndOrientation(self.buoyancyPointIndicator, Translation.vec3_local_to_world(lobster_pos, lobster_orn, relative_desired_position), lobster_orn)
 
         # Apply the buoyancy force
         p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
