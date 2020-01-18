@@ -1,7 +1,7 @@
 
 class PID:
 
-    def __init__(self, p=0, i=0, d=0, min_value=0, max_value=1):
+    def __init__(self, p=0, i=0, d=0, min_value=0, max_value=1, windup_guard = 20):
         self.kp = p
         self.ki = i
         self.kd = d
@@ -14,7 +14,7 @@ class PID:
         self.previous_error = None
 
         self.int_error = 0.0
-        self.windup_guard = 0.5
+        self.windup_guard = windup_guard
 
         self.min = min_value
         self.max = max_value

@@ -2,7 +2,6 @@ import pybullet as p
 import numpy as np
 import math
 from Link import Link
-import Translation
 
 
 class LobsterScout:
