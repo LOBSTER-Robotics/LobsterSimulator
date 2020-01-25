@@ -4,6 +4,7 @@ import pybullet as p
 import pybullet_data
 
 from HighLevelController import HighLevelController
+from AnimatedPlot import AnimatedPlot
 from LobsterScout import LobsterScout
 
 
@@ -34,7 +35,7 @@ def main():
     desired_pos.append(p.addUserDebugParameter("desired y", -100, 100, 0))
     desired_pos.append(p.addUserDebugParameter("desired z", 0, 100, 1))
 
-    debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
+    debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
 
     high_level_controller = HighLevelController()
 
@@ -53,7 +54,7 @@ def main():
         ]
 
         # Add a line from the lobster to the origin
-        p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debugLine,
+        p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debug_line,
                            lineWidth=5, lineColorRGB=[1, 0, 0])
 
         velocity = p.getBaseVelocity(lobster.id)
@@ -66,6 +67,8 @@ def main():
 
         for i in range(4):
             thrust_values[i] += forward_thrust
+
+        print(["{0:+0.2f}".format(i) for i in thrust_values], end='')
 
         lobster.set_thrust_values(thrust_values)
         lobster.update()
