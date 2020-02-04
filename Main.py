@@ -1,13 +1,12 @@
-import time
 import sys
-import socket
 
 import pybullet as p
 import pybullet_data
 
-from HighLevelController import HighLevelController
-from LobsterScout import LobsterScout
-from Constants import *
+from control.HighLevelController import HighLevelController
+from robot.LobsterScout import LobsterScout
+from Tools.Constants import *
+from Tools.Logger import *
 
 
 def move_camera_target(target):
@@ -25,23 +24,16 @@ def main(gui=True, tcp=False):
     if gui:
         p.connect(p.GUI)
     else:
-        physics_client = p.connect(p.DIRECT)
+        p.connect(p.DIRECT)
 
-    conn = None
+    logger = Logger.get_logger()
+
     if tcp:
-        TCP_IP = '127.0.0.1'
-        TCP_PORT = 5005
-        BUFFER_SIZE = 20  # Normally 1024, but we want fast response
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((TCP_IP, TCP_PORT))
-        s.listen(1)
-
-        conn, addr = s.accept()
+        logger.add_tcp_client()
 
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, -10)
-    planeId = p.loadURDF("plane.urdf")
+    p.loadURDF("plane.urdf")
 
     lobster = LobsterScout(2, 0.2, 0.75, -0.3, 0)
 
@@ -61,6 +53,9 @@ def main(gui=True, tcp=False):
     high_level_controller = HighLevelController()
 
     desired_location = [0, 0, 2]
+
+    logger.info("x, y, z, desired_x, desired_y, desired_z, pitch_rate, roll_rate, yaw_rate, target_pitch_rate, "
+                "target_roll_rate, target_yaw_rate")
 
     while True:
         qKey = ord('q')
@@ -84,7 +79,7 @@ def main(gui=True, tcp=False):
                                lineWidth=5, lineColorRGB=[1, 0, 0])
             forward_thrust = p.readUserDebugParameter(forward_thrust_slider)
 
-            high_level_controller.set_rate_target(ROLL, p.readUserDebugParameter(roll_rate_slider))
+            high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
             lobster.set_buoyancy(p.readUserDebugParameter(buoyancyForceSlider))
             lobster.set_max_thrust(p.readUserDebugParameter(totalThrustSlider))
@@ -100,8 +95,11 @@ def main(gui=True, tcp=False):
         lobster.set_thrust_values(thrust_values)
         lobster.update()
 
-        if tcp:
-            conn.send(bytes(str(lobster_pos), 'utf-8'))
+        logger.info(",".join([f'{i:.2f}' for i in
+                              list(lobster_pos) +
+                              list(high_level_controller.relative_desired_location) +
+                              list(high_level_controller.rates) +
+                              list(high_level_controller.target_rates)]))
 
         p.stepSimulation()
         # time.sleep(1. / 240.)
