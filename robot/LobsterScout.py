@@ -1,7 +1,7 @@
 import pybullet as p
 import numpy as np
 import math
-from Link import Link
+from robot.Link import Link
 
 
 class LobsterScout:
