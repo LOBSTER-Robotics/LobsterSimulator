@@ -65,12 +65,18 @@ class LobsterScout:
         for i in range(6):
             self.thrusts.append(0)
 
-        self.buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
-        self.totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
-
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
+
+        self.buoyancy = 100
+        self.max_thrust = 100
+
+    def set_buoyancy(self, value):
+        self.buoyancy = value
+
+    def set_max_thrust(self, value):
+        self.max_thrust = value
 
     def set_thrust_values(self, thrust_values):
         self.thrusts = thrust_values
@@ -78,19 +84,16 @@ class LobsterScout:
     def update(self):
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        buoyancy     = p.readUserDebugParameter(self.buoyancyForceSlider)
-        total_thrust = p.readUserDebugParameter(self.totalThrustSlider)
-
         # Apply forces for forward facing motors
         for i in range(4):
             p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=[0, 0, self.thrusts[i] * total_thrust], posObj=self.motorPositions[i],
+                                 forceObj=[0, 0, self.thrusts[i] * self.max_thrust], posObj=self.motorPositions[i],
                                  flags=p.LINK_FRAME)
 
         # Apply forces for upward facing motors
         for i in range(4, 6):
             p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=[0, self.thrusts[i] * total_thrust, 0], posObj=self.motorPositions[i],
+                                 forceObj=[0, self.thrusts[i] * self.max_thrust, 0], posObj=self.motorPositions[i],
                                  flags=p.LINK_FRAME)
 
         # Determine the point where the buoyancy force acts on the robot
@@ -98,15 +101,9 @@ class LobsterScout:
             np.array([0, 0, -self.center_of_mass])) \
             + lobster_pos
 
-        # print(buoyancy_force_pos, Translation.vec3_local_to_world(lobster_pos, lobster_orn, [0, 0, -self.center_of_mass]))
-
-
-        # Move the sphere that points to the position of the buoyancy force
-        # p.resetBasePositionAndOrientation(self.buoyancyPointIndicator, Translation.vec3_local_to_world(lobster_pos, lobster_orn, relative_desired_position), lobster_orn)
-
         # Apply the buoyancy force
         p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                             forceObj=[0, 0, buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
+                             forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
 
     def get_position_and_orientation(self):
         return p.getBasePositionAndOrientation(self.id)

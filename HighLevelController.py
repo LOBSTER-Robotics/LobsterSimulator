@@ -22,8 +22,10 @@ class HighLevelController:
         PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)   # YAW
     ]
 
-    def __init__(self):
-        self.roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
+    forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
+
+    def set_rate_target(self, direction, target):
+        self.rate_pids[direction].set_target(target)
 
     def update(self, position, orientation, velocity, desired_location):
         relative_desired_location = Translation.vec3_world_to_local(
@@ -42,10 +44,9 @@ class HighLevelController:
         target_rates[PITCH] = self.orientation_pids[PITCH].output
         target_rates[YAW] = self.orientation_pids[YAW].output
 
-        target_rates[ROLL] = p.readUserDebugParameter(self.roll_rate_slider)
-
         print(end='\r')
         print([f'{i:.2f}' for i in target_rates], end='')
+        print([f'des_loc: {i:.2f}' for i in relative_desired_location], end='')
 
         for i in range(3):
             self.rate_pids[i].set_target(target_rates[i])
