@@ -1,9 +1,10 @@
 import getopt, sys
 import Main
 
+
 def main(argv):
     args = argv[1:]
-    unixOptions = "ho:v"
+    unixOptions = "h"
     gnuOptions = ["help", "gui=", "tcp="]
     try:
         arguments, values = getopt.getopt(args, unixOptions, gnuOptions)
@@ -13,17 +14,19 @@ def main(argv):
 
     arguments = dict(arguments)
 
+    if '-h' in arguments or '--help' in arguments:
+        print("Unfortunately there is no help yet...")
+        return
+
     gui = True
-    if arguments['--gui'] is not None and arguments['--gui'] == "false":
+    if '--gui' in arguments and arguments['--gui'] == "false":
         gui = False
 
     tcp = True
-    if arguments['--tcp'] is not None and arguments['--tcp'] == "false":
+    if '--tcp' in arguments and arguments['--tcp'] == "false":
         tcp = False
 
     Main.main(gui=gui, tcp=tcp)
-
-
 
 
 if __name__ == '__main__':

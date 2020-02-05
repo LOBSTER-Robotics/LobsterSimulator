@@ -1,10 +1,12 @@
+import time
 import sys
 
 import pybullet as p
 import pybullet_data
 
+from Tools.Plot import Plot
 from control.HighLevelController import HighLevelController
-from robot.LobsterScout import LobsterScout
+from robot.Lobster import LobsterScout
 from Tools.Constants import *
 from Tools.Logger import *
 
@@ -57,58 +59,73 @@ def main(gui=True, tcp=False):
     logger.info("x, y, z, desired_x, desired_y, desired_z, pitch_rate, roll_rate, yaw_rate, target_pitch_rate, "
                 "target_roll_rate, target_yaw_rate")
 
+    paused = False
+    previous_time = time.time() * 1000000
+    cycle = 0
+
+    plot = Plot(3)
+
     while True:
-        qKey = ord('q')
         keys = p.getKeyboardEvents()
-        if qKey in keys and keys[qKey] & p.KEY_WAS_TRIGGERED:
+        if ord('q') in keys and keys[ord('q')] & p.KEY_WAS_TRIGGERED:
             break
+        if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
+            paused = not paused
+            if paused:
+                plot.plot()
 
-        lobster_pos, lobster_orn = lobster.get_position_and_orientation()
+        if not paused:
 
-        forward_thrust = 0
+            if cycle % 240 == 0:
+                dt = (time.time() - previous_time)
+                print(240 / dt, dt)
+                previous_time = time.time()
 
-        # Reading all the debug parameters (only if the gui is showing)
-        if gui:
-            desired_location = [
-                p.readUserDebugParameter(desired_pos_sliders[0]),
-                p.readUserDebugParameter(desired_pos_sliders[1]),
-                p.readUserDebugParameter(desired_pos_sliders[2])
-            ]
-            # Add a line from the lobster to the origin
-            p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debugLine,
-                               lineWidth=5, lineColorRGB=[1, 0, 0])
-            forward_thrust = p.readUserDebugParameter(forward_thrust_slider)
+            lobster_pos, lobster_orn = lobster.get_position_and_orientation()
 
-            high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
+            logger.store('pos', lobster_pos)
+            plot.add(cycle, list(lobster_pos))
 
-            lobster.set_buoyancy(p.readUserDebugParameter(buoyancyForceSlider))
-            lobster.set_max_thrust(p.readUserDebugParameter(totalThrustSlider))
+            forward_thrust = 0
 
-        velocity = p.getBaseVelocity(lobster.id)
-        high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
+            # Reading all the debug parameters (only if the gui is showing)
+            if gui:
+                desired_location = [
+                    p.readUserDebugParameter(desired_pos_sliders[0]),
+                    p.readUserDebugParameter(desired_pos_sliders[1]),
+                    p.readUserDebugParameter(desired_pos_sliders[2])
+                ]
+                # Add a line from the lobster to the origin
+                p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debugLine,
+                                   lineWidth=5, lineColorRGB=[1, 0, 0])
+                forward_thrust = p.readUserDebugParameter(forward_thrust_slider)
 
-        thrust_values = high_level_controller.motor_outputs
+                high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
-        for i in range(4):
-            thrust_values[i] += forward_thrust
+                lobster.set_buoyancy(p.readUserDebugParameter(buoyancyForceSlider))
+                lobster.set_max_thrust(p.readUserDebugParameter(totalThrustSlider))
 
-        lobster.set_thrust_values(thrust_values)
-        lobster.update()
+            velocity = p.getBaseVelocity(lobster.id)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
 
-        logger.info(",".join([f'{i:.2f}' for i in
-                              list(lobster_pos) +
-                              list(high_level_controller.relative_desired_location) +
-                              list(high_level_controller.rates) +
-                              list(high_level_controller.target_rates)]))
+            thrust_values = high_level_controller.motor_outputs
 
-        p.stepSimulation()
-        # time.sleep(1. / 240.)
+            for i in range(4):
+                thrust_values[i] += forward_thrust
 
-        if gui:
-            move_camera_target(lobster.get_position())
+            lobster.set_thrust_values(thrust_values)
+            lobster.update()
+
+            p.stepSimulation()
+
+            logger.update()
+
+            time.sleep(1. / 240.)
+
+            if gui:
+                move_camera_target(lobster.get_position())
+
+            cycle += 1
 
     p.disconnect()
 
-
-if __name__ == '__main__':
-    main(sys.argv)

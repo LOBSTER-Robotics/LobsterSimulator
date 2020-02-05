@@ -14,6 +14,20 @@ class Logger:
 
     connections = []
 
+    def __init__(self):
+        self.data = dict()
+
+    def store(self, target, value):
+        self.data[target] = value
+
+    def update(self):
+        for conn in self.connections:
+            conn.send(conn.send(bytes(self.data), 'utf-8'))
+
+        print(self.data)
+
+
+
     def add_tcp_client(self):
         TCP_IP = '127.0.0.1'
         TCP_PORT = 5005
