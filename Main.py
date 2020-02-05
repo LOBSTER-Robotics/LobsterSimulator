@@ -84,7 +84,8 @@ def main(gui=True, tcp=False):
             lobster_pos, lobster_orn = lobster.get_position_and_orientation()
 
             logger.store('pos', lobster_pos)
-            plot.add(cycle, list(lobster_pos))
+            plot.add('target roll rate', high_level_controller.target_rates[PITCH])
+            plot.add('actual roll rate', high_level_controller.rates[PITCH])
 
             forward_thrust = 0
 

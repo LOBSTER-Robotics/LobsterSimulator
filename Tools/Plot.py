@@ -5,18 +5,17 @@ class Plot:
 
     def __init__(self, number_of_lines):
         self.x_data = list()
-        self.y_data = list()
-        for i in range(number_of_lines):
-            self.y_data.append(list())
+        self.y_data = dict()
 
-    def add(self, x, y):
-        self.x_data.append(x)
-        for i in range(len(self.y_data)):
-            self.y_data[i].append(y)
+    def add(self, line_name, y):
+        if line_name not in self.y_data:
+            self.y_data[line_name] = list()
+        self.y_data[line_name].append(y)
 
     def plot(self):
-        print(self.y_data)
-        for i in range(len(self.y_data)):
-            plt.plot(self.x_data, self.y_data[i])
+        for value in self.y_data.values():
+            plt.plot(value)
+
+        plt.legend(self.y_data.keys())
 
         plt.show()
