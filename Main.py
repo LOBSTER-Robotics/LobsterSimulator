@@ -1,3 +1,4 @@
+import json
 import time
 import sys
 
@@ -6,7 +7,7 @@ import pybullet_data
 
 from Tools.Plot import Plot
 from control.HighLevelController import HighLevelController
-from robot.Lobster import LobsterScout
+from robot.Lobster import Lobster
 from Tools.Constants import *
 from Tools.Logger import *
 
@@ -21,8 +22,17 @@ def move_camera_target(target):
         cameraTargetPosition=target
     )
 
+def read_config():
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    return config
+
 
 def main(gui=True, tcp=False):
+
+    config = read_config()
+
     if gui:
         p.connect(p.GUI)
     else:
@@ -34,10 +44,16 @@ def main(gui=True, tcp=False):
         logger.add_tcp_client()
 
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    simulator_frequency = config['simulator_frequency']
+    p.setTimeStep(1 / simulator_frequency)
     p.setGravity(0, 0, -10)
     p.loadURDF("plane.urdf")
 
-    lobster = LobsterScout(2, 0.2, 0.75, -0.3, 0)
+    lobster = Lobster(config['length'],
+                      config['diameter'],
+                      config['arm_length'],
+                      config['arm_position_from_center'],
+                      config['center_of_mass'])
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -52,6 +68,8 @@ def main(gui=True, tcp=False):
         totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
         debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
 
+        simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)
+
     high_level_controller = HighLevelController()
 
     desired_location = [0, 0, 2]
@@ -60,7 +78,7 @@ def main(gui=True, tcp=False):
                 "target_roll_rate, target_yaw_rate")
 
     paused = False
-    previous_time = time.time() * 1000000
+    previous_time = 0
     cycle = 0
 
     plot = Plot(3)
@@ -70,15 +88,15 @@ def main(gui=True, tcp=False):
         if ord('q') in keys and keys[ord('q')] & p.KEY_WAS_TRIGGERED:
             break
         if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
-            paused = not paused
-            if paused:
-                plot.plot()
+            # paused = not paused
+            # if paused:
+            plot.plot()
 
         if not paused:
 
-            if cycle % 240 == 0:
+            if cycle % p.readUserDebugParameter(simulator_frequency_slider) == 0:
                 dt = (time.time() - previous_time)
-                print(240 / dt, dt)
+                print(1 / dt, dt)
                 previous_time = time.time()
 
             lobster_pos, lobster_orn = lobster.get_position_and_orientation()
@@ -91,6 +109,8 @@ def main(gui=True, tcp=False):
 
             # Reading all the debug parameters (only if the gui is showing)
             if gui:
+                p.setTimeStep(1 / p.readUserDebugParameter(simulator_frequency_slider))
+
                 desired_location = [
                     p.readUserDebugParameter(desired_pos_sliders[0]),
                     p.readUserDebugParameter(desired_pos_sliders[1]),
@@ -119,9 +139,7 @@ def main(gui=True, tcp=False):
 
             p.stepSimulation()
 
-            logger.update()
-
-            time.sleep(1. / 240.)
+            # time.sleep(1. / 240.)
 
             if gui:
                 move_camera_target(lobster.get_position())

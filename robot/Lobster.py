@@ -4,7 +4,7 @@ import math
 from robot.Link import Link
 
 
-class LobsterScout:
+class Lobster:
 
     def __init__(self, length, diameter, arm_length, arm_position_from_center, center_of_mass=0):
         self.center_of_mass = center_of_mass
