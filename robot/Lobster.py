@@ -6,7 +6,7 @@ from robot.Link import Link
 
 class Lobster:
 
-    def __init__(self, length, diameter, arm_length, arm_position_from_center, center_of_mass=0):
+    def __init__(self, length, diameter, arm_length, arm_position_from_center, center_of_mass, inner_motor_distance_from_center):
         self.center_of_mass = center_of_mass
 
         body_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=diameter, height=length)
@@ -19,13 +19,15 @@ class Lobster:
             [- arm_length, 0, arm_position_from_center],
             [0, arm_length, arm_position_from_center],
             [0, -arm_length, arm_position_from_center],
-            [0.3, 0, arm_position_from_center],
-            [-0.3, 0, arm_position_from_center]
+            [inner_motor_distance_from_center, 0, arm_position_from_center],
+            [-inner_motor_distance_from_center, 0, arm_position_from_center],
+            [0, inner_motor_distance_from_center, arm_position_from_center],
+            [0, -inner_motor_distance_from_center, arm_position_from_center]
         ]
 
         links = [
             Link(collision_shape=head_id,
-                 position=[0, 0, 1]),  # Head Link
+                 position=[0, 0, length / 2]),  # Head Link
 
             Link(collision_shape=arm_id,
                  position=[0, 0, arm_position_from_center],
@@ -40,7 +42,11 @@ class Lobster:
 
         for i in range(4, 6):
             links.append(Link(collision_shape=motor_id, position=self.motorPositions[i],
-                              orientation=p.getQuaternionFromEuler([math.pi / 2, 0, 0])))  # Upward Motor Links
+                              orientation=p.getQuaternionFromEuler([math.pi / 2, 0, 0])))  # Upwards Motor Links
+
+        for i in range(6, 8):
+            links.append(Link(collision_shape=motor_id, position=self.motorPositions[i],
+                              orientation=p.getQuaternionFromEuler([0, math.pi / 2, 0])))  # Sidewards Motor Links
 
         self.id = p.createMultiBody(
             baseMass                        = 10,
@@ -62,7 +68,7 @@ class Lobster:
         p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
 
         self.thrusts = list()
-        for i in range(6):
+        for i in range(8):
             self.thrusts.append(0)
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])

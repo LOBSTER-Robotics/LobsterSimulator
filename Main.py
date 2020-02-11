@@ -53,7 +53,8 @@ def main(gui=True, tcp=False):
                       config['diameter'],
                       config['arm_length'],
                       config['arm_position_from_center'],
-                      config['center_of_mass'])
+                      config['center_of_mass'],
+                      config['inner_motor_distance_from_center'])
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -94,10 +95,10 @@ def main(gui=True, tcp=False):
 
         if not paused:
 
-            if cycle % p.readUserDebugParameter(simulator_frequency_slider) == 0:
-                dt = (time.time() - previous_time)
-                print(1 / dt, dt)
-                previous_time = time.time()
+            # if cycle % p.readUserDebugParameter(simulator_frequency_slider) == 0:
+            #     dt = (time.time() - previous_time)
+            #     print(1 / dt, dt)
+            #     previous_time = time.time()
 
             lobster_pos, lobster_orn = lobster.get_position_and_orientation()
 
