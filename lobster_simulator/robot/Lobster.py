@@ -1,7 +1,7 @@
 import pybullet as p
 import numpy as np
 import math
-from robot.Link import Link
+from lobster_simulator.robot.Link import Link
 
 
 class Lobster:

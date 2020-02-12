@@ -2,6 +2,8 @@ import numpy as np
 import pybullet as p
 
 from .PID import PID
+from lobster_simulator.tools import Translation
+from lobster_simulator.tools.Constants import *
 
 
 class HighLevelController:

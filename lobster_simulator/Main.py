@@ -3,11 +3,11 @@ import json
 import pybullet as p
 import pybullet_data
 
-from lobster-simulator.tools.Plot import Plot
-from control.HighLevelController import HighLevelController
-from robot.Lobster import Lobster
-from tools.Constants import *
-from tools.Logger import *
+from lobster_simulator.tools.Plot import Plot
+from lobster_simulator.control.HighLevelController import HighLevelController
+from lobster_simulator.robot.Lobster import Lobster
+from lobster_simulator.tools.Constants import *
+from lobster_simulator.tools.Logger import *
 
 
 def move_camera_target(target):
