@@ -1,6 +1,6 @@
 {
   "simulator_frequency"       : 240,
-  "length"                    : 20.0,
+  "length"                    : 2.0,
   "diameter"                  : 0.2,
   "center_of_mass"            : 0,
   "arm_length"                : 0.75,

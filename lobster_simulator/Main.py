@@ -1,15 +1,13 @@
 import json
-import time
-import sys
 
 import pybullet as p
 import pybullet_data
 
-from Tools.Plot import Plot
-from control.HighLevelController import HighLevelController
-from robot.Lobster import Lobster
-from Tools.Constants import *
-from Tools.Logger import *
+from lobster_simulator.tools.Plot import Plot
+from lobster_simulator.control.HighLevelController import HighLevelController
+from lobster_simulator.robot.Lobster import Lobster
+from lobster_simulator.tools.Constants import *
+from lobster_simulator.tools.Logger import *
 
 
 def move_camera_target(target):
@@ -21,6 +19,7 @@ def move_camera_target(target):
         cameraPitch=camera_info[9],
         cameraTargetPosition=target
     )
+
 
 def read_config():
     with open('config.json', 'r') as f:
