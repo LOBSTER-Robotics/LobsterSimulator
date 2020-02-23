@@ -8,6 +8,7 @@ from lobster_simulator.control.HighLevelController import HighLevelController
 from lobster_simulator.robot.Lobster import Lobster
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.Logger import *
+from lobster_simulator.Simulator import Simulator
 
 
 def move_camera_target(target):
@@ -32,28 +33,7 @@ def main(gui=True, tcp=False):
 
     config = read_config()
 
-    if gui:
-        p.connect(p.GUI)
-    else:
-        p.connect(p.DIRECT)
-
-    logger = Logger.get_logger()
-
-    if tcp:
-        logger.add_tcp_client()
-
-    p.setAdditionalSearchPath(pybullet_data.getDataPath())
-    simulator_frequency = config['simulator_frequency']
-    p.setTimeStep(1 / simulator_frequency)
-    p.setGravity(0, 0, -10)
-    p.loadURDF("plane.urdf")
-
-    lobster = Lobster(config['length'],
-                      config['diameter'],
-                      config['arm_length'],
-                      config['arm_position_from_center'],
-                      config['center_of_mass'],
-                      config['inner_motor_distance_from_center'])
+    simulator = Simulator(1/240, config, gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -66,7 +46,7 @@ def main(gui=True, tcp=False):
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
         buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
         totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
-        debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=lobster.get_position(), lineWidth=5)
+        debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
         simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)
 
@@ -78,8 +58,6 @@ def main(gui=True, tcp=False):
                 "target_roll_rate, target_yaw_rate")
 
     paused = False
-    previous_time = 0
-    cycle = 0
 
     plot = Plot(3)
 
@@ -99,7 +77,7 @@ def main(gui=True, tcp=False):
             #     print(1 / dt, dt)
             #     previous_time = time.time()
 
-            lobster_pos, lobster_orn = lobster.get_position_and_orientation()
+            lobster_pos, lobster_orn = simulalobster.get_position_and_orientation()
 
             logger.store('pos', lobster_pos)
             plot.add('target roll rate', high_level_controller.target_rates[PITCH])
@@ -137,14 +115,9 @@ def main(gui=True, tcp=False):
             lobster.set_thrust_values(thrust_values)
             lobster.update()
 
-            p.stepSimulation()
 
-            # time.sleep(1. / 240.)
 
-            if gui:
-                move_camera_target(lobster.get_position())
 
-            cycle += 1
 
     p.disconnect()
 
