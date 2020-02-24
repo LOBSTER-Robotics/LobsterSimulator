@@ -5,5 +5,6 @@
   "center_of_mass"            : 0,
   "arm_length"                : 0.75,
   "arm_position_from_center"  : -0.3,
-  "inner_motor_distance_from_center" : 0.3
+  "inner_motor_distance_from_center" : 0.3,
+  "max_rpm_change_per_second": 100
 }

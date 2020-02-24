@@ -23,7 +23,7 @@ def move_camera_target(target):
 
 
 def read_config():
-    with open('config.json', 'r') as f:
+    with open('lobster_simulator/config.json', 'r') as f:
         config = json.load(f)
 
     return config
@@ -37,25 +37,20 @@ def main(gui=True, tcp=False):
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
-        forward_thrust_slider = p.addUserDebugParameter("forward thrust", -1, 1, 0)
         desired_pos_sliders = [
             p.addUserDebugParameter("desired x", -100, 100, 0),
             p.addUserDebugParameter("desired y", -100, 100, 0),
             p.addUserDebugParameter("desired z", 0, 100, 1)
         ]
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        buoyancyForceSlider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
-        totalThrustSlider = p.addUserDebugParameter("Max thrust", 0, 1000, 100)
-        debugLine = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
+        buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
+        debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
         simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)
 
     high_level_controller = HighLevelController()
 
     desired_location = [0, 0, 2]
-
-    logger.info("x, y, z, desired_x, desired_y, desired_z, pitch_rate, roll_rate, yaw_rate, target_pitch_rate, "
-                "target_roll_rate, target_yaw_rate")
 
     paused = False
 
@@ -77,11 +72,7 @@ def main(gui=True, tcp=False):
             #     print(1 / dt, dt)
             #     previous_time = time.time()
 
-            lobster_pos, lobster_orn = simulalobster.get_position_and_orientation()
-
-            logger.store('pos', lobster_pos)
-            plot.add('target roll rate', high_level_controller.target_rates[PITCH])
-            plot.add('actual roll rate', high_level_controller.rates[PITCH])
+            lobster_pos, lobster_orn = simulator.lobster.get_position_and_orientation()
 
             forward_thrust = 0
 
@@ -95,26 +86,21 @@ def main(gui=True, tcp=False):
                     p.readUserDebugParameter(desired_pos_sliders[2])
                 ]
                 # Add a line from the lobster to the origin
-                p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debugLine,
+                p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debug_line,
                                    lineWidth=5, lineColorRGB=[1, 0, 0])
-                forward_thrust = p.readUserDebugParameter(forward_thrust_slider)
 
                 high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
-                lobster.set_buoyancy(p.readUserDebugParameter(buoyancyForceSlider))
-                lobster.set_max_thrust(p.readUserDebugParameter(totalThrustSlider))
+                simulator.lobster.set_buoyancy(p.readUserDebugParameter(buoyancy_force_slider))
 
-            velocity = p.getBaseVelocity(lobster.id)
+            velocity = p.getBaseVelocity(simulator.lobster.id)
             high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
 
-            thrust_values = high_level_controller.motor_outputs
+            rpm_motors = high_level_controller.motor_rpm_outputs
+            print(rpm_motors)
+            simulator.set_rpm_motors(rpm_motors)
 
-            for i in range(4):
-                thrust_values[i] += forward_thrust
-
-            lobster.set_thrust_values(thrust_values)
-            lobster.update()
-
+            simulator.do_step()
 
 
 

@@ -27,7 +27,8 @@ class Simulator:
                                config['arm_length'],
                                config['arm_position_from_center'],
                                config['center_of_mass'],
-                               config['inner_motor_distance_from_center'])
+                               config['inner_motor_distance_from_center'],
+                               config['max_rpm_change_per_second'])
 
     def get_time(self):
         return self.time
@@ -40,11 +41,10 @@ class Simulator:
         p.setTimeStep(self.time_step)
 
     def set_rpm_motors(self, rpm_motors):
-        pass
+        self.lobster.set_desired_rpm_motors(rpm_motors)
 
     def do_step(self):
-
-        self.lobster.update()
+        self.lobster.update(self.time_step)
 
         p.stepSimulation()
 
