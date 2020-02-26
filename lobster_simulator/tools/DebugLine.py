@@ -5,12 +5,14 @@ from lobster_simulator.tools import Translation
 
 class DebugLine:
 
-    def __init__(self, from_location, to_location, width=5, color=[1, 0, 0]):
+    def __init__(self, from_location, to_location, width=5, color=None):
+        if color is None:
+            color = [1, 0, 0]
+
         self.width = width
         self.color = color
         self.id = p.addUserDebugLine(lineFromXYZ=from_location,
                                      lineToXYZ=to_location,
-                                     # replaceItemUniqueId=debug_line,
                                      lineWidth=width,
                                      lineColorRGB=color)
 

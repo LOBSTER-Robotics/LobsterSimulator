@@ -97,7 +97,7 @@ def main(gui=True, tcp=False):
             high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
-            # print(rpm_motors)
+
             simulator.set_rpm_motors(rpm_motors)
 
             simulator.do_step()

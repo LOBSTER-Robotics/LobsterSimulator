@@ -30,9 +30,9 @@ class HighLevelController:
         self.relative_desired_location = [0, 0, 0]
         self.rates = [0, 0, 0]
 
-        self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -1000, 1000, 0)
-        self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -1000, 1000, 0)
-        self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -1000, 1000, 0)
+        self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -3700, 3900, 0)
+        self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -3700, 3900, 0)
+        self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
 
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
@@ -66,7 +66,7 @@ class HighLevelController:
         self.rates = [pitch_rate, roll_rate, yaw_rate]
 
         # print([f'{i:.2f}' for i in [pitch_rate, yaw_rate, roll_rate]], end='')
-        print(self.target_rates[ROLL] - roll_rate)
+        # print(self.target_rates[ROLL] - roll_rate)
 
         for i in range(3):
             self.rate_pids[i].update(self.rates[i], 1. / 240.)

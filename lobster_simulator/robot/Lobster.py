@@ -7,12 +7,20 @@ from lobster_simulator.tools.DebugLine import DebugLine
 
 
 def rpm_to_thrust(rpm):
-    return rpm
+    return 3.92/1000 * rpm + 3.9/10000000 * rpm * rpm + 7.55/10000000000 * rpm * rpm * rpm
+
+
+def thrust_to_rpm(x):
+    return -172.185 - 5.05393 * pow(261.54 * math.sqrt(3.84767*math.pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941 * math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(3.84767*pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941*math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3))
 
 
 class Lobster:
 
     def __init__(self, config):
+
+        print('test')
+        for i in range(-4000, 4001, 100):
+            print(i - thrust_to_rpm(rpm_to_thrust(i)))
 
         self.max_rpm_change_per_second = config['max_rpm_change_per_second']
         self.center_of_volume = config['center_of_volume']
@@ -53,10 +61,10 @@ class Lobster:
         self.motor_debug_lines = list()
 
         self.rpm_motors = list()
-        self.desired_thrust_motors = list()
+        self.desired_rpm_motors = list()
         for i in range(8):
             self.rpm_motors.append(0)
-            self.desired_thrust_motors.append(0)
+            self.desired_rpm_motors.append(0)
             self.motor_debug_lines.append(DebugLine(self.motorPositions[i], self.motorPositions[i]))
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
@@ -70,20 +78,18 @@ class Lobster:
         self.buoyancy = value
 
     def set_desired_rpm_motors(self, desired_rpm_motors):
-        for i in range(len(desired_rpm_motors)):
-            rpm = desired_rpm_motors[i]
-
-        self.desired_thrust_motors = desired_rpm_motors
+        self.desired_rpm_motors = desired_rpm_motors
 
     def set_desired_thrust_motors(self, desired_thrusts):
-        self.desired_thrust_motors = desired_thrusts
+        for i in range(len(desired_thrusts)):
+            self.desired_rpm_motors[i] = rpm_to_thrust(desired_thrusts[i])
 
     def update_motors(self, dt):
         for i in range(8):
-            diff = self.desired_thrust_motors[i] - self.rpm_motors[i]
+            diff = self.desired_rpm_motors[i] - self.rpm_motors[i]
             sign = int(diff > 0) - int(diff < 0)
             if math.fabs(diff) <= self.max_rpm_change_per_second * dt:
-                self.rpm_motors[i] = self.desired_thrust_motors[i]
+                self.rpm_motors[i] = self.desired_rpm_motors[i]
             else:
                 self.rpm_motors[i] += sign * self.max_rpm_change_per_second * dt
 
@@ -92,14 +98,14 @@ class Lobster:
 
         self.update_motors(dt)
 
-        # Apply forces for forward facing motors
+        # Apply forces for the  facing motors
         for i in range(8):
             p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
                                  forceObj=self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]),
                                  posObj=self.motorPositions[i],
                                  flags=p.LINK_FRAME)
             self.motor_debug_lines[i].update(self.motorPositions[i],
-                                             self.motorPositions[i] + self.motor_directions[i] * self.rpm_motors[i] / 1000,
+                                             self.motorPositions[i] + self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]) / 100,
                                              self.id)
 
         # Determine the point where the buoyancy force acts on the robot
