@@ -22,13 +22,7 @@ class Simulator:
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf")
 
-        self.lobster = Lobster(config['length'],
-                               config['diameter'],
-                               config['arm_length'],
-                               config['arm_position_from_center'],
-                               config['center_of_mass'],
-                               config['inner_motor_distance_from_center'],
-                               config['max_rpm_change_per_second'])
+        self.lobster = Lobster(config)
 
     def get_time(self):
         return self.time
@@ -42,6 +36,10 @@ class Simulator:
 
     def set_rpm_motors(self, rpm_motors):
         self.lobster.set_desired_rpm_motors(rpm_motors)
+
+    def set_thrust_pwm(self, pwm_motors):
+        for i in range(len(pwm_motors)):
+            self.lobster.set
 
     def do_step(self):
         self.lobster.update(self.time_step)

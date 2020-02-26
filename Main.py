@@ -43,7 +43,7 @@ def main(gui=True, tcp=False):
             p.addUserDebugParameter("desired z", 0, 100, 1)
         ]
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 120)
+        buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 500)
         debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
         simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)

@@ -58,9 +58,11 @@ class HighLevelController:
             np.linalg.inv(np.reshape(np.array(p.getMatrixFromQuaternion(orientation)), (3, 3))),
             velocity[1])
 
-        pitch_rate, yaw_rate, roll_rate = local_rotation
+        roll_rate, pitch_rate, yaw_rate = local_rotation
 
         self.rates = [pitch_rate, roll_rate, yaw_rate]
+
+        print(self.rates)
 
         # print([f'{i:.2f}' for i in [pitch_rate, yaw_rate, roll_rate]], end='')
 
@@ -76,5 +78,8 @@ class HighLevelController:
         # self.motor_rpm_outputs[2] += self.rate_pids[PITCH].output
         # self.motor_rpm_outputs[3] -= self.rate_pids[PITCH].output
         #
-        # self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
-        # self.motor_rpm_outputs[5] -= -self.rate_pids[ROLL].output
+        self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
+        self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
+
+
+
