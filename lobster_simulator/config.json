@@ -6,6 +6,6 @@
   "front_facing_motor_y"      : 0.299,
   "side_facing_motor_x"       : -0.191,
   "side_facing_motor_y"       : -0.200,
-  "max_rpm_change_per_second" : 10000,
+  "max_rpm_change_per_second" : 10000000,
   "center_of_volume"          : [0, 0, 0]
 }
