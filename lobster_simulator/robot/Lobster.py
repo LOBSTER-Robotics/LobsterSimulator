@@ -12,14 +12,14 @@ def rpm_to_thrust(rpm):
 
 def thrust_to_rpm(x):
     return -172.185 - 5.05393 * pow(261.54 * math.sqrt(3.84767*math.pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941 * math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(3.84767*pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941*math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3))
-
+    # return 516*math.pow(x, 0.489)
 
 class Lobster:
 
     def __init__(self, config):
 
         print('test')
-        for i in range(-4000, 4001, 100):
+        for i in range(0, 4001, 100):
             print(i - thrust_to_rpm(rpm_to_thrust(i)))
 
         self.max_rpm_change_per_second = config['max_rpm_change_per_second']
