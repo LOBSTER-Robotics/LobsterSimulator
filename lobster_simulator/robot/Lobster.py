@@ -1,6 +1,9 @@
 import pybullet as p
 import numpy as np
 import math
+
+from pkg_resources import resource_filename
+
 from lobster_simulator.robot.Link import Link
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.DebugLine import DebugLine
@@ -53,7 +56,7 @@ class Lobster:
             np.array([0, 0, 1]),
         ]
 
-        self.id = p.loadURDF("lobster_simulator\\Model_URDF.SLDASM.urdf",
+        self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
                              [0, 0, 2],
                              p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
 

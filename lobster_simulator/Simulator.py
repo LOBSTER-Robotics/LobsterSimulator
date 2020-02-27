@@ -9,7 +9,7 @@ class Simulator:
 
     def __init__(self, time_step, config=None, gui=True):
         if config is None:
-            with open('lobster_simulator/config.json', 'r') as f:
+            with open('lobster_simulator/data/config.json', 'r') as f:
                 config = json.load(f)
         self.time = 0
         self.time_step = time_step

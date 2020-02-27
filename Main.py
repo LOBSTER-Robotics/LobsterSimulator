@@ -23,15 +23,13 @@ def move_camera_target(target):
 
 
 def read_config():
-    with open('lobster_simulator/config.json', 'r') as f:
+    with open('lobster_simulator/data/config.json', 'r') as f:
         config = json.load(f)
 
     return config
 
 
 def main(gui=True, tcp=False):
-
-    config = read_config()
 
     simulator = Simulator(1/240, None, gui)
 
