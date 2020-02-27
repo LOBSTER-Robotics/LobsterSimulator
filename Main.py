@@ -33,7 +33,7 @@ def main(gui=True, tcp=False):
 
     config = read_config()
 
-    simulator = Simulator(1/240, config, gui)
+    simulator = Simulator(1/240, None, gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:

@@ -1,12 +1,16 @@
 import pybullet as p
 import pybullet_data
+import json
 
 from lobster_simulator.robot.Lobster import Lobster
 
 
 class Simulator:
 
-    def __init__(self, time_step, config, gui=True):
+    def __init__(self, time_step, config=None, gui=True):
+        if config is None:
+            with open('lobster_simulator/config.json', 'r') as f:
+                config = json.load(f)
         self.time = 0
         self.time_step = time_step
         self.gui = gui
@@ -40,6 +44,10 @@ class Simulator:
     def set_thrust_pwm(self, pwm_motors):
         for i in range(len(pwm_motors)):
             self.lobster.set
+
+    def step_until(self, time):
+        while self.time + self.time_step <= time:
+            self.do_step()
 
     def do_step(self):
         self.lobster.update(self.time_step)
