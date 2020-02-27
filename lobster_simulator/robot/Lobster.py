@@ -2,74 +2,71 @@ import pybullet as p
 import numpy as np
 import math
 from lobster_simulator.robot.Link import Link
+from lobster_simulator.tools import Translation
+from lobster_simulator.tools.DebugLine import DebugLine
+
+
+def rpm_to_thrust(rpm):
+    return 3.92/1000 * rpm + 3.9/10000000 * rpm * rpm + 7.55/10000000000 * rpm * rpm * rpm
+
+
+def thrust_to_rpm(x):
+    return -172.185 - 5.05393 * pow(261.54 * math.sqrt(3.84767*math.pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941 * math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(3.84767*pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941*math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3))
+    # return 516*math.pow(x, 0.489)
 
 
 class Lobster:
 
-    def __init__(self, length, diameter, arm_length, arm_position_from_center, center_of_mass, inner_motor_distance_from_center):
-        self.center_of_mass = center_of_mass
+    def __init__(self, config):
 
-        body_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=diameter, height=length)
-        head_id = p.createCollisionShape(p.GEOM_SPHERE, radius=diameter)
-        arm_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.05, height=arm_length*2)
-        motor_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=0.1, height=0.15)
+        print('test')
+        for i in range(0, 4001, 100):
+            print(i - thrust_to_rpm(rpm_to_thrust(i)))
+
+        self.max_rpm_change_per_second = config['max_rpm_change_per_second']
+        self.center_of_volume = config['center_of_volume']
+
+        front_facing_motor_x = config['front_facing_motor_x']
+        front_facing_motor_y = config['front_facing_motor_y']
+        side_facing_motor_x = config['side_facing_motor_x']
+        side_facing_motor_y = config['side_facing_motor_y']
 
         self.motorPositions = [
-            [arm_length, 0, arm_position_from_center],
-            [- arm_length, 0, arm_position_from_center],
-            [0, arm_length, arm_position_from_center],
-            [0, -arm_length, arm_position_from_center],
-            [inner_motor_distance_from_center, 0, arm_position_from_center],
-            [-inner_motor_distance_from_center, 0, arm_position_from_center],
-            [0, inner_motor_distance_from_center, arm_position_from_center],
-            [0, -inner_motor_distance_from_center, arm_position_from_center]
+            np.array([front_facing_motor_x, 0,  front_facing_motor_y]),
+            np.array([front_facing_motor_x, 0, -front_facing_motor_y]),
+            np.array([front_facing_motor_x,  front_facing_motor_y, 0]),
+            np.array([front_facing_motor_x, -front_facing_motor_y, 0]),
+            np.array([side_facing_motor_x, 0,  side_facing_motor_y]),
+            np.array([side_facing_motor_x, 0, -side_facing_motor_y]),
+            np.array([side_facing_motor_x,  side_facing_motor_y, 0]),
+            np.array([side_facing_motor_x, -side_facing_motor_y, 0])
         ]
 
-        links = [
-            Link(collision_shape=head_id,
-                 position=[0, 0, length / 2]),  # Head Link
-
-            Link(collision_shape=arm_id,
-                 position=[0, 0, arm_position_from_center],
-                 orientation=p.getQuaternionFromEuler([math.pi / 2, 0, 0])),  # Arm Link 1
-
-            Link(collision_shape=arm_id, position=[0, 0, arm_position_from_center],
-                 orientation=p.getQuaternionFromEuler([0, math.pi / 2, 0])),  # Arm Link 2
+        self.motor_directions = [
+            np.array([1, 0, 0]),
+            np.array([1, 0, 0]),
+            np.array([1, 0, 0]),
+            np.array([1, 0, 0]),
+            np.array([0, 1, 0]),
+            np.array([0, 1, 0]),
+            np.array([0, 0, 1]),
+            np.array([0, 0, 1]),
         ]
 
-        for i in range(4):
-            links.append(Link(collision_shape=motor_id, position=self.motorPositions[i]))  # Forward Motor Links
-
-        for i in range(4, 6):
-            links.append(Link(collision_shape=motor_id, position=self.motorPositions[i],
-                              orientation=p.getQuaternionFromEuler([math.pi / 2, 0, 0])))  # Upwards Motor Links
-
-        for i in range(6, 8):
-            links.append(Link(collision_shape=motor_id, position=self.motorPositions[i],
-                              orientation=p.getQuaternionFromEuler([0, math.pi / 2, 0])))  # Sidewards Motor Links
-
-        self.id = p.createMultiBody(
-            baseMass                        = 10,
-            baseOrientation                 = p.getQuaternionFromEuler([math.pi /2, 0, 0]),
-            baseCollisionShapeIndex         = body_id,
-            basePosition                    = [2, 2, 2],
-            baseInertialFramePosition       = [0, 0, center_of_mass],
-            linkMasses                      = [link.mass for link in links],
-            linkVisualShapeIndices          = [link.visualShape for link in links],
-            linkPositions                   = [link.position for link in links],
-            linkCollisionShapeIndices       = [link.collisionShape for link in links],
-            linkOrientations                = [link.orientation for link in links],
-            linkInertialFramePositions      = [link.inertial_frame_position for link in links],
-            linkInertialFrameOrientations   = [link.inertial_frame_orientation for link in links],
-            linkParentIndices               = [link.parent_index for link in links],
-            linkJointTypes                  = [link.joint_type for link in links],
-            linkJointAxis                   = [link.joint_axis for link in links])
+        self.id = p.loadURDF("lobster_simulator\\Model_URDF.SLDASM.urdf",
+                             [0, 0, 2],
+                             p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
 
         p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
 
-        self.thrusts = list()
+        self.motor_debug_lines = list()
+
+        self.rpm_motors = list()
+        self.desired_rpm_motors = list()
         for i in range(8):
-            self.thrusts.append(0)
+            self.rpm_motors.append(0)
+            self.desired_rpm_motors.append(0)
+            self.motor_debug_lines.append(DebugLine(self.motorPositions[i], self.motorPositions[i]))
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
@@ -81,31 +78,41 @@ class Lobster:
     def set_buoyancy(self, value):
         self.buoyancy = value
 
-    def set_max_thrust(self, value):
-        self.max_thrust = value
+    def set_desired_rpm_motors(self, desired_rpm_motors):
+        self.desired_rpm_motors = desired_rpm_motors
 
-    def set_thrust_values(self, thrust_values):
-        self.thrusts = thrust_values
+    def set_desired_thrust_motors(self, desired_thrusts):
+        for i in range(len(desired_thrusts)):
+            self.desired_rpm_motors[i] = rpm_to_thrust(desired_thrusts[i])
 
-    def update(self):
+    def update_motors(self, dt):
+        for i in range(8):
+            diff = self.desired_rpm_motors[i] - self.rpm_motors[i]
+            sign = int(diff > 0) - int(diff < 0)
+            if math.fabs(diff) <= self.max_rpm_change_per_second * dt:
+                self.rpm_motors[i] = self.desired_rpm_motors[i]
+            else:
+                self.rpm_motors[i] += sign * self.max_rpm_change_per_second * dt
+
+    def update(self, dt):
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        # Apply forces for forward facing motors
-        for i in range(4):
-            p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=[0, 0, self.thrusts[i] * self.max_thrust], posObj=self.motorPositions[i],
-                                 flags=p.LINK_FRAME)
+        self.update_motors(dt)
 
-        # Apply forces for upward facing motors
-        for i in range(4, 6):
+        # Apply forces for the  facing motors
+        for i in range(8):
             p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=[0, self.thrusts[i] * self.max_thrust, 0], posObj=self.motorPositions[i],
+                                 forceObj=self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]),
+                                 posObj=self.motorPositions[i],
                                  flags=p.LINK_FRAME)
+            self.motor_debug_lines[i].update(self.motorPositions[i],
+                                             self.motorPositions[i] + self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]) / 100,
+                                             self.id)
 
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
-            np.array([0, 0, -self.center_of_mass])) \
-            + lobster_pos
+            np.array(self.center_of_volume)) \
+                             + lobster_pos
 
         # Apply the buoyancy force
         p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,

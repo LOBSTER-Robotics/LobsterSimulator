@@ -7,18 +7,18 @@ from lobster_simulator.tools.Constants import *
 
 
 class HighLevelController:
-    motor_outputs = [0, 0, 0, 0, 0, 0]
+    motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
-        PID(p=8, i=0, d=0, min_value=-10, max_value=10),
+        PID(p=8, i=0, d=2, min_value=-10, max_value=10),
         PID(p=8, i=0, d=0, min_value=-10, max_value=10),  # Not used
-        PID(p=8, i=0, d=0, min_value=-10, max_value=10)
+        PID(p=8, i=0, d=2, min_value=-10, max_value=10)
     ]
 
     rate_pids = [
-        PID(p=0.2, i=0.4, d=0, min_value=-1, max_value=1),  # PITCH
-        PID(p=0.2, i=0.4, d=0, min_value=-1, max_value=1),  # ROLL
-        PID(p=0.2, i=0.4, d=0, min_value=-1, max_value=1)   # YAW
+        PID(p=10, i=0, d=10, min_value=-1000, max_value=1000),  # PITCH
+        PID(p=250, i=100, d=2, min_value=-1000, max_value=1000),  # ROLL
+        PID(p=250, i=0, d=0, min_value=-1000, max_value=1000)   # YAW
     ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
@@ -30,6 +30,10 @@ class HighLevelController:
         self.relative_desired_location = [0, 0, 0]
         self.rates = [0, 0, 0]
 
+        self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -3700, 3900, 0)
+        self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -3700, 3900, 0)
+        self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
+
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
@@ -40,8 +44,8 @@ class HighLevelController:
             desired_location
         )
 
-        self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[2])
-        self.relative_yaw = np.arctan2(self.relative_desired_location[0], self.relative_desired_location[2])
+        self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
+        self.relative_yaw = np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
 
         self.orientation_pids[PITCH].update(self.relative_pitch, 1. / 240.)
         self.orientation_pids[YAW].update(-self.relative_yaw, 1. / 240.)
@@ -57,20 +61,33 @@ class HighLevelController:
             np.linalg.inv(np.reshape(np.array(p.getMatrixFromQuaternion(orientation)), (3, 3))),
             velocity[1])
 
-        pitch_rate, yaw_rate, roll_rate = local_rotation
+        roll_rate, pitch_rate, yaw_rate = local_rotation
 
         self.rates = [pitch_rate, roll_rate, yaw_rate]
 
         # print([f'{i:.2f}' for i in [pitch_rate, yaw_rate, roll_rate]], end='')
+        # print(self.target_rates[ROLL] - roll_rate)
 
         for i in range(3):
             self.rate_pids[i].update(self.rates[i], 1. / 240.)
 
-        self.motor_outputs[0] = -self.rate_pids[YAW].output
-        self.motor_outputs[1] = self.rate_pids[YAW].output
+        for i in range(4):
+            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.forward_rpm_slider)
 
-        self.motor_outputs[2] = self.rate_pids[PITCH].output
-        self.motor_outputs[3] = -self.rate_pids[PITCH].output
+        for i in range(4, 6):
+            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.upward_rpm_slider)
 
-        self.motor_outputs[4] = self.rate_pids[ROLL].output
-        self.motor_outputs[5] = -self.rate_pids[ROLL].output
+        for i in range(6, 8):
+            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.sideward_rpm_slider)
+
+        self.motor_rpm_outputs[0] -= self.rate_pids[YAW].output
+        self.motor_rpm_outputs[1] += self.rate_pids[YAW].output
+
+        self.motor_rpm_outputs[2] += self.rate_pids[PITCH].output
+        self.motor_rpm_outputs[3] -= self.rate_pids[PITCH].output
+
+        self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
+        self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
+
+
+

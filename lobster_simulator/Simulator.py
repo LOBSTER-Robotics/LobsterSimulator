@@ -1,12 +1,16 @@
 import pybullet as p
 import pybullet_data
+import json
 
 from lobster_simulator.robot.Lobster import Lobster
 
 
 class Simulator:
 
-    def __init__(self, time_step, config, gui=True):
+    def __init__(self, time_step, config=None, gui=True):
+        if config is None:
+            with open('lobster_simulator/config.json', 'r') as f:
+                config = json.load(f)
         self.time = 0
         self.time_step = time_step
         self.gui = gui
@@ -22,12 +26,7 @@ class Simulator:
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf")
 
-        self.lobster = Lobster(config['length'],
-                               config['diameter'],
-                               config['arm_length'],
-                               config['arm_position_from_center'],
-                               config['center_of_mass'],
-                               config['inner_motor_distance_from_center'])
+        self.lobster = Lobster(config)
 
     def get_time(self):
         return self.time
@@ -40,11 +39,18 @@ class Simulator:
         p.setTimeStep(self.time_step)
 
     def set_rpm_motors(self, rpm_motors):
-        pass
+        self.lobster.set_desired_rpm_motors(rpm_motors)
+
+    def set_thrust_pwm(self, pwm_motors):
+        for i in range(len(pwm_motors)):
+            self.lobster.set
+
+    def step_until(self, time):
+        while self.time + self.time_step <= time:
+            self.do_step()
 
     def do_step(self):
-
-        self.lobster.update()
+        self.lobster.update(self.time_step)
 
         p.stepSimulation()
 

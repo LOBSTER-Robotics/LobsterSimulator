@@ -1,5 +1,5 @@
 import getopt, sys
-from lobster_simulator import Main
+import Main
 
 
 def main(argv):
