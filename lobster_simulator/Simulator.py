@@ -2,6 +2,8 @@ import pybullet as p
 import pybullet_data
 import json
 
+from pkg_resources import resource_stream
+
 from lobster_simulator.robot.Lobster import Lobster
 
 
@@ -9,7 +11,7 @@ class Simulator:
 
     def __init__(self, time_step, config=None, gui=True):
         if config is None:
-            with open('lobster_simulator/data/config.json', 'r') as f:
+            with resource_stream('lobster_simulator', 'data/config.json') as f:
                 config = json.load(f)
         self.time = 0
         self.time_step = time_step
