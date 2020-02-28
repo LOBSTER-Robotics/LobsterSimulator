@@ -22,10 +22,6 @@ class Lobster:
 
     def __init__(self, config):
 
-        print('test')
-        for i in range(0, 4001, 100):
-            print(i - thrust_to_rpm(rpm_to_thrust(i)))
-
         self.max_rpm_change_per_second = config['max_rpm_change_per_second']
         self.center_of_volume = config['center_of_volume']
 
@@ -84,9 +80,16 @@ class Lobster:
     def set_desired_rpm_motors(self, desired_rpm_motors):
         self.desired_rpm_motors = desired_rpm_motors
 
+    def set_desired_rpm_motor(self, index, desired_rpm):
+        self.desired_rpm_motors[index] = desired_rpm
+        print(desired_rpm)
+
     def set_desired_thrust_motors(self, desired_thrusts):
         for i in range(len(desired_thrusts)):
             self.desired_rpm_motors[i] = rpm_to_thrust(desired_thrusts[i])
+
+    def set_desired_thrust_motor(self, index, desired_thrust):
+        self.desired_rpm_motors[index] = thrust_to_rpm(desired_thrust)
 
     def update_motors(self, dt):
         for i in range(8):

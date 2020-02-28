@@ -16,9 +16,9 @@ class HighLevelController:
     ]
 
     rate_pids = [
-        PID(p=10, i=0, d=10, min_value=-1000, max_value=1000),  # PITCH
-        PID(p=250, i=100, d=2, min_value=-1000, max_value=1000),  # ROLL
-        PID(p=250, i=0, d=0, min_value=-1000, max_value=1000)   # YAW
+        PID(p=1000, i=0, d=10, min_value=-4000, max_value=4000),  # PITCH
+        PID(p=1000, i=0, d=2, min_value=-4000, max_value=4000),  # ROLL
+        PID(p=1000, i=0, d=0, min_value=-4000, max_value=4000)   # YAW
     ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)

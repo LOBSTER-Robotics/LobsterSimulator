@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pybullet as p
 import pybullet_data
 import json
@@ -16,6 +18,17 @@ class Simulator:
         self.time = 0
         self.time_step = time_step
         self.gui = gui
+
+        self.motor_mapping = {
+            'left-forward': 0,
+            'right-front':  1,
+            'top-front':    2,
+            'bottom-front': 3,
+            'left-side':    4,
+            'right-side':   5,
+            'top-side':     6,
+            'bottom-side':  7
+        }
 
         self.physics_client_id = -1
         if gui:
@@ -43,9 +56,9 @@ class Simulator:
     def set_rpm_motors(self, rpm_motors):
         self.lobster.set_desired_rpm_motors(rpm_motors)
 
-    def set_thrust_pwm(self, pwm_motors):
-        for i in range(len(pwm_motors)):
-            self.lobster.set
+    def set_thrust_motors(self, pwm_motors: Dict[str, float]):
+        for (motor, value) in pwm_motors.items():
+            self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
     def step_until(self, time):
         while self.time + self.time_step <= time:
