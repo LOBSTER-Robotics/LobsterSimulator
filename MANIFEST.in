@@ -1,0 +1,3 @@
+include lobster_simulator/data/base_link.STL
+include lobster_simulator/data/Model_URDF.SLDASM.urdf
+include lobster_simulator/data/config.json

@@ -9,7 +9,8 @@ setuptools.setup(
     author_email='Jorisquist@gmail.com',
     license='',
     packages= setuptools.find_packages(),
-    package_data={'data': ['*']},
+    include_package_data=True,
+    # package_data={'lobster-simulator.data': ['*']},
     install_requires=['pybullet',
                       'numpy'
                       ],
