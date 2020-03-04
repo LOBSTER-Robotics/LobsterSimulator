@@ -38,7 +38,7 @@ def main(gui=True, tcp=False):
         desired_pos_sliders = [
             p.addUserDebugParameter("desired x", -100, 100, 0),
             p.addUserDebugParameter("desired y", -100, 100, 0),
-            p.addUserDebugParameter("desired z", 0, 100, 1)
+            p.addUserDebugParameter("desired z", -100, 0, -10)
         ]
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
         buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)

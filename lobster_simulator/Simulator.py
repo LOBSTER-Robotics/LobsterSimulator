@@ -39,7 +39,7 @@ class Simulator:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(self.time_step)
         p.setGravity(0, 0, -10)
-        p.loadURDF("plane.urdf")
+        p.loadURDF("plane.urdf", [0, 0, -100])
 
         self.lobster = Lobster(config)
 
