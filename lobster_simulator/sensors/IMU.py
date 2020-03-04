@@ -7,7 +7,7 @@ from lobster_simulator.sensors.Sensor import Sensor
 class IMU(Sensor):
 
     def __init__(self, pybullet_id, position, orientation, frequency):
-        super().__init__(id, position, orientation, frequency)
+        super().__init__(pybullet_id, position, orientation, frequency)
 
         self.velocity = np.array([0, 0, 0])
         self.acceleration = np.array([0, 0, 0])
