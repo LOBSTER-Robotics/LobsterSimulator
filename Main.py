@@ -98,9 +98,6 @@ def main(gui=True, tcp=False):
 
             simulator.set_rpm_motors(rpm_motors)
 
-            # for i in range(len(rpm_motors)):
-            #     simulator.lobster.set_desired_rpm_motor(i, rpm_motors[i])
-
             simulator.do_step()
 
     p.disconnect()

@@ -20,7 +20,7 @@ class Simulator:
         self.gui = gui
 
         self.motor_mapping = {
-            'left-forward': 0,
+            'left-front': 0,
             'right-front':  1,
             'top-front':    2,
             'bottom-front': 3,
