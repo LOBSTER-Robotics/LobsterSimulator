@@ -10,15 +10,15 @@ class HighLevelController:
     motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
-        PID(p=8, i=0, d=2, min_value=-10, max_value=10),
+        PID(p=20, i=0, d=0, min_value=-100, max_value=100),
         PID(p=8, i=0, d=0, min_value=-10, max_value=10),  # Not used
-        PID(p=8, i=0, d=2, min_value=-10, max_value=10)
+        PID(p=20, i=0, d=0, min_value=-100, max_value=100)
     ]
 
     rate_pids = [
-        PID(p=1000, i=0, d=10, min_value=-4000, max_value=4000),  # PITCH
+        PID(p=1000, i=0, d=800, min_value=-4000, max_value=4000),  # PITCH
         PID(p=1000, i=0, d=2, min_value=-4000, max_value=4000),  # ROLL
-        PID(p=1000, i=0, d=0, min_value=-4000, max_value=4000)   # YAW
+        PID(p=1000, i=0, d=800, min_value=-4000, max_value=4000)   # YAW
     ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
@@ -37,7 +37,7 @@ class HighLevelController:
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position, orientation, velocity, desired_location):
+    def update(self, position, orientation, velocity, desired_location, dt):
         self.relative_desired_location = Translation.vec3_world_to_local(
             position,
             orientation,
@@ -47,8 +47,8 @@ class HighLevelController:
         self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
         self.relative_yaw = np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
 
-        self.orientation_pids[PITCH].update(self.relative_pitch, 1. / 240.)
-        self.orientation_pids[YAW].update(-self.relative_yaw, 1. / 240.)
+        self.orientation_pids[PITCH].update(self.relative_pitch, dt)
+        self.orientation_pids[YAW].update(-self.relative_yaw, dt)
 
         self.target_rates[PITCH] = self.orientation_pids[PITCH].output
         self.target_rates[YAW] = self.orientation_pids[YAW].output
@@ -88,6 +88,8 @@ class HighLevelController:
 
         self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
         self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
+
+        print(self.orientation_pids[PITCH].get_terms(), self.orientation_pids[PITCH].output, self.rate_pids[PITCH].get_terms())
 
 
 
