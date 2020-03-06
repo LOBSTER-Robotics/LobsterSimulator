@@ -11,7 +11,7 @@ from lobster_simulator.robot.Lobster import Lobster
 
 class Simulator:
 
-    def __init__(self, time_step, config=None, gui=True):
+    def __init__(self, time_step: int, config=None, gui=True):
         if config is None:
             with resource_stream('lobster_simulator', 'data/config.json') as f:
                 config = json.load(f)
@@ -20,7 +20,7 @@ class Simulator:
         self.gui = gui
 
         self.motor_mapping = {
-            'left-front': 0,
+            'left-front':   0,
             'right-front':  1,
             'top-front':    2,
             'bottom-front': 3,
@@ -37,21 +37,24 @@ class Simulator:
             self.physics_client_id = p.connect(p.DIRECT)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        p.setTimeStep(self.time_step)
+        p.setTimeStep(self.time_step / 1000000)
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf", [0, 0, -100])
 
-        self.lobster = Lobster(config)
+        with resource_stream('lobster_simulator', 'data/scout-alpha.json') as f:
+            lobster_config = json.load(f)
+
+        self.lobster = Lobster(lobster_config)
 
     def get_time(self):
-        return self.time
+        return self.time / 1000000
 
     def get_position(self):
         return self.lobster.get_position()
 
     def set_time_step(self, time_step):
         self.time_step = time_step
-        p.setTimeStep(self.time_step)
+        p.setTimeStep(self.time_step/1000000)
 
     def set_rpm_motors(self, rpm_motors):
         self.lobster.set_desired_rpm_motors(rpm_motors)
@@ -61,11 +64,11 @@ class Simulator:
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
     def step_until(self, time):
-        while self.time + self.time_step <= time:
+        while self.time + self.time_step <= time * 1000000:
             self.do_step()
 
     def do_step(self):
-        self.lobster.update(self.time_step)
+        self.lobster.update(self.time_step, self.time)
 
         p.stepSimulation()
 
@@ -77,5 +80,4 @@ class Simulator:
                 cameraPitch=camera_info[9],
                 cameraTargetPosition=self.lobster.get_position()
             )
-
         self.time += self.time_step

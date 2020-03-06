@@ -1,13 +1,10 @@
 import json
 
 import pybullet as p
-import pybullet_data
 
 from lobster_simulator.tools.Plot import Plot
-from lobster_simulator.control.HighLevelController import HighLevelController
-from lobster_simulator.robot.Lobster import Lobster
+from control.HighLevelController import HighLevelController
 from lobster_simulator.tools.Constants import *
-from lobster_simulator.tools.Logger import *
 from lobster_simulator.Simulator import Simulator
 
 
@@ -31,7 +28,9 @@ def read_config():
 
 def main(gui=True, tcp=False):
 
-    simulator = Simulator(1/240, None, gui)
+    time_step = 4000
+
+    simulator = Simulator(time_step, None, gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -44,7 +43,7 @@ def main(gui=True, tcp=False):
         buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
         debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
-        simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)
+        simulator_time_step_slider = p.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
     high_level_controller = HighLevelController()
 
@@ -76,7 +75,7 @@ def main(gui=True, tcp=False):
 
             # Reading all the debug parameters (only if the gui is showing)
             if gui:
-                p.setTimeStep(1 / p.readUserDebugParameter(simulator_frequency_slider))
+                time_step = p.readUserDebugParameter(simulator_time_step_slider)
 
                 desired_location = [
                     p.readUserDebugParameter(desired_pos_sliders[0]),
@@ -91,8 +90,10 @@ def main(gui=True, tcp=False):
 
                 simulator.lobster.set_buoyancy(p.readUserDebugParameter(buoyancy_force_slider))
 
+            simulator.set_time_step(time_step)
+
             velocity = p.getBaseVelocity(simulator.lobster.id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location, time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
