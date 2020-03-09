@@ -8,6 +8,7 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.DepthSensor import DepthSensor
+from lobster_simulator.sensors.IMU import IMU
 from lobster_simulator.tools.DebugLine import DebugLine
 
 
@@ -45,6 +46,7 @@ class Lobster:
                                                         useMaximalCoordinates=0)
 
         self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, 4000)
+        imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], 1000)
 
         self.buoyancy = 100
 
