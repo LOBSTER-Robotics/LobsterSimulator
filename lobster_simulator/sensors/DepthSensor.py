@@ -1,4 +1,5 @@
 import math
+from typing import List
 
 import pybullet as p
 
@@ -27,5 +28,6 @@ class DepthSensor(Sensor):
     #     self.previous_update_time = time
     #     self.previous_update_depth = current_depth
 
-    def __get_real_values(self, dt):
-        return vec3_local_to_world_id(self.pybullet_id, self.position)[2]
+    def _get_real_values(self, dt) -> List[float]:
+        # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")
+        return [vec3_local_to_world_id(self.pybullet_id, self.position)[2]]

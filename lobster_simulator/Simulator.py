@@ -65,7 +65,8 @@ class Simulator:
 
     def set_time_step(self, time_step):
         self.time_step = time_step
-        p.setTimeStep(self.time_step/1000000)
+        time_step_in_seconds = self.time_step/1000000
+        p.setTimeStep(time_step_in_seconds)
 
     def set_rpm_motors(self, rpm_motors):
         self.lobster.set_desired_rpm_motors(rpm_motors)
@@ -80,7 +81,6 @@ class Simulator:
 
     def do_step(self):
         if self.gui:
-            self.set_time_step(1 / p.readUserDebugParameter(self.simulator_frequency_slider))
             self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
 
             camera_info = p.getDebugVisualizerCamera()
@@ -91,14 +91,13 @@ class Simulator:
                 cameraTargetPosition=self.lobster.get_position()
             )
 
-        self.lobster.update(self.time_step)
+        self.lobster.update(self.time_step, self.time)
 
         p.stepSimulation()
 
         self.cycle += 1
         self.time += self.time_step
         if self.cycle % 50 == 0:
-            print((self.time - self.previous_update_time) / (t.perf_counter() - self.previous_update_real_time))
-
+            print((self.time - self.previous_update_time) / (t.perf_counter() - self.previous_update_real_time) / 1000000)
             self.previous_update_time = self.time
             self.previous_update_real_time = t.perf_counter()

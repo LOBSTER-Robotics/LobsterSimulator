@@ -67,9 +67,6 @@ class HighLevelController:
 
         self.rates = [pitch_rate, roll_rate, yaw_rate]
 
-        # print([f'{i:.2f}' for i in [pitch_rate, yaw_rate, roll_rate]], end='')
-        # print(self.target_rates[ROLL] - roll_rate)
-
         if self.gui:
             for i in range(3):
                 self.rate_pids[i].update(self.rates[i], 1. / 240.)
@@ -95,7 +92,7 @@ class HighLevelController:
         self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
         self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
 
-        print(self.orientation_pids[PITCH].get_terms(), self.orientation_pids[PITCH].output, self.rate_pids[PITCH].get_terms())
+        # print(self.orientation_pids[PITCH].get_terms(), self.orientation_pids[PITCH].output, self.rate_pids[PITCH].get_terms())
 
 
 

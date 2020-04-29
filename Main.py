@@ -43,6 +43,7 @@ def main(gui=True, tcp=False):
         debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
         simulator_time_step_slider = p.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
+
     high_level_controller = HighLevelController(gui)
 
     desired_location = [0, 0, 2]
@@ -77,9 +78,7 @@ def main(gui=True, tcp=False):
                 p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debug_line,
                                    lineWidth=5, lineColorRGB=[1, 0, 0])
 
-                # high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
-
-                simulator.lobster.set_buoyancy(p.readUserDebugParameter(buoyancy_force_slider))
+                high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
             simulator.set_time_step(time_step)
 

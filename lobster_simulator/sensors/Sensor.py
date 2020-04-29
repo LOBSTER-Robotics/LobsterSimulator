@@ -26,11 +26,11 @@ class Sensor:
 
         self.next_sample_time = 0
         self.previous_update_time = 0
-        self.previous_real_value = self.__get_real_values(0)
+        self.previous_real_value = self._get_real_values(0)
 
     def update(self, time):
         dt = time - self.previous_update_time
-        real_values = self.__get_real_values(dt)
+        real_values = self._get_real_values(dt)
 
         while self.next_sample_time <= time:
 
@@ -62,5 +62,6 @@ class Sensor:
     def get_sensor_orientation(self):
         return self.orientation
 
-    def __get_real_values(self, dt) -> List[float]:
+    def _get_real_values(self, dt) -> List[float]:
+        print("Error called __get_real_values() on abstract sensor!")
         pass
