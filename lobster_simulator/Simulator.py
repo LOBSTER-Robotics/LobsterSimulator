@@ -3,6 +3,7 @@ from typing import Dict
 import pybullet as p
 import pybullet_data
 import json
+import time as t
 
 from pkg_resources import resource_stream
 
@@ -16,8 +17,12 @@ class Simulator:
             with resource_stream('lobster_simulator', 'data/config.json') as f:
                 config = json.load(f)
         self.time = 0
+        self.previous_update_time = 0
+        self.previous_update_real_time = t.perf_counter()
         self.time_step = time_step
         self.gui = gui
+
+        self.cycle = 0
 
         self.motor_mapping = {
             'left-front':   0,
@@ -33,6 +38,9 @@ class Simulator:
         self.physics_client_id = -1
         if gui:
             self.physics_client_id = p.connect(p.GUI)
+            self.simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 10, 1000, 1/time_step)
+            self.buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
+
         else:
             self.physics_client_id = p.connect(p.DIRECT)
 
@@ -45,6 +53,9 @@ class Simulator:
             lobster_config = json.load(f)
 
         self.lobster = Lobster(lobster_config)
+
+    def get_pybullet_id(self):
+        return self.physics_client_id
 
     def get_time(self):
         return self.time / 1000000
@@ -68,11 +79,10 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
-        self.lobster.update(self.time_step, self.time)
-
-        p.stepSimulation()
-
         if self.gui:
+            self.set_time_step(1 / p.readUserDebugParameter(self.simulator_frequency_slider))
+            self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
+
             camera_info = p.getDebugVisualizerCamera()
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
@@ -80,4 +90,15 @@ class Simulator:
                 cameraPitch=camera_info[9],
                 cameraTargetPosition=self.lobster.get_position()
             )
+
+        self.lobster.update(self.time_step)
+
+        p.stepSimulation()
+
+        self.cycle += 1
         self.time += self.time_step
+        if self.cycle % 50 == 0:
+            print((self.time - self.previous_update_time) / (t.perf_counter() - self.previous_update_real_time))
+
+            self.previous_update_time = self.time
+            self.previous_update_real_time = t.perf_counter()

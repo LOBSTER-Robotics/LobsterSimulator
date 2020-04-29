@@ -48,7 +48,8 @@ class Lobster:
         self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, 4000)
         imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], 1000)
 
-        self.buoyancy = 100
+        self.max_thrust = 100
+        self.buoyancy = 550
 
     def set_buoyancy(self, value):
         self.buoyancy = value

@@ -23,16 +23,18 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self):
+    def __init__(self, gui):
         self.relative_yaw = 0
         self.relative_pitch = 0
         self.target_rates = [0, 0, 0]
         self.relative_desired_location = [0, 0, 0]
         self.rates = [0, 0, 0]
+        self.gui = gui
 
-        self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -3700, 3900, 0)
-        self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -3700, 3900, 0)
-        self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
+        if gui:
+            self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -3700, 3900, 0)
+            self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -3700, 3900, 0)
+            self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
 
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
@@ -68,17 +70,21 @@ class HighLevelController:
         # print([f'{i:.2f}' for i in [pitch_rate, yaw_rate, roll_rate]], end='')
         # print(self.target_rates[ROLL] - roll_rate)
 
-        for i in range(3):
-            self.rate_pids[i].update(self.rates[i], 1. / 240.)
+        if self.gui:
+            for i in range(3):
+                self.rate_pids[i].update(self.rates[i], 1. / 240.)
 
-        for i in range(4):
-            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.forward_rpm_slider)
+            for i in range(4):
+                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.forward_rpm_slider)
 
-        for i in range(4, 6):
-            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.upward_rpm_slider)
+            for i in range(4, 6):
+                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.upward_rpm_slider)
 
-        for i in range(6, 8):
-            self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.sideward_rpm_slider)
+            for i in range(6, 8):
+                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.sideward_rpm_slider)
+        else:
+            for i in range(8):
+                self.motor_rpm_outputs[i] = 0
 
         self.motor_rpm_outputs[0] -= self.rate_pids[YAW].output
         self.motor_rpm_outputs[1] += self.rate_pids[YAW].output

@@ -40,12 +40,10 @@ def main(gui=True, tcp=False):
             p.addUserDebugParameter("desired z", -100, 0, -10)
         ]
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
         debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
         simulator_time_step_slider = p.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
-
-    high_level_controller = HighLevelController()
+    high_level_controller = HighLevelController(gui)
 
     desired_location = [0, 0, 2]
 
@@ -64,14 +62,7 @@ def main(gui=True, tcp=False):
 
         if not paused:
 
-            # if cycle % p.readUserDebugParameter(simulator_frequency_slider) == 0:
-            #     dt = (time.time() - previous_time)
-            #     print(1 / dt, dt)
-            #     previous_time = time.time()
-
             lobster_pos, lobster_orn = simulator.lobster.get_position_and_orientation()
-
-            forward_thrust = 0
 
             # Reading all the debug parameters (only if the gui is showing)
             if gui:
@@ -86,7 +77,7 @@ def main(gui=True, tcp=False):
                 p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debug_line,
                                    lineWidth=5, lineColorRGB=[1, 0, 0])
 
-                high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
+                # high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
                 simulator.lobster.set_buoyancy(p.readUserDebugParameter(buoyancy_force_slider))
 
