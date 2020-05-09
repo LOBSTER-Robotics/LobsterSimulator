@@ -6,6 +6,7 @@ from typing import List
 
 from pkg_resources import resource_filename
 
+from common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.IMU import IMU
@@ -15,6 +16,8 @@ from lobster_simulator.tools.DebugLine import DebugLine
 class Lobster:
 
     def __init__(self, config):
+        if config is None:
+            raise ArgumentNoneError("config parameter should not be None")
 
         self.center_of_volume = config['center_of_volume']
 
@@ -70,6 +73,7 @@ class Lobster:
 
     def update(self, dt, time):
         lobster_pos, lobster_orn = self.get_position_and_orientation()
+
         self.depth_sensor.update(time)
 
         for i in range(8):

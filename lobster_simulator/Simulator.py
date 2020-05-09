@@ -13,6 +13,12 @@ from lobster_simulator.robot.Lobster import Lobster
 class Simulator:
 
     def __init__(self, time_step: int, config=None, gui=True):
+        """
+        Simulator
+        :param time_step: duration of a step in microseconds
+        :param config: config of the robot.
+        :param gui: start the PyBullet gui when true
+        """
         if config is None:
             with resource_stream('lobster_simulator', 'data/config.json') as f:
                 config = json.load(f)
@@ -38,7 +44,7 @@ class Simulator:
         self.physics_client_id = -1
         if gui:
             self.physics_client_id = p.connect(p.GUI)
-            self.simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 10, 1000, 1/time_step)
+            self.simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 10, 1000, 1 / time_step)
             self.buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
 
         else:
@@ -80,6 +86,8 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
+        self.time += self.time_step
+
         if self.gui:
             self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
 
@@ -96,7 +104,6 @@ class Simulator:
         p.stepSimulation()
 
         self.cycle += 1
-        self.time += self.time_step
         if self.cycle % 50 == 0:
             print((self.time - self.previous_update_time) / (t.perf_counter() - self.previous_update_real_time) / 1000000)
             self.previous_update_time = self.time

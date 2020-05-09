@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from typing import List
 
 
-class Sensor:
+class Sensor(ABC):
 
     def __init__(self, pybullet_id, position, orientation, time_step):
         """
@@ -24,11 +25,11 @@ class Sensor:
 
         self.queue = list()
 
-        self.next_sample_time = 0
-        self.previous_update_time = 0
-        self.previous_real_value = self._get_real_values(0)
+        self.next_sample_time = 0.
+        self.previous_update_time = 0.
+        self.previous_real_value = self._get_real_values(0.)
 
-    def update(self, time):
+    def update(self, time: float):
         dt = time - self.previous_update_time
         real_values = self._get_real_values(dt)
 
@@ -62,6 +63,6 @@ class Sensor:
     def get_sensor_orientation(self):
         return self.orientation
 
-    def _get_real_values(self, dt) -> List[float]:
-        print("Error called __get_real_values() on abstract sensor!")
-        pass
+    @abstractmethod
+    def _get_real_values(self, dt: float) -> List[float]:
+        raise NotImplementedError("This method should be implemented")
