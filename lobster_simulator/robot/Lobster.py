@@ -71,7 +71,13 @@ class Lobster:
     def set_desired_thrust_motor(self, index: int, desired_thrust: float):
         self.motors[index].set_desired_thrust(desired_thrust)
 
-    def update(self, dt, time):
+    def update(self, dt: int, time: int):
+        """
+
+        :param dt: dt in microseconds
+        :param time: time in microseconds
+        :return:
+        """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
         self.depth_sensor.update(time)

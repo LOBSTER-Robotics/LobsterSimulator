@@ -12,7 +12,7 @@ class Motor:
         self.direction = direction
 
         self.rpm_to_thrust = rpm_to_thrust
-        self.thrust_to_rpm = thrust_to_rpm
+        self._thrust_to_rpm = thrust_to_rpm
 
         self.max_rpm_change_per_second = max_rpm_change_per_second
 
@@ -30,12 +30,16 @@ class Motor:
         self.desired_rpm = desired_rpm
 
     def set_desired_thrust(self, desired_thrust):
-        self.desired_rpm = self.__thrust_to_rpm(desired_thrust)
+        self.desired_rpm = self._thrust_to_rpm(desired_thrust)
 
     def get_thrust(self):
         return self.rpm_to_thrust(self.rpm)
 
-    def update(self, dt):
+    def update(self, dt: int):
+        """
+
+        :param dt: dt in microseconds
+        """
         diff = self.desired_rpm - self.rpm
         sign = int(diff > 0) - int(diff < 0)
         if math.fabs(diff) <= self.max_rpm_change_per_second * dt / 1000000:

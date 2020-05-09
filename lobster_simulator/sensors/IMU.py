@@ -15,7 +15,7 @@ class IMU(Sensor):
         self.previous_velocity = np.array([0, 0, 0])
         self.previous_real_value = (np.array([0, 0, 0]), self.previous_velocity)
 
-    def _get_real_values(self, dt: float):
+    def _get_real_values(self, dt: int):
         velocity = np.array(p.getBaseVelocity(self.pybullet_id)[0])
         acceleration = (velocity - self.previous_real_value[VELOCITY]) / dt
         return acceleration, velocity

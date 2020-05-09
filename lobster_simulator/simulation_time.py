@@ -8,6 +8,7 @@ def microseconds_to_seconds(microseconds: float) -> float:
 class SimulationTime:
 
     def __init__(self, initial_microseconds: int = 0):
+        # todo add microseconds class
         self._micro_seconds = initial_microseconds
 
     @property

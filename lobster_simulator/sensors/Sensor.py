@@ -25,11 +25,16 @@ class Sensor(ABC):
 
         self.queue = list()
 
-        self.next_sample_time = 0.
-        self.previous_update_time = 0.
-        self.previous_real_value = self._get_real_values(0.)
+        self.next_sample_time: int = 0
+        self.previous_update_time: int = 0
+        self.previous_real_value = self._get_real_values(0)
 
-    def update(self, time: float):
+    def update(self, time: int):
+        """
+
+        :param time: time in microseconds
+        :return:
+        """
         dt = time - self.previous_update_time
         real_values = self._get_real_values(dt)
 
@@ -64,5 +69,10 @@ class Sensor(ABC):
         return self.orientation
 
     @abstractmethod
-    def _get_real_values(self, dt: float) -> List[float]:
+    def _get_real_values(self, dt: int) -> List[float]:
+        """
+
+        :param dt: dt in microseconds
+        :return:
+        """
         raise NotImplementedError("This method should be implemented")
