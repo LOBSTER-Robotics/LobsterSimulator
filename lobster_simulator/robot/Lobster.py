@@ -6,7 +6,7 @@ from typing import List
 
 from pkg_resources import resource_filename
 
-from common.general_exceptions import ArgumentNoneError
+from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.IMU import IMU
