@@ -25,6 +25,9 @@ class SimulationTime:
     def __sub__(self, other):
         return SimulationTime(self._micro_seconds - other.microseconds)
 
+    def __le__(self, other):
+        return self._micro_seconds <= other.microseconds
+
     def add_time_step(self, time_step: int):
         """
         Add time step in microseconds

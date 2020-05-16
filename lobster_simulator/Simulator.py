@@ -92,6 +92,7 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
+        self.time.add_time_step(self.time_step.microseconds)
         if self.gui:
             self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
 
@@ -108,10 +109,9 @@ class Simulator:
         p.stepSimulation()
 
         self.cycle += 1
-        self.time.add_time_step(self.time_step.microseconds)
         if self.cycle % 50 == 0:
-            print(
-                (self.time - self.previous_update_time) / microseconds_to_seconds(
-                    t.perf_counter() - self.previous_update_real_time))
+            # print(
+            #     (self.time - self.previous_update_time) / microseconds_to_seconds(
+            #         t.perf_counter() - self.previous_update_real_time))
             self.previous_update_time = self.time
             self.previous_update_real_time = t.perf_counter()

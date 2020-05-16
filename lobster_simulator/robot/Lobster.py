@@ -10,6 +10,7 @@ from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.IMU import IMU
+from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.DebugLine import DebugLine
 
 
@@ -50,8 +51,8 @@ class Lobster:
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
 
-        self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, 4000)
-        self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], 1000)
+        self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, SimulationTime(4000))
+        self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
 
         self.max_thrust = 100
         self.buoyancy = 550
@@ -73,7 +74,7 @@ class Lobster:
     def set_desired_thrust_motor(self, index: int, desired_thrust: float):
         self.motors[index].set_desired_thrust(desired_thrust)
 
-    def update(self, dt: int, time: int):
+    def update(self, dt: SimulationTime, time: SimulationTime):
         """
 
         :param dt: dt in microseconds
@@ -92,24 +93,24 @@ class Lobster:
         # print('\r', end='')
         # print(np.array(p.getBaseVelocity(self.id)[0]), end='')
 
-        # for i in range(8):
-        #     self.motors[i].update(dt)
-        #
-        # # Apply forces for the  facing motors
-        # for i in range(8):
-        #     self.motors[i].apply_thrust()
-        #     self.motor_debug_lines[i].update(self.motors[i].position,
-        #                                      self.motors[i].position
-        #                                      + self.motors[i].direction * self.motors[i].get_thrust() / 100,
-        #                                      self.id)
-        #
-        # # Determine the point where the buoyancy force acts on the robot
-        # buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
-        #     np.array(self.center_of_volume)) + lobster_pos
-        #
-        # # Apply the buoyancy force
-        # p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-        #                      forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
+        for i in range(8):
+            self.motors[i].update(dt.microseconds)
+
+        # Apply forces for the  facing motors
+        for i in range(8):
+            self.motors[i].apply_thrust()
+            self.motor_debug_lines[i].update(self.motors[i].position,
+                                             self.motors[i].position
+                                             + self.motors[i].direction * self.motors[i].get_thrust() / 100,
+                                             self.id)
+
+        # Determine the point where the buoyancy force acts on the robot
+        buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
+            np.array(self.center_of_volume)) + lobster_pos
+
+        # Apply the buoyancy force
+        p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
+                             forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
 
     def get_position_and_orientation(self):
         return p.getBasePositionAndOrientation(self.id)

@@ -3,10 +3,12 @@ from abc import ABC, abstractmethod
 
 from typing import List
 
+from lobster_simulator.simulation_time import SimulationTime
+
 
 class Sensor(ABC):
 
-    def __init__(self, pybullet_id, position, orientation, time_step):
+    def __init__(self, pybullet_id, position, orientation, time_step: SimulationTime):
         """
         Parameters
         ----------
@@ -27,34 +29,33 @@ class Sensor(ABC):
 
         self.queue = list()
 
-        self.next_sample_time: int = 0
-        self.previous_update_time: int = 0
-        self.previous_real_value = self._get_real_values(0)
+        self.next_sample_time: SimulationTime = SimulationTime(0)
+        self.previous_update_time: SimulationTime = SimulationTime(0)
+        self.previous_real_value = self._get_real_values(SimulationTime(1))
 
-
-    def update(self, time: int):
+    def update(self, time: SimulationTime):
         """
 
         :param time: time in microseconds
         :return:
         """
+        # print(time, self.previous_update_time)
         dt = time - self.previous_update_time
         real_values = self._get_real_values(dt)
-
 
         while self.next_sample_time <= time:
 
             value_outputs = list()
             for i in range(len(real_values)):
-                value_dt = (real_values[i] - self.previous_real_value[i]) / dt
+                value_dt = (real_values[i] - self.previous_real_value[i]) / dt.microseconds
                 value_output = self.previous_real_value[i] + value_dt * (
-                        self.next_sample_time - self.previous_update_time)
+                        self.next_sample_time - self.previous_update_time).microseconds
                 value_outputs.append(value_output)
 
             self.queue.append(value_outputs)
             self.next_sample_time += self.time_step
 
-        self.previous_update_time = time
+        self.previous_update_time = SimulationTime(time.microseconds)
 
     def pop_next_value(self):
         if len(self.queue) == 0:
@@ -73,7 +74,7 @@ class Sensor(ABC):
         return self.orientation
 
     @abstractmethod
-    def _get_real_values(self, dt: int) -> List[float]:
+    def _get_real_values(self, dt: SimulationTime) -> List[float]:
         """
         :param dt: dt in microseconds
         :return:

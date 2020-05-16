@@ -50,16 +50,16 @@ def main(gui=True, tcp=False):
 
     paused = False
 
-    plot = Plot(3)
+    # plot = Plot(3)
 
     while True:
         keys = p.getKeyboardEvents()
         if ord('q') in keys and keys[ord('q')] & p.KEY_WAS_TRIGGERED:
             break
-        if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
+        # if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
             # paused = not paused
             # if paused:
-            plot.plot()
+            # plot.plot()
 
         if not paused:
 
@@ -88,6 +88,7 @@ def main(gui=True, tcp=False):
             rpm_motors = high_level_controller.motor_rpm_outputs
 
             simulator.set_rpm_motors(rpm_motors)
+            print(rpm_motors)
 
             simulator.do_step()
 
