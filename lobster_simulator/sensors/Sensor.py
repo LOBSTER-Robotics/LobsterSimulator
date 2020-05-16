@@ -1,4 +1,6 @@
+
 from abc import ABC, abstractmethod
+
 from typing import List
 
 
@@ -29,6 +31,7 @@ class Sensor(ABC):
         self.previous_update_time: int = 0
         self.previous_real_value = self._get_real_values(0)
 
+
     def update(self, time: int):
         """
 
@@ -37,6 +40,7 @@ class Sensor(ABC):
         """
         dt = time - self.previous_update_time
         real_values = self._get_real_values(dt)
+
 
         while self.next_sample_time <= time:
 
@@ -71,7 +75,6 @@ class Sensor(ABC):
     @abstractmethod
     def _get_real_values(self, dt: int) -> List[float]:
         """
-
         :param dt: dt in microseconds
         :return:
         """

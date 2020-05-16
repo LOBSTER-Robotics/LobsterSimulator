@@ -23,7 +23,8 @@ class Lobster:
 
         self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
                              [0, 0, 0],
-                             p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
+                             # p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
+                             p.getQuaternionFromEuler([0, 0, 0]))
 
         config_motors = config['motors']
 
@@ -33,7 +34,8 @@ class Lobster:
                                               np.array(config_motors[i]['position']),
                                               np.array(config_motors[i]['direction'])))
 
-        p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        # p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        p.changeDynamics(self.id, -1, linearDamping=0, angularDamping=0)
 
         self.motor_debug_lines = list()
 
@@ -49,7 +51,7 @@ class Lobster:
                                                         useMaximalCoordinates=0)
 
         self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, 4000)
-        imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], 1000)
+        self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], 1000)
 
         self.max_thrust = 100
         self.buoyancy = 550
@@ -81,25 +83,33 @@ class Lobster:
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
         self.depth_sensor.update(time)
+        self.imu.update(time)
 
-        for i in range(8):
-            self.motors[i].update(dt)
+        for value in self.imu.get_all_values():
+            print('\r', end='')
+            print(value, end='')
 
-        # Apply forces for the  facing motors
-        for i in range(8):
-            self.motors[i].apply_thrust()
-            self.motor_debug_lines[i].update(self.motors[i].position,
-                                             self.motors[i].position
-                                             + self.motors[i].direction * self.motors[i].get_thrust() / 100,
-                                             self.id)
+        # print('\r', end='')
+        # print(np.array(p.getBaseVelocity(self.id)[0]), end='')
 
-        # Determine the point where the buoyancy force acts on the robot
-        buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
-            np.array(self.center_of_volume)) + lobster_pos
-
-        # Apply the buoyancy force
-        p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                             forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
+        # for i in range(8):
+        #     self.motors[i].update(dt)
+        #
+        # # Apply forces for the  facing motors
+        # for i in range(8):
+        #     self.motors[i].apply_thrust()
+        #     self.motor_debug_lines[i].update(self.motors[i].position,
+        #                                      self.motors[i].position
+        #                                      + self.motors[i].direction * self.motors[i].get_thrust() / 100,
+        #                                      self.id)
+        #
+        # # Determine the point where the buoyancy force acts on the robot
+        # buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
+        #     np.array(self.center_of_volume)) + lobster_pos
+        #
+        # # Apply the buoyancy force
+        # p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
+        #                      forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
 
     def get_position_and_orientation(self):
         return p.getBasePositionAndOrientation(self.id)
