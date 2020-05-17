@@ -1,6 +1,4 @@
-
 from abc import ABC, abstractmethod
-
 from typing import List
 
 from lobster_simulator.simulation_time import SimulationTime
@@ -77,6 +75,13 @@ class Sensor(ABC):
 
     def get_sensor_orientation(self):
         return self.orientation
+
+    @abstractmethod
+    def _get_initial_values(self) -> List[float]:
+        """
+        :return:
+        """
+        raise NotImplementedError("This method should be implemented")
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:

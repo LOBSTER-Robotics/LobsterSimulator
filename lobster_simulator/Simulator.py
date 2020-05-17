@@ -1,5 +1,5 @@
 from typing import Dict
-
+import copy
 import pybullet as p
 import pybullet_data
 import json
@@ -8,7 +8,7 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.robot.Lobster import Lobster
-from lobster_simulator.simulation_time import SimulationTime, microseconds_to_seconds
+from lobster_simulator.simulation_time import SimulationTime, microseconds_to_seconds, seconds_to_microseconds
 
 
 class Simulator:
@@ -25,7 +25,7 @@ class Simulator:
                 config = json.load(f)
         self.time: SimulationTime = SimulationTime(0)
         self.previous_update_time: SimulationTime = SimulationTime(0)
-        self.previous_update_real_time = t.perf_counter()
+        self.previous_update_real_time: float = t.perf_counter() # in seconds
         self.time_step : SimulationTime = SimulationTime(initial_microseconds=time_step)
         self.gui = gui
 
@@ -82,7 +82,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: int):
+    def step_until(self, time: float): # todo not sure if this was int or float
         """
         Execute steps until time (in seconds) has reached
         :param time:
@@ -110,8 +110,8 @@ class Simulator:
 
         self.cycle += 1
         if self.cycle % 50 == 0:
-            # print(
-            #     (self.time - self.previous_update_time) / microseconds_to_seconds(
-            #         t.perf_counter() - self.previous_update_real_time))
-            self.previous_update_time = self.time
+            print("test"+str(
+                (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
+                    t.perf_counter() - self.previous_update_real_time)))
+            self.previous_update_time = copy.copy(self.time)
             self.previous_update_real_time = t.perf_counter()
