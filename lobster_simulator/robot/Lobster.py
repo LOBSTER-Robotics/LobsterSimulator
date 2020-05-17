@@ -83,12 +83,15 @@ class Lobster:
         """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
+        for value in self.imu.get_all_values():
+            [print(f'{value}, ', end='') for value in self.imu._get_real_values(dt)]
+            [print(f'{value}, ', end='') for value in value]
+            print()
+
         self.depth_sensor.update(time)
         self.imu.update(time)
 
-        for value in self.imu.get_all_values():
-            print('\r', end='')
-            print(value, end='')
+
 
         # print('\r', end='')
         # print(np.array(p.getBaseVelocity(self.id)[0]), end='')

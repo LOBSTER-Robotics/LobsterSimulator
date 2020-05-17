@@ -50,11 +50,16 @@ class Sensor(ABC):
                 value_dt = (real_values[i] - self.previous_real_value[i]) / dt.microseconds
                 value_output = self.previous_real_value[i] + value_dt * (
                         self.next_sample_time - self.previous_update_time).microseconds
+
+
+                # print(value_output, real_values[i], self.previous_real_value[i])
                 value_outputs.append(value_output)
+
 
             self.queue.append(value_outputs)
             self.next_sample_time += self.time_step
 
+        self.previous_real_value = real_values
         self.previous_update_time = SimulationTime(time.microseconds)
 
     def pop_next_value(self):

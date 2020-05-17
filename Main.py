@@ -88,7 +88,6 @@ def main(gui=True, tcp=False):
             rpm_motors = high_level_controller.motor_rpm_outputs
 
             simulator.set_rpm_motors(rpm_motors)
-            print(rpm_motors)
 
             simulator.do_step()
 
