@@ -27,7 +27,7 @@ class IMU(Sensor):
     def _get_real_values(self, dt: int):
         velocity = self._get_velocity()
         # 1000000 could be replaced with .toMicroseconds()
-        acceleration = (velocity - self.previous_velocity)*1000000 / dt.microseconds
+        acceleration = (velocity - self.previous_velocity) * 1000000 / dt.microseconds
         return acceleration, velocity
 
     def _get_velocity(self):
