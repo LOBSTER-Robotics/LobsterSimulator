@@ -19,7 +19,7 @@ class IMU(Sensor):
         super().update(time)
         self.previous_velocity = self._get_velocity()
 
-    def _get_initial_values(self):  # todo not sure if this is still needed
+    def _get_initial_values(self):
         velocity = self._get_velocity()
         acceleration = 0
         return (acceleration, velocity)
