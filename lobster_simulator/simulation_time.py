@@ -1,11 +1,13 @@
 MICROSECONDS_IN_SECONDS = 1000000
 
 
-def microseconds_to_seconds(microseconds: float) -> float:
+def microseconds_to_seconds(microseconds: int) -> float:
     return microseconds / MICROSECONDS_IN_SECONDS
 
-def seconds_to_microseconds(seconds: float) -> float:
-    return seconds * MICROSECONDS_IN_SECONDS
+
+def seconds_to_microseconds(seconds: float) -> int:
+    return int(seconds * MICROSECONDS_IN_SECONDS)
+
 
 class SimulationTime:
 
@@ -29,9 +31,3 @@ class SimulationTime:
 
     def __le__(self, other):
         return self._micro_seconds <= other.microseconds
-
-    def add_time_step(self, time_step: int):
-        """
-        Add time step in microseconds
-        """
-        self._micro_seconds += time_step

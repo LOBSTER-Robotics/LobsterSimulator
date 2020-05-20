@@ -72,6 +72,10 @@ class Simulator:
         return self.lobster.get_position()
 
     def set_time_step(self, time_step: int):
+        """
+        Set time step
+        :param time_step: in milliseconds
+        """
         self.time_step = SimulationTime(time_step)
         p.setTimeStep(self.time_step.seconds)
 
@@ -82,7 +86,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: float): # todo not sure if this was int or float
+    def step_until(self, time: float):
         """
         Execute steps until time (in seconds) has reached
         :param time:
@@ -92,7 +96,7 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
-        self.time.add_time_step(self.time_step.microseconds)
+        self.time += self.time_step
         if self.gui:
             self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
 
@@ -113,5 +117,5 @@ class Simulator:
             print("test"+str(
                 (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
                     t.perf_counter() - self.previous_update_real_time)))
-            self.previous_update_time = copy.copy(self.time)
+            self.previous_update_time = self.time
             self.previous_update_real_time = t.perf_counter()
