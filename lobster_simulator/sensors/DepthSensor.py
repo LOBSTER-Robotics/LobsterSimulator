@@ -22,4 +22,4 @@ class DepthSensor(Sensor):
         return [vec3_local_to_world_id(self.pybullet_id, self.position)[2]]
 
     def get_depth(self):
-        return self._previous_real_value[0]
+        return -self._previous_real_value[0]
