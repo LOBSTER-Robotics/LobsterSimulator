@@ -31,10 +31,13 @@ class IMU(Sensor):
         return np.array(p.getBaseVelocity(self.pybullet_id)[0])
 
     def get_magnetometer_value(self):
-        return self._previous_real_value[0]
+        return p.getEulerFromQuaternion(self._previous_real_value[0])
 
     def get_accelerometer_value(self):
         return self._previous_real_value[1]
 
     def get_gyroscope_value(self):
         return self._previous_real_value[2]
+    
+    def get_orientation(self):
+        return np.array(p.getBasePositionAndOrientation(self.pybullet_id)[1])
