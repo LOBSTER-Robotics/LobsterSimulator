@@ -77,13 +77,6 @@ class Sensor(ABC):
         return self.orientation
 
     @abstractmethod
-    def _get_initial_values(self) -> List[float]:
-        """
-        :return:
-        """
-        raise NotImplementedError("This method should be implemented")
-
-    @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:
         """
         :param dt: dt in microseconds
