@@ -4,43 +4,33 @@
   "center_of_volume"          : [0, 0, 0],
   "motors"                     : [
     {
-      "name": "left-front",
-      "position": [-0.128, 0, 0.299],
-      "direction": [1, 0, 0]
-    },
-    {
-      "name": "right-front",
-      "position": [-0.128, 0, -0.299],
-      "direction": [1, 0, 0]
-    },
-    {
       "name": "top-front",
-      "position": [-0.128, 0.299, 0],
+      "position": [0, 0, 0.384],
+      "direction": [1, 0, 0]
+    },
+    {
+      "name": "left-front",
+      "position": [0, 0.384, 0],
       "direction": [1, 0, 0]
     },
     {
       "name": "bottom-front",
-      "position": [-0.128, -0.299, 0],
+      "position": [0, 0, -0.384],
+      "direction": [1, 0, 0]
+    },
+    {
+      "name": "right-front",
+      "position": [0, -0.384, 0],
       "direction": [1, 0, 0]
     },
     {
       "name": "left-side",
-      "position": [-0.191, 0, 0.200],
-      "direction": [0, 1, 0]
+      "position": [0, 0.220, 0],
+      "direction": [0, 0, 1]
     },
     {
       "name": "right-side",
-      "position": [-0.191, 0, -0.200],
-      "direction": [0, 1, 0]
-    },
-    {
-      "name": "top-side",
-      "position": [-0.191, 0.200, 0],
-      "direction": [0, 0, 1]
-    },
-        {
-      "name": "bottom-side",
-      "position": [-0.191, -0.200, 0],
+      "position": [0, -0.220, 0],
       "direction": [0, 0, 1]
     }
   ]

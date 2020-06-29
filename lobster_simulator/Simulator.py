@@ -20,9 +20,9 @@ class Simulator:
         :param config: config of the robot.
         :param gui: start the PyBullet gui when true
         """
-        if config is None:
-            with resource_stream('lobster_simulator', 'data/config.json') as f:
-                config = json.load(f)
+        # if config is None:
+        #     with resource_stream('lobster_simulator', 'data/config.json') as f:
+        #         config = json.load(f)
         self.time: SimulationTime = SimulationTime(0)
         self.previous_update_time: SimulationTime = SimulationTime(0)
         self.previous_update_real_time: float = t.perf_counter() # in seconds
@@ -32,14 +32,14 @@ class Simulator:
         self.cycle = 0
 
         self.motor_mapping = {
-            'left-front': 0,
-            'right-front': 1,
-            'top-front': 2,
-            'bottom-front': 3,
+            'top-front': 0,
+            'left-front': 1,
+            'bottom-front': 2,
+            'right-front': 3,
             'left-side': 4,
-            'right-side': 5,
-            'top-side': 6,
-            'bottom-side': 7
+            'right-side': 5#,
+            # 'top-side': 6,
+            # 'bottom-side': 7
         }
 
         self.physics_client_id = -1
@@ -72,10 +72,6 @@ class Simulator:
         return self.lobster.get_position()
 
     def set_time_step(self, time_step: int):
-        """
-        Set time step
-        :param time_step: in milliseconds
-        """
         self.time_step = SimulationTime(time_step)
         p.setTimeStep(self.time_step.seconds)
 
@@ -86,7 +82,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: float):
+    def step_until(self, time: float): # todo not sure if this was int or float
         """
         Execute steps until time (in seconds) has reached
         :param time:
@@ -96,7 +92,7 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
-        self.time += self.time_step
+        self.time.add_time_step(self.time_step.microseconds)
         if self.gui:
             self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
 
@@ -114,8 +110,8 @@ class Simulator:
 
         self.cycle += 1
         if self.cycle % 50 == 0:
-            print("test"+str(
-                (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
-                    t.perf_counter() - self.previous_update_real_time)))
-            self.previous_update_time = self.time
+            # print("test"+str(
+            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
+            #         t.perf_counter() - self.previous_update_real_time)))
+            self.previous_update_time = copy.copy(self.time)
             self.previous_update_real_time = t.perf_counter()

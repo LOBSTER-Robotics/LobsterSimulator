@@ -39,10 +39,10 @@ class Lobster:
         p.changeDynamics(self.id, -1, linearDamping=0, angularDamping=0)
 
         self.motor_debug_lines = list()
-
+        self._motor_count = 6
         self.rpm_motors = list()
         self.desired_rpm_motors = list()
-        for i in range(8):
+        for i in range(self._motor_count):
             self.rpm_motors.append(0)
             self.desired_rpm_motors.append(0)
             self.motor_debug_lines.append(DebugLine(self.motors[i].position, self.motors[i].position))
@@ -83,10 +83,10 @@ class Lobster:
         """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        for value in self.imu.get_all_values():
-            [print(f'{value}, ', end='') for value in self.imu._get_real_values(dt)]
-            [print(f'{value}, ', end='') for value in value]
-            print()
+        # for value in self.imu.get_all_values():
+        #     [print(f'{value}, ', end='') for value in self.imu._get_real_values(dt)]
+        #     [print(f'{value}, ', end='') for value in value]
+        #     print()
 
         self.depth_sensor.update(time)
         self.imu.update(time)
@@ -96,11 +96,11 @@ class Lobster:
         # print('\r', end='')
         # print(np.array(p.getBaseVelocity(self.id)[0]), end='')
 
-        for i in range(8):
+        for i in range(self._motor_count):
             self.motors[i].update(dt.microseconds)
 
         # Apply forces for the  facing motors
-        for i in range(8):
+        for i in range(self._motor_count):
             self.motors[i].apply_thrust()
             self.motor_debug_lines[i].update(self.motors[i].position,
                                              self.motors[i].position
