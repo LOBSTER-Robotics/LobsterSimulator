@@ -1,13 +1,10 @@
 import json
 
 import pybullet as p
-import pybullet_data
 
 from lobster_simulator.tools.Plot import Plot
-from lobster_simulator.control.HighLevelController import HighLevelController
-from lobster_simulator.robot.Lobster import Lobster
+from control.HighLevelController import HighLevelController
 from lobster_simulator.tools.Constants import *
-from lobster_simulator.tools.Logger import *
 from lobster_simulator.Simulator import Simulator
 
 
@@ -31,52 +28,46 @@ def read_config():
 
 def main(gui=True, tcp=False):
 
-    simulator = Simulator(1/240, None, gui)
+    time_step = 4000
+
+    simulator = Simulator(time_step, None, gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
         desired_pos_sliders = [
             p.addUserDebugParameter("desired x", -100, 100, 0),
             p.addUserDebugParameter("desired y", -100, 100, 0),
-            p.addUserDebugParameter("desired z", 0, 100, 1)
+            p.addUserDebugParameter("desired z", -100, 0, -10)
         ]
         roll_rate_slider = p.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
         debug_line = p.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.lobster.get_position(), lineWidth=5)
 
-        simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 1, 1000, 240)
+        simulator_time_step_slider = p.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
-    high_level_controller = HighLevelController()
+    high_level_controller = HighLevelController(gui)
 
     desired_location = [0, 0, 2]
 
     paused = False
 
-    plot = Plot(3)
+    # plot = Plot(3)
 
     while True:
         keys = p.getKeyboardEvents()
         if ord('q') in keys and keys[ord('q')] & p.KEY_WAS_TRIGGERED:
             break
-        if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
+        # if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
             # paused = not paused
             # if paused:
-            plot.plot()
+            # plot.plot()
 
         if not paused:
 
-            # if cycle % p.readUserDebugParameter(simulator_frequency_slider) == 0:
-            #     dt = (time.time() - previous_time)
-            #     print(1 / dt, dt)
-            #     previous_time = time.time()
-
             lobster_pos, lobster_orn = simulator.lobster.get_position_and_orientation()
-
-            forward_thrust = 0
 
             # Reading all the debug parameters (only if the gui is showing)
             if gui:
-                p.setTimeStep(1 / p.readUserDebugParameter(simulator_frequency_slider))
+                time_step = p.readUserDebugParameter(simulator_time_step_slider)
 
                 desired_location = [
                     p.readUserDebugParameter(desired_pos_sliders[0]),
@@ -89,10 +80,10 @@ def main(gui=True, tcp=False):
 
                 high_level_controller.set_target_rate(ROLL, p.readUserDebugParameter(roll_rate_slider))
 
-                simulator.lobster.set_buoyancy(p.readUserDebugParameter(buoyancy_force_slider))
+            simulator.set_time_step(time_step)
 
             velocity = p.getBaseVelocity(simulator.lobster.id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location, time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 

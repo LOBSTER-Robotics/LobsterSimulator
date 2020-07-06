@@ -2,123 +2,114 @@ import pybullet as p
 import numpy as np
 import math
 
+from typing import List
+
 from pkg_resources import resource_filename
 
-from lobster_simulator.robot.Link import Link
-from lobster_simulator.tools import Translation
+from lobster_simulator.common.general_exceptions import ArgumentNoneError
+from lobster_simulator.robot.Motor import Motor
+from lobster_simulator.sensors.DepthSensor import DepthSensor
+from lobster_simulator.sensors.IMU import IMU
+from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.DebugLine import DebugLine
-
-
-def rpm_to_thrust(rpm):
-    return 3.92/1000 * rpm + 3.9/10000000 * rpm * rpm + 7.55/10000000000 * rpm * rpm * rpm
-
-
-def thrust_to_rpm(x):
-    return -172.185 - 5.05393 * pow(261.54 * math.sqrt(3.84767*math.pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941 * math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(3.84767*pow(10, 8) * math.pow(x, 2) + 5.13478*math.pow(10, 8) * x + 4.48941*math.pow(10, 9)) - 5.13023*math.pow(10, 6) * x - 3.42319*math.pow(10, 6), (1 / 3))
-    # return 516*math.pow(x, 0.489)
 
 
 class Lobster:
 
     def __init__(self, config):
+        if config is None:
+            raise ArgumentNoneError("config parameter should not be None")
 
-        self.max_rpm_change_per_second = config['max_rpm_change_per_second']
         self.center_of_volume = config['center_of_volume']
 
-        front_facing_motor_x = config['front_facing_motor_x']
-        front_facing_motor_y = config['front_facing_motor_y']
-        side_facing_motor_x = config['side_facing_motor_x']
-        side_facing_motor_y = config['side_facing_motor_y']
-
-        self.motorPositions = [
-            np.array([front_facing_motor_x, 0,  front_facing_motor_y]),
-            np.array([front_facing_motor_x, 0, -front_facing_motor_y]),
-            np.array([front_facing_motor_x,  front_facing_motor_y, 0]),
-            np.array([front_facing_motor_x, -front_facing_motor_y, 0]),
-            np.array([side_facing_motor_x, 0,  side_facing_motor_y]),
-            np.array([side_facing_motor_x, 0, -side_facing_motor_y]),
-            np.array([side_facing_motor_x,  side_facing_motor_y, 0]),
-            np.array([side_facing_motor_x, -side_facing_motor_y, 0])
-        ]
-
-        self.motor_directions = [
-            np.array([1, 0, 0]),
-            np.array([1, 0, 0]),
-            np.array([1, 0, 0]),
-            np.array([1, 0, 0]),
-            np.array([0, 1, 0]),
-            np.array([0, 1, 0]),
-            np.array([0, 0, 1]),
-            np.array([0, 0, 1]),
-        ]
-
         self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                             [0, 0, 2],
-                             p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
+                             [0, 0, 0],
+                             # p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
+                             p.getQuaternionFromEuler([0, 0, 0]))
 
-        p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        config_motors = config['motors']
+
+        self.motors: List[Motor] = list()
+        for i in range(len(config_motors)):
+            self.motors.append(Motor.new_T200(self.id, config_motors[i]['name'],
+                                              np.array(config_motors[i]['position']),
+                                              np.array(config_motors[i]['direction'])))
+
+        # p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        p.changeDynamics(self.id, -1, linearDamping=0, angularDamping=0)
 
         self.motor_debug_lines = list()
-
+        self._motor_count = 6
         self.rpm_motors = list()
         self.desired_rpm_motors = list()
-        for i in range(8):
+        for i in range(self._motor_count):
             self.rpm_motors.append(0)
             self.desired_rpm_motors.append(0)
-            self.motor_debug_lines.append(DebugLine(self.motorPositions[i], self.motorPositions[i]))
+            self.motor_debug_lines.append(DebugLine(self.motors[i].position, self.motors[i].position))
 
         self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
 
-        self.buoyancy = 100
+        self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, SimulationTime(4000))
+        self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
+
         self.max_thrust = 100
+        self.buoyancy = 550
 
     def set_buoyancy(self, value):
         self.buoyancy = value
 
     def set_desired_rpm_motors(self, desired_rpm_motors):
-        self.desired_rpm_motors = desired_rpm_motors
+        for i in range(len(desired_rpm_motors)):
+            self.motors[i].set_desired_rpm(desired_rpm_motors[i])
 
     def set_desired_rpm_motor(self, index, desired_rpm):
         self.desired_rpm_motors[index] = desired_rpm
-        print(desired_rpm)
 
     def set_desired_thrust_motors(self, desired_thrusts):
         for i in range(len(desired_thrusts)):
-            self.desired_rpm_motors[i] = rpm_to_thrust(desired_thrusts[i])
+            self.motors[i].set_desired_thrust(desired_thrusts[i])
 
-    def set_desired_thrust_motor(self, index, desired_thrust):
-        self.desired_rpm_motors[index] = thrust_to_rpm(desired_thrust)
+    def set_desired_thrust_motor(self, index: int, desired_thrust: float):
+        self.motors[index].set_desired_thrust(desired_thrust)
 
-    def update_motors(self, dt):
-        for i in range(8):
-            diff = self.desired_rpm_motors[i] - self.rpm_motors[i]
-            sign = int(diff > 0) - int(diff < 0)
-            if math.fabs(diff) <= self.max_rpm_change_per_second * dt:
-                self.rpm_motors[i] = self.desired_rpm_motors[i]
-            else:
-                self.rpm_motors[i] += sign * self.max_rpm_change_per_second * dt
+    def update(self, dt: SimulationTime, time: SimulationTime):
+        """
 
-    def update(self, dt):
+        :param dt: dt in microseconds
+        :param time: time in microseconds
+        :return:
+        """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        self.update_motors(dt)
+        # for value in self.imu.get_all_values():
+        #     [print(f'{value}, ', end='') for value in self.imu._get_real_values(dt)]
+        #     [print(f'{value}, ', end='') for value in value]
+        #     print()
+
+        self.depth_sensor.update(time)
+        self.imu.update(time)
+
+
+
+        # print('\r', end='')
+        # print(np.array(p.getBaseVelocity(self.id)[0]), end='')
+
+        for i in range(self._motor_count):
+            self.motors[i].update(dt.microseconds)
 
         # Apply forces for the  facing motors
-        for i in range(8):
-            p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                                 forceObj=self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]),
-                                 posObj=self.motorPositions[i],
-                                 flags=p.LINK_FRAME)
-            self.motor_debug_lines[i].update(self.motorPositions[i],
-                                             self.motorPositions[i] + self.motor_directions[i] * rpm_to_thrust(self.rpm_motors[i]) / 100,
+        for i in range(self._motor_count):
+            self.motors[i].apply_thrust()
+            self.motor_debug_lines[i].update(self.motors[i].position,
+                                             self.motors[i].position
+                                             + self.motors[i].direction * self.motors[i].get_thrust() / 100,
                                              self.id)
 
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
-            np.array(self.center_of_volume)) \
-                             + lobster_pos
+            np.array(self.center_of_volume)) + lobster_pos
 
         # Apply the buoyancy force
         p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
