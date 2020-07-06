@@ -29,6 +29,8 @@ class Lobster:
 
         config_motors = config['motors']
 
+        print("config motors", len(config_motors))
+
         self.motors: List[Motor] = list()
         for i in range(len(config_motors)):
             self.motors.append(Motor.new_T200(self.id, config_motors[i]['name'],
@@ -39,7 +41,7 @@ class Lobster:
         p.changeDynamics(self.id, -1, linearDamping=0, angularDamping=0)
 
         self.motor_debug_lines = list()
-        self._motor_count = 6
+        self._motor_count = len(config_motors)
         self.rpm_motors = list()
         self.desired_rpm_motors = list()
         for i in range(self._motor_count):
@@ -62,6 +64,7 @@ class Lobster:
 
     def set_desired_rpm_motors(self, desired_rpm_motors):
         for i in range(len(desired_rpm_motors)):
+            print(len(desired_rpm_motors), len(self.motors))
             self.motors[i].set_desired_rpm(desired_rpm_motors[i])
 
     def set_desired_rpm_motor(self, index, desired_rpm):

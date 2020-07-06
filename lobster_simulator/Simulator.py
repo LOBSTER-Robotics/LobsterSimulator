@@ -9,11 +9,17 @@ from pkg_resources import resource_stream
 
 from lobster_simulator.robot.Lobster import Lobster
 from lobster_simulator.simulation_time import SimulationTime, microseconds_to_seconds, seconds_to_microseconds
+from enum import Enum
+
+
+class Models(Enum):
+    SCOUT_ALPHA = 1
+    PTV = 2
 
 
 class Simulator:
 
-    def __init__(self, time_step: int, config=None, gui=True):
+    def __init__(self, time_step: int, model=Models.SCOUT_ALPHA, config=None, gui=True):
         """
         Simulator
         :param time_step: duration of a step in microseconds
@@ -31,16 +37,20 @@ class Simulator:
 
         self.cycle = 0
 
-        self.motor_mapping = {
-            'top-front': 0,
-            'left-front': 1,
-            'bottom-front': 2,
-            'right-front': 3,
-            'left-side': 4,
-            'right-side': 5#,
-            # 'top-side': 6,
-            # 'bottom-side': 7
-        }
+        if model == Models.SCOUT_ALPHA:
+            model_config = 'scout-alpha.json'
+        else:
+            model_config = 'ptv.json'
+
+        with resource_stream('lobster_simulator', f'data/{model_config}') as f:
+            lobster_config = json.load(f)
+
+        print(lobster_config)
+
+
+        self.motor_mapping = [motor['name'] for motor in lobster_config['motors']]
+
+        print(self.motor_mapping)
 
         self.physics_client_id = -1
         if gui:
@@ -56,9 +66,6 @@ class Simulator:
         p.setTimeStep(self.time_step.seconds)
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf", [0, 0, -100])
-
-        with resource_stream('lobster_simulator', 'data/scout-alpha.json') as f:
-            lobster_config = json.load(f)
 
         self.lobster = Lobster(lobster_config)
 
