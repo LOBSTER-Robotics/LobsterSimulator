@@ -29,7 +29,7 @@ class Sensor(ABC):
 
         self.next_sample_time: SimulationTime = SimulationTime(0)
         self.previous_update_time: SimulationTime = SimulationTime(0)
-        self.previous_real_value = self._get_real_values(SimulationTime(1))
+        self._previous_real_value = self._get_real_values(SimulationTime(1))
 
     def update(self, time: SimulationTime):
         """
@@ -45,8 +45,8 @@ class Sensor(ABC):
 
             value_outputs = list()
             for i in range(len(real_values)):
-                value_dt = (real_values[i] - self.previous_real_value[i]) / dt.microseconds
-                value_output = self.previous_real_value[i] + value_dt * (
+                value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
+                value_output = self._previous_real_value[i] + value_dt * (
                         self.next_sample_time - self.previous_update_time).microseconds
 
 
@@ -57,7 +57,7 @@ class Sensor(ABC):
             self.queue.append(value_outputs)
             self.next_sample_time += self.time_step
 
-        self.previous_real_value = real_values
+        self._previous_real_value = real_values
         self.previous_update_time = SimulationTime(time.microseconds)
 
     def pop_next_value(self):
@@ -75,13 +75,13 @@ class Sensor(ABC):
 
     def get_sensor_orientation(self):
         return self.orientation
-
-    @abstractmethod
-    def _get_initial_values(self) -> List[float]:
-        """
-        :return:
-        """
-        raise NotImplementedError("This method should be implemented")
+    #
+    # @abstractmethod
+    # def _get_initial_values(self) -> List[float]:
+    #     """
+    #     :return:
+    #     """
+    #     raise NotImplementedError("This method should be implemented")
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:
