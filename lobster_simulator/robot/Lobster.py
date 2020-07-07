@@ -38,8 +38,7 @@ class Lobster:
                                               np.array(config_motors[i]['position']),
                                               np.array(config_motors[i]['direction'])))
 
-        # p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
-        p.changeDynamics(self.id, -1, linearDamping=0, angularDamping=0)
+        p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
 
         self.motor_debug_lines = list()
         self._motor_count = len(config_motors)
