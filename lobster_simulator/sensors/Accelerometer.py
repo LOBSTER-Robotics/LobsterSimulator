@@ -5,12 +5,13 @@ from typing import List
 from lobster_simulator.robot import Lobster
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime, MICROSECONDS_IN_SECONDS
+from lobster_simulator.tools.Constants import GRAVITY
 from lobster_simulator.tools.Translation import *
-
-GRAVITY = np.array([0, 0, -9.81])
 
 
 class Accelerometer(Sensor):
+
+    GRAVITY_VEC = np.array([0, 0, -GRAVITY])
 
     def __init__(self, robot: Lobster, position: np.array, orientation: np.array, time_step: SimulationTime):
         self._previous_linear_velocity = np.array([0, 0, 0])
