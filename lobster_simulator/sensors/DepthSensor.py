@@ -19,12 +19,12 @@ class DepthSensor(Sensor):
     OFFSET = 0
 
     def __init__(self, pybullet_id, position, orientation, time_step, saltwater=False):
-        super(DepthSensor, self).__init__(pybullet_id, position, orientation, time_step)
-
         if saltwater:
             self.water_density = self.DENSITY_SALTWATER
         else:
             self.water_density = self.DENSITY_FRESHWATER
+
+        super(DepthSensor, self).__init__(pybullet_id, position, orientation, time_step)
 
         self.previous_real_value = [0]
 
@@ -33,11 +33,15 @@ class DepthSensor(Sensor):
 
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")
-        depth = vec3_local_to_world_id(self.robot.id, self.position)[2]
+        depth = -vec3_local_to_world_id(self.robot.id, self.position)[2]
+
+        print("depth", depth)
 
         pressure = (depth * ((self.water_density * GRAVITY) + self.OFFSET) + self.STANDARD_ATMOSPHERE) / self.KPA_TO_PA
 
-        return pressure
+        print("pressure", pressure)
 
-    def get_depth(self):
-        return -self._previous_real_value[0]
+        return [pressure]
+
+    def get_pressure(self):
+        return self._previous_real_value[0]

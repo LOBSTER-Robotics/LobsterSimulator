@@ -26,7 +26,7 @@ class Lobster:
         self.center_of_volume = config['center_of_volume']
 
         self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                             [0, 0, 0],
+                             [0, 0, -2],
                              # p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
                              p.getQuaternionFromEuler([0, 0, 0]))
 
@@ -98,7 +98,8 @@ class Lobster:
         self.gyroscope.update(time)
         self.magnetometer.update(time)
 
-        print(self.accelerometer.get_accelerometer_value())
+        # print(self.accelerometer.get_accelerometer_value())
+        print(self.depth_sensor.get_pressure())
 
 
         for i in range(self._motor_count):
