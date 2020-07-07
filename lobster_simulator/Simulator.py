@@ -52,7 +52,7 @@ class Simulator:
 
         print(lobster_config)
 
-        self.motor_mapping = [motor['name'] for motor in lobster_config['motors']]
+        self.motor_mapping = {motor['name']: i for i, motor in enumerate(lobster_config['motors'])}
 
         print(self.motor_mapping)
 
