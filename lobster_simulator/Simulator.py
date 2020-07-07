@@ -9,12 +9,12 @@ from pkg_resources import resource_stream
 
 from lobster_simulator.robot.Lobster import Lobster
 from lobster_simulator.simulation_time import SimulationTime
-from enum import Enum
+from enum import Enum, auto
 
 
 class Models(Enum):
-    SCOUT_ALPHA = 1
-    PTV = 2
+    SCOUT_ALPHA = auto()
+    PTV = auto()
 
 
 class Simulator:
