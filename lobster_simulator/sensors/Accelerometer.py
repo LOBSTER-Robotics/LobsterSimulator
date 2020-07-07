@@ -22,19 +22,25 @@ class Accelerometer(Sensor):
 
     def _get_real_values(self, dt: SimulationTime) -> List[np.ndarray]:
         linear_velocity = self._get_linear_velocity()
-        linear_acceleration = 0
+        acceleration = 0
         if dt.microseconds > 0:
-            linear_acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
+            acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
+
+        # acceleration += gravity_sensor_frame
 
         # Rotate the gravity vector to the robot reference frame
-        gravity_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), GRAVITY)
+        acceleration_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), acceleration)
 
         # Rotate the gravity vector to the sensor reference frame
-        gravity_sensor_frame = vec3_rotate_vector_to_local(self.sensor_orientation, gravity_local_frame)
+        acceleration_sensor_frame = vec3_rotate_vector_to_local(self.sensor_orientation, acceleration_local_frame)
 
-        linear_acceleration += gravity_sensor_frame
+        # # Rotate the gravity vector to the robot reference frame
+        # gravity_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), GRAVITY)
+        #
+        # # Rotate the gravity vector to the sensor reference frame
+        # gravity_sensor_frame = vec3_rotate_vector_to_local(self.sensor_orientation, gravity_local_frame)
 
-        return [linear_acceleration]
+        return [acceleration_sensor_frame]
 
     def _get_linear_velocity(self) -> np.ndarray:
         return np.array(self.robot.get_velocity())
