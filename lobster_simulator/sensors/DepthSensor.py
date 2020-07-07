@@ -15,11 +15,11 @@ class DepthSensor(Sensor):
         self.previous_real_value = [0]
 
     def _get_initial_values(self) -> List[float]:
-        return [vec3_local_to_world_id(self.pybullet_id, self.position)[2]]
+        return [vec3_local_to_world_id(self.robot.id, self.position)[2]]
 
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")
-        return [vec3_local_to_world_id(self.pybullet_id, self.position)[2]]
+        return [vec3_local_to_world_id(self.robot.id, self.position)[2]]
 
     def get_depth(self):
         return -self._previous_real_value[0]

@@ -4,6 +4,7 @@ import pybullet as p
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
+from lobster_simulator.tools.Translation import *
 
 
 class HighLevelController:
@@ -59,9 +60,7 @@ class HighLevelController:
             self.rate_pids[i].set_target(self.target_rates[i])
 
         # Translate world frame angular velocities to local frame angular velocities
-        local_rotation = np.dot(
-            np.linalg.inv(np.reshape(np.array(p.getMatrixFromQuaternion(orientation)), (3, 3))),
-            velocity[1])
+        local_rotation = vec3_rotate_vector_to_local(orientation, velocity[1])
 
         roll_rate, pitch_rate, yaw_rate = local_rotation
 

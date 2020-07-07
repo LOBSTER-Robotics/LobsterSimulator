@@ -8,7 +8,7 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.robot.Lobster import Lobster
-from lobster_simulator.simulation_time import SimulationTime, microseconds_to_seconds, seconds_to_microseconds
+from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum
 
 
@@ -26,13 +26,18 @@ class Simulator:
         :param config: config of the robot.
         :param gui: start the PyBullet gui when true
         """
-        # if config is None:
-        #     with resource_stream('lobster_simulator', 'data/config.json') as f:
-        #         config = json.load(f)
+        with resource_stream('lobster_simulator', 'data/config.json') as f:
+            base_config = json.load(f)
+
+        if config is not None:
+            base_config.update(config)
+
+        config = base_config
+
         self.time: SimulationTime = SimulationTime(0)
         self.previous_update_time: SimulationTime = SimulationTime(0)
-        self.previous_update_real_time: float = t.perf_counter() # in seconds
-        self.time_step : SimulationTime = SimulationTime(initial_microseconds=time_step)
+        self.previous_update_real_time: float = t.perf_counter()  # in seconds
+        self.time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
         self.gui = gui
 
         self.cycle = 0
@@ -46,7 +51,6 @@ class Simulator:
             lobster_config = json.load(f)
 
         print(lobster_config)
-
 
         self.motor_mapping = [motor['name'] for motor in lobster_config['motors']]
 
@@ -89,7 +93,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: float): # todo not sure if this was int or float
+    def step_until(self, time: float):  # todo not sure if this was int or float
         """
         Execute steps until time (in seconds) has reached
         :param time:

@@ -4,8 +4,10 @@ MICROSECONDS_IN_SECONDS = 1000000
 def microseconds_to_seconds(microseconds: float) -> float:
     return microseconds / MICROSECONDS_IN_SECONDS
 
+
 def seconds_to_microseconds(seconds: float) -> float:
     return seconds * MICROSECONDS_IN_SECONDS
+
 
 class SimulationTime:
 

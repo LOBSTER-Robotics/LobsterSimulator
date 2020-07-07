@@ -30,7 +30,7 @@ def main(gui=True, tcp=False):
 
     time_step = 4000
 
-    simulator = Simulator(time_step, model= Models.PTV, config=None, gui=gui)
+    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -87,7 +87,7 @@ def main(gui=True, tcp=False):
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
-            simulator.set_rpm_motors(rpm_motors[:-2])
+            simulator.set_rpm_motors(rpm_motors)
 
             simulator.do_step()
 

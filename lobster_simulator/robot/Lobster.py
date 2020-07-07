@@ -8,8 +8,11 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
+from lobster_simulator.sensors.Accelerometer import Accelerometer
 from lobster_simulator.sensors.DepthSensor import DepthSensor
+from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.IMU import IMU
+from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.DebugLine import DebugLine
 
@@ -28,8 +31,6 @@ class Lobster:
                              p.getQuaternionFromEuler([0, 0, 0]))
 
         config_motors = config['motors']
-
-        print("config motors", len(config_motors))
 
         self.motors: List[Motor] = list()
         for i in range(len(config_motors)):
@@ -53,8 +54,11 @@ class Lobster:
         self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
                                                         useMaximalCoordinates=0)
 
-        self.depth_sensor = DepthSensor(self.id, [1, 0, 0], None, SimulationTime(4000))
-        self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
+        self.depth_sensor = DepthSensor(self, [1, 0, 0], None, SimulationTime(4000))
+        # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
+        self.accelerometer = Accelerometer(self, [1, 0, 0], None, SimulationTime(4000))
+        self.gyroscope = Gyroscope(self, [1, 0, 0], None, SimulationTime(4000))
+        self.magnetometer = Magnetometer(self, [1, 0, 0], None, SimulationTime(4000))
 
         self.max_thrust = 100
         self.buoyancy = 550
@@ -64,7 +68,6 @@ class Lobster:
 
     def set_desired_rpm_motors(self, desired_rpm_motors):
         for i in range(len(desired_rpm_motors)):
-            print(len(desired_rpm_motors), len(self.motors))
             self.motors[i].set_desired_rpm(desired_rpm_motors[i])
 
     def set_desired_rpm_motor(self, index, desired_rpm):
@@ -92,12 +95,12 @@ class Lobster:
         #     print()
 
         self.depth_sensor.update(time)
-        self.imu.update(time)
+        self.accelerometer.update(time)
+        self.gyroscope.update(time)
+        self.magnetometer.update(time)
 
+        print(self.accelerometer.get_accelerometer_value())
 
-
-        # print('\r', end='')
-        # print(np.array(p.getBaseVelocity(self.id)[0]), end='')
 
         for i in range(self._motor_count):
             self.motors[i].update(dt.microseconds)
@@ -128,3 +131,9 @@ class Lobster:
     def get_orientation(self):
         _, orientation = self.get_position_and_orientation()
         return orientation
+
+    def get_velocity(self):
+        return p.getBaseVelocity(self.id)[0]
+
+    def get_rotational_velocity(self):
+        return p.getBaseVelocity(self.id)[1]
