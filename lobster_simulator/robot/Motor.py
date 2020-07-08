@@ -1,11 +1,12 @@
 import math
 
-import pybullet as p
+from lobster_simulator.PybulletAPI import PybulletAPI, Frame
 
 
 class Motor:
 
-    def __init__(self, pybullet_id, name, position, direction, rpm_to_thrust, thrust_to_rpm, max_rpm_change_per_second, max_rpm):
+    def __init__(self, pybullet_id, name, position, direction, rpm_to_thrust, thrust_to_rpm, max_rpm_change_per_second,
+                 max_rpm):
         self.name = name
         self.pybullet_id = pybullet_id
         self.position = position
@@ -22,10 +23,18 @@ class Motor:
 
     @staticmethod
     def new_T200(pybullet_id, name, position, direction):
-        rpm_to_thrust = lambda rpm: 3.92 / 1000 * rpm + 3.9 / 10000000 * rpm * rpm + 7.55 / 10000000000 * rpm * rpm * rpm
-        thrust_to_rpm = lambda x: -172.185 - 5.05393 * pow(261.54 * math.sqrt(3.84767 * math.pow(10, 8) * math.pow(x, 2) + 5.13478 * math.pow(10, 8) * x + 4.48941 * math.pow(10,9)) - 5.13023 * math.pow(10, 6) * x - 3.42319 * math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(3.84767 * pow(10, 8) * math.pow(x, 2) + 5.13478 * math.pow(10, 8) * x + 4.48941 * math.pow(10,9)) - 5.13023 * math.pow(10, 6) * x - 3.42319 * math.pow(10, 6), (1 / 3))
+        rpm_to_thrust = lambda \
+            rpm: 3.92 / 1000 * rpm + 3.9 / 10000000 * rpm * rpm + 7.55 / 10000000000 * rpm * rpm * rpm
+        thrust_to_rpm = lambda x: -172.185 - 5.05393 * pow(261.54 * math.sqrt(
+            3.84767 * math.pow(10, 8) * math.pow(x, 2) + 5.13478 * math.pow(10, 8) * x + 4.48941 * math.pow(10,
+                                                                                                            9)) - 5.13023 * math.pow(
+            10, 6) * x - 3.42319 * math.pow(10, 6), (1 / 3)) + 336577. / math.pow(261.54 * math.sqrt(
+            3.84767 * pow(10, 8) * math.pow(x, 2) + 5.13478 * math.pow(10, 8) * x + 4.48941 * math.pow(10,
+                                                                                                       9)) - 5.13023 * math.pow(
+            10, 6) * x - 3.42319 * math.pow(10, 6), (1 / 3))
 
-        return Motor(pybullet_id, name, position, direction, rpm_to_thrust, thrust_to_rpm, max_rpm_change_per_second=40000, max_rpm=4000)
+        return Motor(pybullet_id, name, position, direction, rpm_to_thrust, thrust_to_rpm,
+                     max_rpm_change_per_second=40000, max_rpm=4000)
 
     def set_desired_rpm(self, desired_rpm):
         desired_rpm = min(desired_rpm, self.max_rpm)
@@ -52,7 +61,12 @@ class Motor:
             self.rpm += sign * self.max_rpm_change_per_second * dt / 1000000
 
     def apply_thrust(self):
-        p.applyExternalForce(objectUniqueId=self.pybullet_id, linkIndex=-1,
-                             forceObj=self.direction * self.rpm_to_thrust(self.rpm),
-                             posObj=self.position,
-                             flags=p.LINK_FRAME)
+        # p.applyExternalForce(objectUniqueId=self.pybullet_id, linkIndex=-1,
+        #                      forceObj=self.direction * self.rpm_to_thrust(self.rpm),
+        #                      posObj=self.position,
+        #                      flags=p.LINK_FRAME)
+
+        PybulletAPI.applyExternalForce(objectUniqueId=self.pybullet_id,
+                                       forceObj=self.direction * self.rpm_to_thrust(self.rpm),
+                                       posObj=self.position,
+                                       frame=Frame.LINK_FRAME)

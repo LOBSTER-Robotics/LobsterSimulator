@@ -6,6 +6,7 @@ from typing import List
 
 from pkg_resources import resource_filename
 
+from lobster_simulator.PybulletAPI import PybulletAPI
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.Accelerometer import Accelerometer
@@ -101,7 +102,6 @@ class Lobster:
         # print(self.accelerometer.get_accelerometer_value())
         print(self.depth_sensor.get_pressure())
 
-
         for i in range(self._motor_count):
             self.motors[i].update(dt.microseconds)
 
@@ -135,5 +135,21 @@ class Lobster:
     def get_velocity(self):
         return p.getBaseVelocity(self.id)[0]
 
-    def get_rotational_velocity(self):
+    def get_angular_velocity(self):
         return p.getBaseVelocity(self.id)[1]
+
+    def set_position_and_orientation(self, position=None, orientation=None):
+        if position is None:
+            position = self.get_position()
+        if orientation is None:
+            orientation = self.get_orientation()
+
+        PybulletAPI.resetBasePositionAndOrientation(self.id, position, orientation)
+
+    def set_velocity(self, linear_velocity=None, angular_velocity=None):
+        if linear_velocity is None:
+            linear_velocity = self.get_velocity()
+        if angular_velocity is None:
+            angular_velocity = self.get_angular_velocity()
+
+        PybulletAPI.resetBaseVelocity(self.id, linear_velocity, angular_velocity)

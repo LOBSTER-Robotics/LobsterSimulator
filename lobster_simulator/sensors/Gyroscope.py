@@ -17,7 +17,7 @@ class Gyroscope(Sensor):
         super().__init__(robot, position, orientation, time_step)
 
     def _get_real_values(self, dt: SimulationTime):
-        rotation = self.robot.get_rotational_velocity()
+        rotation = self.robot.get_angular_velocity()
 
         # Rotate rotational velocity to robot reference frame
         robot_rotation = vec3_rotate_vector_to_local(self.robot.get_orientation(), rotation)
