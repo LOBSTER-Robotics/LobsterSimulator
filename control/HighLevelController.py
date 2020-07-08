@@ -8,6 +8,11 @@ from lobster_simulator.tools.Translation import *
 
 
 class HighLevelController:
+    """
+    This class is used for the control of the robot when the simulator is being run from this project for testing
+    purposes.
+    """
+
     motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [

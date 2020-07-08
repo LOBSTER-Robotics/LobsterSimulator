@@ -58,7 +58,7 @@ class Simulator:
         self.time_step = SimulationTime(time_step)
         PybulletAPI.setTimeStep(self.time_step)
 
-    def step_until(self, time: float):  # todo not sure if this was int or float
+    def step_until(self, time: float):
         """
         Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
         less than the specified time (at most 1 time step off).
