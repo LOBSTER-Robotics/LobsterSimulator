@@ -61,11 +61,6 @@ class Motor:
             self._rpm += sign * self._max_rpm_change_per_second * dt / 1000000
 
     def apply_thrust(self):
-        # p.applyExternalForce(objectUniqueId=self.pybullet_id, linkIndex=-1,
-        #                      forceObj=self.direction * self.rpm_to_thrust(self.rpm),
-        #                      posObj=self.position,
-        #                      flags=p.LINK_FRAME)
-
         PybulletAPI.applyExternalForce(objectUniqueId=self._pybullet_id,
                                        forceObj=self._direction * self._rpm_to_thrust(self._rpm),
                                        posObj=self._position,
