@@ -18,7 +18,6 @@ class Models(Enum):
 
 class Simulator:
     robot = None
-    motor_mapping = None
 
     def __init__(self, time_step: int, model=Models.SCOUT_ALPHA, config=None, gui=True):
         """
@@ -73,7 +72,7 @@ class Simulator:
         if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self.buoyancy_force_slider))
 
-        # PybulletAPI.moveCameraToPosition(self.robot.get_position())
+        PybulletAPI.moveCameraToPosition(self.robot.get_position())
 
         self.robot.update(self.time_step, self.time)
 
@@ -107,8 +106,6 @@ class Simulator:
 
         with resource_stream('lobster_simulator', f'data/{model_config}') as f:
             lobster_config = json.load(f)
-
-        self.motor_mapping = {motor['name']: i for i, motor in enumerate(lobster_config['motors'])}
 
         self.robot = UUV(lobster_config)
 

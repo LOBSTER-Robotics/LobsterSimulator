@@ -1,6 +1,3 @@
-import numpy as np
-import pybullet as p
-
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -38,9 +35,9 @@ class HighLevelController:
         self.gui = gui
 
         if gui:
-            self.forward_rpm_slider = p.addUserDebugParameter("forward rpm", -3700, 3900, 0)
-            self.upward_rpm_slider = p.addUserDebugParameter("upward rpm", -3700, 3900, 0)
-            self.sideward_rpm_slider = p.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
+            self.forward_rpm_slider = PybulletAPI.addUserDebugParameter("forward rpm", -3700, 3900, 0)
+            self.upward_rpm_slider = PybulletAPI.addUserDebugParameter("upward rpm", -3700, 3900, 0)
+            self.sideward_rpm_slider = PybulletAPI.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
 
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
@@ -76,13 +73,13 @@ class HighLevelController:
                 self.rate_pids[i].update(self.rates[i], 1. / 240.)
 
             for i in range(4):
-                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.forward_rpm_slider)
+                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.forward_rpm_slider)
 
             for i in range(4, 6):
-                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.upward_rpm_slider)
+                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.upward_rpm_slider)
 
             for i in range(6, 8):
-                self.motor_rpm_outputs[i] = p.readUserDebugParameter(self.sideward_rpm_slider)
+                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.sideward_rpm_slider)
         else:
             for i in range(8):
                 self.motor_rpm_outputs[i] = 0

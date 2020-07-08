@@ -2,16 +2,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, TYPE_CHECKING
 import numpy as np
-import pybullet as p
+
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
+
+if TYPE_CHECKING:
+    from lobster_simulator.robot.UUV import UUV
 
 from lobster_simulator.simulation_time import SimulationTime
 
 
 class Sensor(ABC):
 
-    def __init__(self, robot: Lobster, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
+    def __init__(self, robot: UUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
         """
         Parameters
         ----------
@@ -25,9 +29,9 @@ class Sensor(ABC):
             The time step between two polls on the sensor in microseconds.
         """
         if orientation is None:
-            orientation = p.getQuaternionFromEuler([0, 0, 0])
+            orientation = PybulletAPI.getQuaternionFromEuler([0, 0, 0])
 
-        self.robot = robot
+        self.robot: UUV = robot
         self.position = position
         self.sensor_orientation = orientation
         self.time_step = time_step

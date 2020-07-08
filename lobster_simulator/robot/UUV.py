@@ -1,4 +1,3 @@
-import pybullet as p
 import numpy as np
 
 from typing import List
@@ -24,9 +23,9 @@ class UUV:
 
         self.center_of_volume = config['center_of_volume']
 
-        self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                             [0, 0, -5],
-                             p.getQuaternionFromEuler([0, 0, 0]))
+        self.id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
+                                       [0, 0, -1],
+                                       PybulletAPI.getQuaternionFromEuler([0, 0, 0]))
 
         config_motors = config['motors']
 
@@ -36,7 +35,7 @@ class UUV:
                                               np.array(config_motors[i]['position']),
                                               np.array(config_motors[i]['direction'])))
 
-        p.changeDynamics(self.id, -1, linearDamping=0.9, angularDamping=0.9)
+        PybulletAPI.changeDynamics(self.id, linearDamping=0.9, angularDamping=0.9)
 
         self.motor_debug_lines = list()
         self._motor_count = len(config_motors)
@@ -47,9 +46,9 @@ class UUV:
             self.desired_rpm_motors.append(0)
             self.motor_debug_lines.append(DebugLine(self.motors[i].position, self.motors[i].position))
 
-        self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
-        self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
-                                                        useMaximalCoordinates=0)
+        # self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
+        # self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
+        #                                                 useMaximalCoordinates=0)
 
         self.depth_sensor = DepthSensor(self, [1, 0, 0], None, SimulationTime(4000))
         # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
@@ -90,9 +89,6 @@ class UUV:
         self.gyroscope.update(time)
         self.magnetometer.update(time)
 
-        # print(self.accelerometer.get_accelerometer_value())
-        print(self.depth_sensor.get_pressure())
-
         for i in range(self._motor_count):
             self.motors[i].update(dt.microseconds)
 
@@ -105,7 +101,7 @@ class UUV:
                                              self.id)
 
         # Determine the point where the buoyancy force acts on the robot
-        buoyancy_force_pos = np.reshape(np.array(p.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
+        buoyancy_force_pos = np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
             np.array(self.center_of_volume)) + lobster_pos
 
         # Apply the buoyancy force
@@ -114,7 +110,7 @@ class UUV:
                                        frame=Frame.WORLD_FRAME)
 
     def get_position_and_orientation(self):
-        return p.getBasePositionAndOrientation(self.id)
+        return PybulletAPI.getBasePositionAndOrientation(self.id)
 
     def get_position(self):
         position, _ = self.get_position_and_orientation()
@@ -125,10 +121,10 @@ class UUV:
         return orientation
 
     def get_velocity(self):
-        return p.getBaseVelocity(self.id)[0]
+        return PybulletAPI.getBaseVelocity(self.id)[0]
 
     def get_angular_velocity(self):
-        return p.getBaseVelocity(self.id)[1]
+        return PybulletAPI.getBaseVelocity(self.id)[1]
 
     def set_position_and_orientation(self, position=None, orientation=None):
         if position is None:

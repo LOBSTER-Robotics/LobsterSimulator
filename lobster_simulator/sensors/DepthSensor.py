@@ -1,7 +1,9 @@
-import math
-from typing import List
+from __future__ import annotations
 
-import pybullet as p
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lobster_simulator.robot.UUV import UUV
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.tools.Constants import GRAVITY
@@ -18,13 +20,13 @@ class DepthSensor(Sensor):
     DENSITY_SALTWATER = 1029
     OFFSET = 0
 
-    def __init__(self, pybullet_id, position, orientation, time_step, saltwater=False):
+    def __init__(self, robot: UUV, position, orientation, time_step, saltwater=False):
         if saltwater:
             self.water_density = self.DENSITY_SALTWATER
         else:
             self.water_density = self.DENSITY_FRESHWATER
 
-        super(DepthSensor, self).__init__(pybullet_id, position, orientation, time_step)
+        super(DepthSensor, self).__init__(robot, position, orientation, time_step)
 
         self.previous_real_value = [0]
 
