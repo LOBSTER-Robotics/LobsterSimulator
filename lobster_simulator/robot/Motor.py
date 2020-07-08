@@ -23,6 +23,10 @@ class Motor:
 
     @staticmethod
     def new_T200(pybullet_id, name, position, direction):
+
+        # These two lambda functions are based on data that is available of the T200 motor
+        # (https://bluerobotics.com/store/thrusters/t100-t200-thrusters/t200-thruster/)
+        # It was used to fit a function in Excel and the inverse of the function was calculated using Wolfram Alpha
         rpm_to_thrust = lambda \
                 rpm: 3.92 / 1000 * rpm + 3.9 / 10000000 * rpm * rpm + 7.55 / 10000000000 * rpm * rpm * rpm
         thrust_to_rpm = lambda x: -172.185 - 5.05393 * pow(261.54 * math.sqrt(
