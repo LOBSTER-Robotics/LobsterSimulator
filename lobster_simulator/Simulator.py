@@ -8,39 +8,53 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.robot.Lobster import Lobster
-from lobster_simulator.simulation_time import SimulationTime, microseconds_to_seconds, seconds_to_microseconds
+from lobster_simulator.simulation_time import SimulationTime
+from enum import Enum, auto
+
+
+class Models(Enum):
+    SCOUT_ALPHA = auto()
+    PTV = auto()
 
 
 class Simulator:
 
-    def __init__(self, time_step: int, config=None, gui=True):
+    def __init__(self, time_step: int, model=Models.SCOUT_ALPHA, config=None, gui=True):
         """
         Simulator
         :param time_step: duration of a step in microseconds
         :param config: config of the robot.
         :param gui: start the PyBullet gui when true
         """
-        # if config is None:
-        #     with resource_stream('lobster_simulator', 'data/config.json') as f:
-        #         config = json.load(f)
+        with resource_stream('lobster_simulator', 'data/config.json') as f:
+            base_config = json.load(f)
+
+        if config is not None:
+            base_config.update(config)
+
+        config = base_config
+
         self.time: SimulationTime = SimulationTime(0)
         self.previous_update_time: SimulationTime = SimulationTime(0)
-        self.previous_update_real_time: float = t.perf_counter() # in seconds
-        self.time_step : SimulationTime = SimulationTime(initial_microseconds=time_step)
+        self.previous_update_real_time: float = t.perf_counter()  # in seconds
+        self.time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
         self.gui = gui
 
         self.cycle = 0
 
-        self.motor_mapping = {
-            'top-front': 0,
-            'left-front': 1,
-            'bottom-front': 2,
-            'right-front': 3,
-            'left-side': 4,
-            'right-side': 5#,
-            # 'top-side': 6,
-            # 'bottom-side': 7
-        }
+        if model == Models.SCOUT_ALPHA:
+            model_config = 'scout-alpha.json'
+        else:
+            model_config = 'ptv.json'
+
+        with resource_stream('lobster_simulator', f'data/{model_config}') as f:
+            lobster_config = json.load(f)
+
+        print(lobster_config)
+
+        self.motor_mapping = {motor['name']: i for i, motor in enumerate(lobster_config['motors'])}
+
+        print(self.motor_mapping)
 
         self.physics_client_id = -1
         if gui:
@@ -56,9 +70,6 @@ class Simulator:
         p.setTimeStep(self.time_step.seconds)
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf", [0, 0, -100])
-
-        with resource_stream('lobster_simulator', 'data/scout-alpha.json') as f:
-            lobster_config = json.load(f)
 
         self.lobster = Lobster(lobster_config)
 
@@ -82,7 +93,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: float): # todo not sure if this was int or float
+    def step_until(self, time: float):
         """
         Execute steps until time (in seconds) has reached
         :param time:

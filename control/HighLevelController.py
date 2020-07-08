@@ -4,9 +4,15 @@ import pybullet as p
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
+from lobster_simulator.tools.Translation import *
 
 
 class HighLevelController:
+    """
+    This class is used for the control of the robot when the simulator is being run from this project for testing
+    purposes.
+    """
+
     motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
@@ -59,9 +65,7 @@ class HighLevelController:
             self.rate_pids[i].set_target(self.target_rates[i])
 
         # Translate world frame angular velocities to local frame angular velocities
-        local_rotation = np.dot(
-            np.linalg.inv(np.reshape(np.array(p.getMatrixFromQuaternion(orientation)), (3, 3))),
-            velocity[1])
+        local_rotation = vec3_rotate_vector_to_local(orientation, velocity[1])
 
         roll_rate, pitch_rate, yaw_rate = local_rotation
 

@@ -1,12 +1,17 @@
+# This is needed to resolve the Lobster class type, since it can't be imported due to a cyclic dependency
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import List
+import numpy as np
+import pybullet as p
 
 from lobster_simulator.simulation_time import SimulationTime
 
 
 class Sensor(ABC):
 
-    def __init__(self, pybullet_id, position, orientation, time_step: SimulationTime):
+    def __init__(self, robot: Lobster, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
         """
         Parameters
         ----------
@@ -19,10 +24,12 @@ class Sensor(ABC):
         time_step : int
             The time step between two polls on the sensor in microseconds.
         """
+        if orientation is None:
+            orientation = p.getQuaternionFromEuler([0, 0, 0])
 
-        self.pybullet_id = pybullet_id
+        self.robot = robot
         self.position = position
-        self.orientation = orientation
+        self.sensor_orientation = orientation
         self.time_step = time_step
 
         self.queue = list()
@@ -74,14 +81,7 @@ class Sensor(ABC):
         return self.position
 
     def get_sensor_orientation(self):
-        return self.orientation
-    #
-    # @abstractmethod
-    # def _get_initial_values(self) -> List[float]:
-    #     """
-    #     :return:
-    #     """
-    #     raise NotImplementedError("This method should be implemented")
+        return self.sensor_orientation
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:

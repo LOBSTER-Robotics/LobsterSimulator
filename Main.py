@@ -5,7 +5,7 @@ import pybullet as p
 from lobster_simulator.tools.Plot import Plot
 from control.HighLevelController import HighLevelController
 from lobster_simulator.tools.Constants import *
-from lobster_simulator.Simulator import Simulator
+from lobster_simulator.Simulator import Simulator, Models
 
 
 def move_camera_target(target):
@@ -30,7 +30,7 @@ def main(gui=True, tcp=False):
 
     time_step = 4000
 
-    simulator = Simulator(time_step, None, gui)
+    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
