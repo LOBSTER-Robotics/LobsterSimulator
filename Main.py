@@ -28,7 +28,6 @@ def main(gui=True, tcp=False):
             PybulletAPI.addUserDebugParameter("desired z", -100, 0, -10)
         ]
         roll_rate_slider = PybulletAPI.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        # debug_line = PybulletAPI.addUserDebugLine(lineFromXYZ=[0, 0, 0], lineToXYZ=simulator.robot.get_position(), lineWidth=5, lineColorRGB=[1, 0, 0])
         debug_line = DebugLine([0, 0, 0], simulator.robot.get_position(), 5)
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
@@ -39,16 +38,10 @@ def main(gui=True, tcp=False):
 
     paused = False
 
-    # plot = Plot(3)
-
     while True:
         keys = PybulletAPI.getKeyboardEvents()
         if ord('q') in keys and keys[ord('q')] & PybulletAPI.KEY_WAS_TRIGGERED:
             break
-        # if ord('p') in keys and keys[ord('p')] & p.KEY_WAS_TRIGGERED:
-            # paused = not paused
-            # if paused:
-            # plot.plot()
 
         if not paused:
 

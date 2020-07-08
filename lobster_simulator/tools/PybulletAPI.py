@@ -99,11 +99,12 @@ class PybulletAPI:
     def addUserDebugLine(lineFromXYZ: List[float], lineToXYZ: List[float], lineWidth: float, lineColorRGB: List[float],
                          replaceItemUniqueId: int = -1):
 
-        return p.addUserDebugLine(lineFromXYZ=lineFromXYZ,
-                                  lineToXYZ=lineToXYZ,
-                                  lineWidth=lineWidth,
-                                  lineColorRGB=lineColorRGB,
-                                  replaceItemUniqueId=replaceItemUniqueId)
+        if PybulletAPI.gui():
+            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ,
+                                      lineToXYZ=lineToXYZ,
+                                      lineWidth=lineWidth,
+                                      lineColorRGB=lineColorRGB,
+                                      replaceItemUniqueId=replaceItemUniqueId)
 
     @staticmethod
     def getKeyboardEvents():
