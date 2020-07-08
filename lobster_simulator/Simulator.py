@@ -1,13 +1,12 @@
-from typing import Dict
 import copy
-import pybullet as p
-import pybullet_data
+
 import json
 import time as t
 
 from pkg_resources import resource_stream
 
-from lobster_simulator.robot.Lobster import Lobster
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.robot.UUV import UUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
 
@@ -18,6 +17,7 @@ class Models(Enum):
 
 
 class Simulator:
+    robot = None
 
     def __init__(self, time_step: int, model=Models.SCOUT_ALPHA, config=None, gui=True):
         """
@@ -34,13 +34,70 @@ class Simulator:
 
         config = base_config
 
-        self.time: SimulationTime = SimulationTime(0)
-        self.previous_update_time: SimulationTime = SimulationTime(0)
-        self.previous_update_real_time: float = t.perf_counter()  # in seconds
-        self.time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
-        self.gui = gui
+        self._time: SimulationTime = SimulationTime(0)
+        self._previous_update_time: SimulationTime = SimulationTime(0)
+        self._previous_update_real_time: float = t.perf_counter()  # in seconds
+        self._time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
 
-        self.cycle = 0
+        self._cycle = 0
+
+        PybulletAPI.initialize(self._time_step, gui)
+
+        self._simulator_frequency_slider = PybulletAPI.addUserDebugParameter("simulation frequency", 10, 1000,
+                                                                             1 / self._time_step.microseconds)
+        self._buoyancy_force_slider = PybulletAPI.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
+
+        self._model = model
+        self.create_robot(model)
+
+    def get_time_in_seconds(self) -> float:
+        return self._time.seconds
+
+    def set_time_step(self, time_step: int):
+        self._time_step = SimulationTime(time_step)
+        PybulletAPI.setTimeStep(self._time_step)
+
+    def step_until(self, time: float):
+        """
+        Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
+        less than the specified time (at most 1 time step off).
+        :param time: Time (in seconds) to which the simulator should run
+        """
+        while (self._time + self._time_step).seconds <= time:
+            self.do_step()
+
+    def do_step(self):
+        self._time.add_time_step(self._time_step.microseconds)
+
+        if PybulletAPI.gui():
+            self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
+
+        PybulletAPI.moveCameraToPosition(self.robot.get_position())
+
+        self.robot.update(self._time_step, self._time)
+
+        PybulletAPI.stepSimulation()
+
+        self._cycle += 1
+        if self._cycle % 50 == 0:
+            # print("test"+str(
+            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
+            #         t.perf_counter() - self.previous_update_real_time)))
+            self._previous_update_time = copy.copy(self._time)
+            self._previous_update_real_time = t.perf_counter()
+
+    def get_robot(self):
+        """
+        Gets the current instance of the robot.
+        :return: Robot instance
+        """
+        return self.robot
+
+    def create_robot(self, model):
+        """
+        Creates a new robot based on the given model.
+        :param model: Model of the robot. (Scout-alpha, PTV)
+        """
 
         if model == Models.SCOUT_ALPHA:
             model_config = 'scout-alpha.json'
@@ -50,79 +107,10 @@ class Simulator:
         with resource_stream('lobster_simulator', f'data/{model_config}') as f:
             lobster_config = json.load(f)
 
-        print(lobster_config)
+        self.robot = UUV(lobster_config)
 
-        self.motor_mapping = {motor['name']: i for i, motor in enumerate(lobster_config['motors'])}
-
-        print(self.motor_mapping)
-
-        self.physics_client_id = -1
-        if gui:
-            self.physics_client_id = p.connect(p.GUI)
-            self.simulator_frequency_slider = p.addUserDebugParameter("simulation frequency", 10, 1000,
-                                                                      1 / self.time_step.microseconds)
-            self.buoyancy_force_slider = p.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
-
-        else:
-            self.physics_client_id = p.connect(p.DIRECT)
-
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        p.setTimeStep(self.time_step.seconds)
-        p.setGravity(0, 0, -10)
-        p.loadURDF("plane.urdf", [0, 0, -100])
-
-        self.lobster = Lobster(lobster_config)
-
-    def get_pybullet_id(self):
-        return self.physics_client_id
-
-    def get_time_in_seconds(self) -> float:
-        return self.time.seconds
-
-    def get_position(self):
-        return self.lobster.get_position()
-
-    def set_time_step(self, time_step: int):
-        self.time_step = SimulationTime(time_step)
-        p.setTimeStep(self.time_step.seconds)
-
-    def set_rpm_motors(self, rpm_motors):
-        self.lobster.set_desired_rpm_motors(rpm_motors)
-
-    def set_thrust_motors(self, pwm_motors: Dict[str, float]):
-        for (motor, value) in pwm_motors.items():
-            self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
-
-    def step_until(self, time: float):
+    def reset_robot(self):
         """
-        Execute steps until time (in seconds) has reached
-        :param time:
-        :return:
+        Resets the robot using the same configuration.
         """
-        while (self.time + self.time_step).seconds <= time:
-            self.do_step()
-
-    def do_step(self):
-        self.time.add_time_step(self.time_step.microseconds)
-        if self.gui:
-            self.lobster.set_buoyancy(p.readUserDebugParameter(self.buoyancy_force_slider))
-
-            camera_info = p.getDebugVisualizerCamera()
-            p.resetDebugVisualizerCamera(
-                cameraDistance=camera_info[10],
-                cameraYaw=camera_info[8],
-                cameraPitch=camera_info[9],
-                cameraTargetPosition=self.lobster.get_position()
-            )
-
-        self.lobster.update(self.time_step, self.time)
-
-        p.stepSimulation()
-
-        self.cycle += 1
-        if self.cycle % 50 == 0:
-            # print("test"+str(
-            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
-            #         t.perf_counter() - self.previous_update_real_time)))
-            self.previous_update_time = copy.copy(self.time)
-            self.previous_update_real_time = t.perf_counter()
+        self.create_robot(self._model)

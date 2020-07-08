@@ -15,18 +15,16 @@ class Logger:
     connections = []
 
     def __init__(self):
-        self.data = dict()
+        self._data = dict()
 
     def store(self, target, value):
-        self.data[target] = value
+        self._data[target] = value
 
     def update(self):
         for conn in self.connections:
-            conn.send(conn.send(bytes(self.data), 'utf-8'))
+            conn.send(conn.send(bytes(self._data), 'utf-8'))
 
-        print(self.data)
-
-
+        print(self._data)
 
     def add_tcp_client(self):
         TCP_IP = '127.0.0.1'

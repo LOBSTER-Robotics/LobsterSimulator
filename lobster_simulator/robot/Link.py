@@ -1,5 +1,3 @@
-import pybullet as p
-
 
 class Link:
 
@@ -12,7 +10,7 @@ class Link:
                  inertial_frame_position=None,
                  inertial_frame_orientation=None,
                  parent_index=0,
-                 joint_type=p.JOINT_REVOLUTE,
+                 joint_type=0,
                  joint_axis=None):
 
         if joint_axis is None:
@@ -26,13 +24,13 @@ class Link:
         if position is None:
             position = [0, 0, 0]
 
-        self.mass = mass
-        self.joint_axis = joint_axis
-        self.joint_type = joint_type
-        self.parent_index = parent_index
-        self.inertial_frame_orientation = inertial_frame_orientation
-        self.inertial_frame_position = inertial_frame_position
-        self.orientation = orientation
-        self.visualShape = visual_shape
-        self.collisionShape = collision_shape
-        self.position = position
+        self._mass = mass
+        self._joint_axis = joint_axis
+        self._joint_type = joint_type
+        self._parent_index = parent_index
+        self._inertial_frame_orientation = inertial_frame_orientation
+        self._inertial_frame_position = inertial_frame_position
+        self._orientation = orientation
+        self._visualShape = visual_shape
+        self._collisionShape = collision_shape
+        self._position = position

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import List
+from typing import TYPE_CHECKING
 
-from lobster_simulator.robot import Lobster
+if TYPE_CHECKING:
+    from lobster_simulator.robot.UUV import UUV
+
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime, MICROSECONDS_IN_SECONDS
 from lobster_simulator.tools.Constants import GRAVITY
@@ -13,7 +15,7 @@ class Accelerometer(Sensor):
 
     GRAVITY_VEC = np.array([0, 0, GRAVITY])
 
-    def __init__(self, robot: Lobster, position: np.array, orientation: np.array, time_step: SimulationTime):
+    def __init__(self, robot: UUV, position: np.array, orientation: np.array, time_step: SimulationTime):
         self._previous_linear_velocity = np.array([0, 0, 0])
         super().__init__(robot, position, orientation, time_step)
 
@@ -30,21 +32,15 @@ class Accelerometer(Sensor):
         acceleration += self.GRAVITY_VEC
 
         # Rotate the gravity vector to the robot reference frame
-        acceleration_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), acceleration)
+        acceleration_local_frame = vec3_rotate_vector_to_local(self._robot.get_orientation(), acceleration)
 
         # Rotate the gravity vector to the sensor reference frame
-        acceleration_sensor_frame = vec3_rotate_vector_to_local(self.sensor_orientation, acceleration_local_frame)
-
-        # # Rotate the gravity vector to the robot reference frame
-        # gravity_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), GRAVITY)
-        #
-        # # Rotate the gravity vector to the sensor reference frame
-        # gravity_sensor_frame = vec3_rotate_vector_to_local(self.sensor_orientation, gravity_local_frame)
+        acceleration_sensor_frame = vec3_rotate_vector_to_local(self._sensor_orientation, acceleration_local_frame)
 
         return [acceleration_sensor_frame]
 
     def _get_linear_velocity(self) -> np.ndarray:
-        return np.array(self.robot.get_velocity())
+        return np.array(self._robot.get_velocity())
 
     def get_accelerometer_value(self):
         return self._previous_real_value[0]
