@@ -1,6 +1,6 @@
 import math
 
-from lobster_simulator.PybulletAPI import PybulletAPI, Frame
+from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 
 
 class Motor:
@@ -24,7 +24,7 @@ class Motor:
     @staticmethod
     def new_T200(pybullet_id, name, position, direction):
         rpm_to_thrust = lambda \
-            rpm: 3.92 / 1000 * rpm + 3.9 / 10000000 * rpm * rpm + 7.55 / 10000000000 * rpm * rpm * rpm
+                rpm: 3.92 / 1000 * rpm + 3.9 / 10000000 * rpm * rpm + 7.55 / 10000000000 * rpm * rpm * rpm
         thrust_to_rpm = lambda x: -172.185 - 5.05393 * pow(261.54 * math.sqrt(
             3.84767 * math.pow(10, 8) * math.pow(x, 2) + 5.13478 * math.pow(10, 8) * x + 4.48941 * math.pow(10,
                                                                                                             9)) - 5.13023 * math.pow(

@@ -1,24 +1,22 @@
 import pybullet as p
 import numpy as np
-import math
 
 from typing import List
 
 from pkg_resources import resource_filename
 
-from lobster_simulator.PybulletAPI import PybulletAPI
+from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
 from lobster_simulator.sensors.Accelerometer import Accelerometer
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
-from lobster_simulator.sensors.IMU import IMU
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.DebugLine import DebugLine
 
 
-class Lobster:
+class UUV:
 
     def __init__(self, config):
         if config is None:
@@ -27,8 +25,7 @@ class Lobster:
         self.center_of_volume = config['center_of_volume']
 
         self.id = p.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                             [0, 0, -2],
-                             # p.getQuaternionFromEuler([math.pi / 2, 0, 0]))
+                             [0, 0, -5],
                              p.getQuaternionFromEuler([0, 0, 0]))
 
         config_motors = config['motors']
@@ -82,17 +79,11 @@ class Lobster:
 
     def update(self, dt: SimulationTime, time: SimulationTime):
         """
-
+        Updates the UUV by the specified time.
         :param dt: dt in microseconds
         :param time: time in microseconds
-        :return:
         """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
-
-        # for value in self.imu.get_all_values():
-        #     [print(f'{value}, ', end='') for value in self.imu._get_real_values(dt)]
-        #     [print(f'{value}, ', end='') for value in value]
-        #     print()
 
         self.depth_sensor.update(time)
         self.accelerometer.update(time)
@@ -118,8 +109,9 @@ class Lobster:
             np.array(self.center_of_volume)) + lobster_pos
 
         # Apply the buoyancy force
-        p.applyExternalForce(objectUniqueId=self.id, linkIndex=-1,
-                             forceObj=[0, 0, self.buoyancy], posObj=np.array(buoyancy_force_pos), flags=p.WORLD_FRAME)
+        PybulletAPI.applyExternalForce(objectUniqueId=self.id,
+                                       forceObj=[0, 0, self.buoyancy], posObj=buoyancy_force_pos,
+                                       frame=Frame.WORLD_FRAME)
 
     def get_position_and_orientation(self):
         return p.getBasePositionAndOrientation(self.id)

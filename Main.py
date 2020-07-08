@@ -87,7 +87,7 @@ def main(gui=True, tcp=False):
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
-            simulator.set_rpm_motors(rpm_motors)
+            simulator.get_robot().set_desired_rpm_motors(rpm_motors)
 
             simulator.do_step()
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from lobster_simulator.robot import Lobster
+from lobster_simulator.robot import UUV
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime, MICROSECONDS_IN_SECONDS
 from lobster_simulator.tools.Constants import GRAVITY

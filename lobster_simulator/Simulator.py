@@ -1,4 +1,3 @@
-from typing import Dict
 import copy
 
 import json
@@ -6,8 +5,8 @@ import time as t
 
 from pkg_resources import resource_stream
 
-from lobster_simulator.PybulletAPI import PybulletAPI
-from lobster_simulator.robot.Lobster import Lobster
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.robot.UUV import UUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
 
@@ -40,7 +39,6 @@ class Simulator:
         self.previous_update_time: SimulationTime = SimulationTime(0)
         self.previous_update_real_time: float = t.perf_counter()  # in seconds
         self.time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
-        self.gui = gui
 
         self.cycle = 0
 
@@ -72,10 +70,10 @@ class Simulator:
     def do_step(self):
         self.time.add_time_step(self.time_step.microseconds)
 
-        if self.gui:
+        if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self.buoyancy_force_slider))
 
-        PybulletAPI.moveCameraToPosition(self.robot.get_position())
+        # PybulletAPI.moveCameraToPosition(self.robot.get_position())
 
         self.robot.update(self.time_step, self.time)
 
@@ -112,7 +110,7 @@ class Simulator:
 
         self.motor_mapping = {motor['name']: i for i, motor in enumerate(lobster_config['motors'])}
 
-        self.robot = Lobster(lobster_config)
+        self.robot = UUV(lobster_config)
 
     def reset_robot(self):
         """

@@ -25,7 +25,6 @@ class PybulletAPI:
         self.physics_client_id = -1
         if gui:
             self.physics_client_id = p.connect(p.GUI)
-
         else:
             self.physics_client_id = p.connect(p.DIRECT)
 
@@ -44,6 +43,10 @@ class PybulletAPI:
         return PybulletAPI.__instance.physics_client_id
 
     @staticmethod
+    def gui():
+        return PybulletAPI.__instance.gui
+
+    @staticmethod
     def setTimeStep(time_step: SimulationTime):
         p.setTimeStep(time_step.seconds)
 
@@ -54,12 +57,13 @@ class PybulletAPI:
     @staticmethod
     def addUserDebugParameter(name, rangeMin, rangeMax, startValue):
         if PybulletAPI.__instance.gui:
-            p.addUserDebugParameter(name, rangeMin, rangeMax, startValue)
+            return p.addUserDebugParameter(name, rangeMin, rangeMax, startValue)
 
     @staticmethod
-    def readUserDebugParameter(name: str) -> float:
+    def readUserDebugParameter(itemUniqueId: int) -> float:
+        print("gui", PybulletAPI.__instance.gui)
         if PybulletAPI.__instance.gui:
-            return p.readUserDebugParameter(name)
+            return p.readUserDebugParameter(itemUniqueId)
 
     @staticmethod
     def moveCameraToPosition(position: List[float]):
@@ -82,4 +86,5 @@ class PybulletAPI:
 
     @staticmethod
     def applyExternalForce(objectUniqueId: int, forceObj: List[float], posObj: List[float], frame: Frame):
-        p.applyExternalForce(objectUniqueId, -1, forceObj, posObj, frame)
+
+        p.applyExternalForce(objectUniqueId, -1, forceObj, posObj, frame.value)
