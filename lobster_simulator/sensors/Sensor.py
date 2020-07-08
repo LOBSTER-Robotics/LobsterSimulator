@@ -31,15 +31,15 @@ class Sensor(ABC):
         if orientation is None:
             orientation = PybulletAPI.getQuaternionFromEuler([0, 0, 0])
 
-        self.robot: UUV = robot
-        self.position = position
-        self.sensor_orientation = orientation
-        self.time_step = time_step
+        self._robot: UUV = robot
+        self._position = position
+        self._sensor_orientation = orientation
+        self._time_step = time_step
 
-        self.queue = list()
+        self._queue = list()
 
-        self.next_sample_time: SimulationTime = SimulationTime(0)
-        self.previous_update_time: SimulationTime = SimulationTime(0)
+        self._next_sample_time: SimulationTime = SimulationTime(0)
+        self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_real_value = self._get_real_values(SimulationTime(1))
 
     def update(self, time: SimulationTime):
@@ -49,43 +49,43 @@ class Sensor(ABC):
         :return:
         """
         # print(time, self.previous_update_time)
-        dt = time - self.previous_update_time
+        dt = time - self._previous_update_time
         real_values = self._get_real_values(dt)
 
-        while self.next_sample_time <= time:
+        while self._next_sample_time <= time:
 
             value_outputs = list()
             for i in range(len(real_values)):
                 value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
                 value_output = self._previous_real_value[i] + value_dt * (
-                        self.next_sample_time - self.previous_update_time).microseconds
+                        self._next_sample_time - self._previous_update_time).microseconds
 
 
                 # print(value_output, real_values[i], self.previous_real_value[i])
                 value_outputs.append(value_output)
 
 
-            self.queue.append(value_outputs)
-            self.next_sample_time += self.time_step
+            self._queue.append(value_outputs)
+            self._next_sample_time += self._time_step
 
         self._previous_real_value = real_values
-        self.previous_update_time = SimulationTime(time.microseconds)
+        self._previous_update_time = SimulationTime(time.microseconds)
 
     def pop_next_value(self):
-        if len(self.queue) == 0:
+        if len(self._queue) == 0:
             return None
-        return self.queue.pop()
+        return self._queue.pop()
 
     def get_all_values(self):
-        values = self.queue
-        self.queue = list()
+        values = self._queue
+        self._queue = list()
         return values
 
     def get_sensor_position(self):
-        return self.position
+        return self._position
 
     def get_sensor_orientation(self):
-        return self.sensor_orientation
+        return self._sensor_orientation
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:

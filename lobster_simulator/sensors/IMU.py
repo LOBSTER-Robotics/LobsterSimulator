@@ -30,12 +30,12 @@ class IMU(Sensor):
         if dt.microseconds > 0:
             linear_acceleration = (linear_velocity - self._previous_linear_velocity) * 1000000 / dt.microseconds
 
-        angular_velocity = np.array(self.robot.get_angular_velocity())
-        orientation = np.array(self.robot.get_orientation())
+        angular_velocity = np.array(self._robot.get_angular_velocity())
+        orientation = np.array(self._robot.get_orientation())
         return orientation, linear_acceleration, angular_velocity,
 
     def _get_linear_velocity(self):
-        return np.array(self.robot.get_velocity())
+        return np.array(self._robot.get_velocity())
 
     def get_magnetometer_value(self):
         return PybulletAPI.getEulerFromQuaternion(self._previous_real_value[0])

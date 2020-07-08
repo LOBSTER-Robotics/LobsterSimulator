@@ -68,17 +68,13 @@ def main(gui=True, tcp=False):
                     PybulletAPI.readUserDebugParameter(desired_pos_sliders[2])
                 ]
                 # Add a line from the lobster to the origin
-
-                # p.addUserDebugLine(lineFromXYZ=desired_location, lineToXYZ=lobster_pos, replaceItemUniqueId=debug_line,
-                #                    lineWidth=5, lineColorRGB=[1, 0, 0])
-
                 debug_line.update(desired_location, lobster_pos)
 
                 high_level_controller.set_target_rate(ROLL, PybulletAPI.readUserDebugParameter(roll_rate_slider))
 
             simulator.set_time_step(time_step)
 
-            velocity = PybulletAPI.getBaseVelocity(simulator.robot.id)
+            velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
             high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location, time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs

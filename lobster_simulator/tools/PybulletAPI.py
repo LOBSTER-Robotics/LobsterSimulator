@@ -24,19 +24,22 @@ class PybulletAPI:
     __instance = None
 
     def __init__(self, time_step: SimulationTime, gui=False):
-        self.gui = gui
+        self._gui = gui
 
-        self.physics_client_id = -1
+        self._physics_client_id = -1
         if gui:
-            self.physics_client_id = p.connect(p.GUI)
+            self._physics_client_id = p.connect(p.GUI)
         else:
-            self.physics_client_id = p.connect(p.DIRECT)
+            self._physics_client_id = p.connect(p.DIRECT)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
         p.loadURDF("plane.urdf", [0, 0, -100])
         p.loadURDF("plane.urdf", [0, 0, 0], self.getQuaternionFromEuler([math.pi, 0, 0]))
+
+    def is_gui_enabled(self):
+        return self._gui
 
     @staticmethod
     def initialize(time_step: SimulationTime, gui: bool):
@@ -52,7 +55,7 @@ class PybulletAPI:
 
     @staticmethod
     def get_pybullet_id():
-        return PybulletAPI.__instance.physics_client_id
+        return PybulletAPI.__instance._physics_client_id
 
     @staticmethod
     def loadURDF(file_name: str, base_position: List[float], base_orientation: List[float]):
@@ -72,7 +75,7 @@ class PybulletAPI:
 
     @staticmethod
     def gui():
-        return PybulletAPI.__instance.gui
+        return PybulletAPI.__instance.is_gui_enabled()
 
     @staticmethod
     def setTimeStep(time_step: SimulationTime):
@@ -84,12 +87,12 @@ class PybulletAPI:
 
     @staticmethod
     def addUserDebugParameter(name, rangeMin, rangeMax, startValue):
-        if PybulletAPI.__instance.gui:
+        if PybulletAPI.gui():
             return p.addUserDebugParameter(name, rangeMin, rangeMax, startValue)
 
     @staticmethod
     def readUserDebugParameter(itemUniqueId: int) -> float:
-        if PybulletAPI.__instance.gui:
+        if PybulletAPI.gui():
             return p.readUserDebugParameter(itemUniqueId)
 
     @staticmethod
@@ -108,7 +111,7 @@ class PybulletAPI:
 
     @staticmethod
     def moveCameraToPosition(position: List[float]):
-        if PybulletAPI.__instance.gui:
+        if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
