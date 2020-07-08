@@ -7,10 +7,6 @@ from lobster_simulator.tools.DebugLine import DebugLine
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 
-# def move_camera_target(target):
-#     PybulletAPI.moveCameraToPosition(target)
-
-
 def read_config():
     with open('lobster_simulator/data/config.json', 'r') as f:
         config = json.load(f)
