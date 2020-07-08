@@ -99,8 +99,7 @@ class Lobster:
         self.magnetometer.update(time)
 
         # print(self.accelerometer.get_accelerometer_value())
-        print(self.depth_sensor.get_pressure())
-
+        print(self.accelerometer.get_accelerometer_value())
 
         for i in range(self._motor_count):
             self.motors[i].update(dt.microseconds)

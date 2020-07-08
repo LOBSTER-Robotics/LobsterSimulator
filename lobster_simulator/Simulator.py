@@ -93,7 +93,7 @@ class Simulator:
         for (motor, value) in pwm_motors.items():
             self.lobster.set_desired_thrust_motor(self.motor_mapping[motor], value)
 
-    def step_until(self, time: float):  # todo not sure if this was int or float
+    def step_until(self, time: float):
         """
         Execute steps until time (in seconds) has reached
         :param time:

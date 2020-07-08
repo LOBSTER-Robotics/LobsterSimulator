@@ -13,7 +13,6 @@ MAGNETIC_FIELD = [1, 0, 0]
 class Gyroscope(Sensor):
 
     def __init__(self, robot: Lobster, position: np.array, orientation: np.array, time_step: SimulationTime):
-        self._previous_linear_velocity = np.array([0, 0, 0])
         super().__init__(robot, position, orientation, time_step)
 
     def _get_real_values(self, dt: SimulationTime):

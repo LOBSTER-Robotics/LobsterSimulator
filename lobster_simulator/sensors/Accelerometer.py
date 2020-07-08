@@ -27,7 +27,7 @@ class Accelerometer(Sensor):
         if dt.microseconds > 0:
             acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
 
-        # acceleration += gravity_sensor_frame
+        acceleration += self.GRAVITY_VEC
 
         # Rotate the gravity vector to the robot reference frame
         acceleration_local_frame = vec3_rotate_vector_to_local(self.robot.get_orientation(), acceleration)
