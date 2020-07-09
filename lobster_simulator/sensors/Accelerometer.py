@@ -15,7 +15,7 @@ class Accelerometer(Sensor):
 
     GRAVITY_VEC = np.array([0, 0, GRAVITY])
 
-    def __init__(self, robot: UUV, position: np.array, orientation: np.array, time_step: SimulationTime):
+    def __init__(self, robot: UUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
         self._previous_linear_velocity = np.array([0, 0, 0])
         super().__init__(robot, position, orientation, time_step)
 

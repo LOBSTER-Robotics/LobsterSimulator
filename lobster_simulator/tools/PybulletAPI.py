@@ -1,10 +1,12 @@
 import math
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 
 import pybullet as p
 import pybullet_data
 
+from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Constants import GRAVITY
 
@@ -70,8 +72,9 @@ class PybulletAPI:
         return p.getEulerFromQuaternion(quaternion)
 
     @staticmethod
-    def getMatrixFromQuaternion(quaternion: List[float]):
-        return p.getMatrixFromQuaternion(quaternion)
+    def getMatrixFromQuaternion(quaternion: Quaternion):
+
+        return p.getMatrixFromQuaternion(quaternion.data)
 
     @staticmethod
     def gui():
@@ -122,8 +125,13 @@ class PybulletAPI:
             )
 
     @staticmethod
-    def getBasePositionAndOrientation(objectUniqueId: int):
-        return p.getBasePositionAndOrientation(objectUniqueId)
+    def getBasePositionAndOrientation(objectUniqueId: int) -> Tuple[Vec3, Quaternion]:
+
+        position, orientation = p.getBasePositionAndOrientation(objectUniqueId)
+
+        print(Quaternion(orientation))
+
+        return Vec3(position), Quaternion(orientation)
 
     @staticmethod
     def resetBasePositionAndOrientation(objectUniqueId: int, posObj: List[float], ornObj: List[float]):
