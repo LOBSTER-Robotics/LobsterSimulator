@@ -1,12 +1,17 @@
+# This is needed to resolve the Lobster class type, since it can't be imported due to a cyclic dependency
+from __future__ import annotations
+
 import math
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, TYPE_CHECKING
+
 
 import pybullet as p
 import pybullet_data
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
+
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Constants import GRAVITY
 
@@ -37,8 +42,8 @@ class PybulletAPI:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        p.loadURDF("plane.urdf", [0, 0, -100])
-        p.loadURDF("plane.urdf", [0, 0, 0], self.getQuaternionFromEuler([math.pi, 0, 0]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, -100]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler([math.pi, 0, 0]))
 
     def is_gui_enabled(self):
         return self._gui
@@ -60,12 +65,15 @@ class PybulletAPI:
         return PybulletAPI.__instance._physics_client_id
 
     @staticmethod
-    def loadURDF(file_name: str, base_position: List[float], base_orientation: List[float]):
-        return p.loadURDF(fileName=file_name, basePosition=base_position, baseOrientation=base_orientation)
+    def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
+        if base_orientation:
+            return p.loadURDF(fileName=file_name, basePosition=base_position.data, baseOrientation=base_orientation.data)
+        else:
+            return p.loadURDF(fileName=file_name, basePosition=base_position.data)
 
     @staticmethod
     def getQuaternionFromEuler(euler_angle: List[float]):
-        return p.getQuaternionFromEuler(euler_angle)
+        return Quaternion(p.getQuaternionFromEuler(euler_angle))
 
     @staticmethod
     def getEulerFromQuaternion(quaternion: List[float]):
@@ -129,8 +137,6 @@ class PybulletAPI:
 
         position, orientation = p.getBasePositionAndOrientation(objectUniqueId)
 
-        print(Quaternion(orientation))
-
         return Vec3(position), Quaternion(orientation)
 
     @staticmethod
@@ -138,8 +144,9 @@ class PybulletAPI:
         p.resetBasePositionAndOrientation(objectUniqueId, posObj, ornObj)
 
     @staticmethod
-    def getBaseVelocity(objectUniqueId: int):
-        return p.getBaseVelocity(objectUniqueId)
+    def getBaseVelocity(objectUniqueId: int) -> Tuple[Vec3, Vec3]:
+        linearVelocity, angularVelocity = p.getBaseVelocity(objectUniqueId)
+        return Vec3(linearVelocity), Vec3(angularVelocity)
 
     @staticmethod
     def resetBaseVelocity(objectUniqueId: int, linearVelocity: List[float], angularVelocity: List[float]):

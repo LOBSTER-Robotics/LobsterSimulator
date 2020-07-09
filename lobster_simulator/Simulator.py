@@ -6,7 +6,7 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
-from lobster_simulator.robot.UUV import UUV
+from lobster_simulator.robot.AUV import UUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
 

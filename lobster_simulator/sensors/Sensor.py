@@ -5,12 +5,13 @@ from abc import ABC, abstractmethod
 from typing import List, TYPE_CHECKING
 import numpy as np
 
-from lobster_simulator.common.Quaternion import Quaternion
-from lobster_simulator.common.Vec3 import Vec3
+
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot.UUV import UUV
+    from lobster_simulator.robot.AUV import UUV
+    from lobster_simulator.common.Quaternion import Quaternion
+    from lobster_simulator.common.Vec3 import Vec3
 
 from lobster_simulator.simulation_time import SimulationTime
 
@@ -35,7 +36,7 @@ class Sensor(ABC):
 
         self._robot: UUV = robot
         self._position: Vec3 = position
-        self._sensor_orientation = orientation
+        self._sensor_orientation: Quaternion = orientation
         self._time_step = time_step
 
         self._queue = list()

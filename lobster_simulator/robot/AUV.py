@@ -4,6 +4,7 @@ from typing import List
 
 from pkg_resources import resource_filename
 
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
@@ -24,7 +25,7 @@ class UUV:
         self._center_of_volume = config['center_of_volume']
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        [0, 0, -1],
+                                        Vec3([0, 0, -1]),
                                         PybulletAPI.getQuaternionFromEuler([0, 0, 0]))
 
         config_motors = config['motors']
@@ -50,11 +51,11 @@ class UUV:
         # self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
         #                                                 useMaximalCoordinates=0)
 
-        self._depth_sensor = DepthSensor(self, [1, 0, 0], None, SimulationTime(4000))
+        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
-        self._accelerometer = Accelerometer(self, [1, 0, 0], None, SimulationTime(4000))
-        self._gyroscope = Gyroscope(self, [1, 0, 0], None, SimulationTime(4000))
-        self._magnetometer = Magnetometer(self, [1, 0, 0], None, SimulationTime(4000))
+        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
+        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
+        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
 
         self._max_thrust = 100
         self._buoyancy = 550
@@ -120,7 +121,7 @@ class UUV:
         _, orientation = self.get_position_and_orientation()
         return orientation
 
-    def get_velocity(self):
+    def get_velocity(self) -> Vec3:
         return PybulletAPI.getBaseVelocity(self._id)[0]
 
     def get_angular_velocity(self):
