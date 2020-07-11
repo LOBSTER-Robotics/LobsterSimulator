@@ -5,6 +5,7 @@ import time as t
 
 from pkg_resources import resource_stream
 
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import UUV
 from lobster_simulator.simulation_time import SimulationTime
@@ -75,6 +76,8 @@ class Simulator:
         PybulletAPI.moveCameraToPosition(self.robot.get_position())
 
         self.robot.update(self._time_step, self._time)
+
+        self.robot.apply_force(Vec3([0, 0, 0]), Vec3([0, -1000, 0]), relative_direction=True)
 
         PybulletAPI.stepSimulation()
 

@@ -4,8 +4,6 @@ import numpy as np
 
 from lobster_simulator.common.general_exceptions import InputDimensionError
 
-
-
 class Quaternion:
 
     def __init__(self, data: Any):
@@ -21,6 +19,9 @@ class Quaternion:
     def get_rotation_matrix(self):
         from lobster_simulator.tools.PybulletAPI import PybulletAPI
         return np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(self)), (3, 3))
+
+    def get_inverse_rotation_matrix(self):
+        return np.linalg.inv(self.get_rotation_matrix())
 
 
     def __str__(self):

@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -42,7 +44,7 @@ class HighLevelController:
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position, orientation, velocity, desired_location, dt):
+    def update(self, position: Vec3, orientation: Quaternion, velocity: Tuple[Vec3, Vec3], desired_location: Vec3, dt):
         self.relative_desired_location = Translation.vec3_world_to_local(
             position,
             orientation,

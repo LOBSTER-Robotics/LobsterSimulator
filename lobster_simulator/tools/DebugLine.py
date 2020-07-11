@@ -1,10 +1,11 @@
+from lobster_simulator.common import Vec3
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 
 class DebugLine:
 
-    def __init__(self, from_location, to_location, width=5, color=None):
+    def __init__(self, from_location: Vec3, to_location: Vec3, width=5, color=None):
         if color is None:
             color = [1, 0, 0]
 
@@ -15,7 +16,7 @@ class DebugLine:
                                                 lineWidth=width,
                                                 lineColorRGB=color)
 
-    def update(self, from_location, to_location, frame_id=None):
+    def update(self, from_location: Vec3, to_location: Vec3, frame_id=None):
         if frame_id:
             from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
             to_location = Translation.vec3_local_to_world_id(frame_id, to_location)

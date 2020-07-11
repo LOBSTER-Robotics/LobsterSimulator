@@ -23,9 +23,8 @@ def vec3_local_to_world(local_frame_position: Vec3, local_frame_orientation: Qua
     :param local_vec: Vector in the local reference frame
     :return: Vector in the global reference frame
     """
-
-    word_vec = local_frame_orientation.get_rotation_matrix().dot(local_vec.data) + local_frame_position.data
-    return Vec3(word_vec)
+    word_vec = local_vec.rotate(local_frame_orientation) + local_frame_position
+    return word_vec
 
 
 def vec3_world_to_local(local_frame_position: Vec3, local_frame_orientation: Quaternion,
@@ -37,23 +36,22 @@ def vec3_world_to_local(local_frame_position: Vec3, local_frame_orientation: Qua
     :param world_vec: Vector in the global reference frame
     :return: Vector in the local reference frame
     """
-    rotation_matrix = np.linalg.inv(
-        np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(local_frame_orientation)), (3, 3)))
+    # rotation_matrix = np.linalg.inv(
+    #     np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(local_frame_orientation)), (3, 3)))
+    #
+    # local_vec =  np.dot(
+    #     rotation_matrix,
+    #     (np.array(world_vec.data) - np.array(local_frame_position.data))
+    # )
+    return (world_vec - local_frame_position).rotate_inverse(local_frame_orientation)
 
-    local_vec =  np.dot(
-        rotation_matrix,
-        (np.array(world_vec.data) - np.array(local_frame_position.data))
-    )
 
-    return Vec3(local_vec)
+def vec3_rotate_vector_to_world(local_frame_orientation: Quaternion, local_vec: Vec3) -> Vec3:
+    return local_vec.rotate(local_frame_orientation)
 
 
 def vec3_rotate_vector_to_local(local_frame_orientation: Quaternion, world_vec: Vec3) -> Vec3:
-    rotation_matrix = np.linalg.inv(local_frame_orientation.get_rotation_matrix())
-
-    local_vec = np.dot(rotation_matrix, world_vec.data)
-
-    return Vec3(local_vec)
+    return world_vec.rotate_inverse(local_frame_orientation)
 
 
 def vec3_local_to_world_id(local_frame_id: int, local_vec: Vec3) -> Vec3:

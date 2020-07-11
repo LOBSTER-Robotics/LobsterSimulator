@@ -67,9 +67,9 @@ class PybulletAPI:
     @staticmethod
     def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
         if base_orientation:
-            return p.loadURDF(fileName=file_name, basePosition=base_position.data, baseOrientation=base_orientation.data)
+            return p.loadURDF(fileName=file_name, basePosition=base_position.array, baseOrientation=base_orientation.data)
         else:
-            return p.loadURDF(fileName=file_name, basePosition=base_position.data)
+            return p.loadURDF(fileName=file_name, basePosition=base_position.array)
 
     @staticmethod
     def getQuaternionFromEuler(euler_angle: List[float]):
@@ -107,12 +107,12 @@ class PybulletAPI:
             return p.readUserDebugParameter(itemUniqueId)
 
     @staticmethod
-    def addUserDebugLine(lineFromXYZ: List[float], lineToXYZ: List[float], lineWidth: float, lineColorRGB: List[float],
+    def addUserDebugLine(lineFromXYZ: Vec3, lineToXYZ: Vec3, lineWidth: float, lineColorRGB: List[float],
                          replaceItemUniqueId: int = -1):
 
         if PybulletAPI.gui():
-            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ,
-                                      lineToXYZ=lineToXYZ,
+            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.array,
+                                      lineToXYZ=lineToXYZ.array,
                                       lineWidth=lineWidth,
                                       lineColorRGB=lineColorRGB,
                                       replaceItemUniqueId=replaceItemUniqueId)
@@ -122,14 +122,14 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: List[float]):
+    def moveCameraToPosition(position: Vec3):
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
                 cameraYaw=camera_info[8],
                 cameraPitch=camera_info[9],
-                cameraTargetPosition=position
+                cameraTargetPosition=position.array
             )
 
     @staticmethod
@@ -153,9 +153,10 @@ class PybulletAPI:
         p.resetBaseVelocity(objectUniqueId, linearVelocity, angularVelocity)
 
     @staticmethod
-    def applyExternalForce(objectUniqueId: int, forceObj: List[float], posObj: List[float], frame: Frame):
+    def applyExternalForce(objectUniqueId: int, forceObj: Vec3, posObj: Vec3, frame: Frame):
+        assert isinstance(forceObj, Vec3) and isinstance(posObj, Vec3)
 
-        p.applyExternalForce(objectUniqueId, -1, forceObj, posObj, frame.value)
+        p.applyExternalForce(objectUniqueId, -1, forceObj.array, posObj.array, frame.value)
 
     @staticmethod
     def disconnect():

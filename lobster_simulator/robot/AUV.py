@@ -1,9 +1,10 @@
 import numpy as np
 
-from typing import List
+from typing import List, Tuple
 
 from pkg_resources import resource_filename
 
+from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
@@ -14,6 +15,7 @@ from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.DebugLine import DebugLine
+from lobster_simulator.tools.Translation import *
 
 
 class UUV:
@@ -33,8 +35,8 @@ class UUV:
         self._motors: List[Motor] = list()
         for i in range(len(config_motors)):
             self._motors.append(Motor.new_T200(self._id, config_motors[i]['name'],
-                                               np.array(config_motors[i]['position']),
-                                               np.array(config_motors[i]['direction'])))
+                                               Vec3(config_motors[i]['position']),
+                                               Vec3(config_motors[i]['direction'])))
 
         PybulletAPI.changeDynamics(self._id, linearDamping=0.9, angularDamping=0.9)
 
@@ -98,26 +100,31 @@ class UUV:
             self._motors[i].apply_thrust()
             self._motor_debug_lines[i].update(self._motors[i]._position,
                                               self._motors[i]._position
-                                              + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
+                                              + self._motors[i]._direction * self._motors[i].get_thrust() / 100.0,
                                               self._id)
 
         # Determine the point where the buoyancy force acts on the robot
-        buoyancy_force_pos = np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(
-            np.array(self._center_of_volume)) + lobster_pos
+        buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
+
+        buoyancy_force_pos = buoyancy_force_pos + lobster_pos
+
+        # print(lobster_pos + buoyancy_force_pos, buoyancy_force_pos + lobster_pos)
 
         # Apply the buoyancy force
-        PybulletAPI.applyExternalForce(objectUniqueId=self._id,
-                                       forceObj=[0, 0, self._buoyancy], posObj=buoyancy_force_pos,
-                                       frame=Frame.WORLD_FRAME)
+        # PybulletAPI.applyExternalForce(objectUniqueId=self._id,
+        #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
+        #                                frame=Frame.WORLD_FRAME)
 
-    def get_position_and_orientation(self):
+        self.apply_force(Vec3([0,0,0]), Vec3([0, 0, self._buoyancy]), relative_direction=False)
+
+    def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)
 
-    def get_position(self):
+    def get_position(self) -> Vec3:
         position, _ = self.get_position_and_orientation()
         return position
 
-    def get_orientation(self):
+    def get_orientation(self) -> Quaternion:
         _, orientation = self.get_position_and_orientation()
         return orientation
 
@@ -127,7 +134,27 @@ class UUV:
     def get_angular_velocity(self):
         return PybulletAPI.getBaseVelocity(self._id)[1]
 
-    def set_position_and_orientation(self, position=None, orientation=None):
+    def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
+        """
+        Applies a force to the robot (should only be used for testing purposes).
+        :param force_pos: Position of the acting force, given in the local frame
+        :param force: Force vector
+        :param relative_direction: Determines whether or not the force is defined in the local or world frame.
+        """
+
+        if not relative_direction:
+            # If the force direction is given in the world frame, it should be rotated to the local frame
+            force = vec3_rotate_vector_to_local(self.get_orientation(), force)
+
+        # Apply the force in the local frame
+        PybulletAPI.applyExternalForce(self._id, force, force_pos, Frame.LINK_FRAME)
+
+    def set_position_and_orientation(self, position=None, orientation=None) -> None:
+        """
+        Sets the position and/or the orientation of the robot (should only be used for testing purposes).
+        :param position: Position
+        :param orientation: Orientation
+        """
         if position is None:
             position = self.get_position()
         if orientation is None:
@@ -135,7 +162,13 @@ class UUV:
 
         PybulletAPI.resetBasePositionAndOrientation(self._id, position, orientation)
 
-    def set_velocity(self, linear_velocity=None, angular_velocity=None):
+    def set_velocity(self, linear_velocity=None, angular_velocity=None) -> None:
+        """
+        Sets the linear and/or angular velocity of the robot (should only be used for testing purposes).
+        :param linear_velocity:
+        :param angular_velocity:
+        :return:
+        """
         if linear_velocity is None:
             linear_velocity = self.get_velocity()
         if angular_velocity is None:
