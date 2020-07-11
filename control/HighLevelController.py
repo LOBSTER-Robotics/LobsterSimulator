@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 
 from .PID import PID
 from lobster_simulator.tools import Translation
@@ -12,7 +12,7 @@ class HighLevelController:
     purposes.
     """
 
-    motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
+    motor_rpm_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
         PID(p=20, i=0, d=0, min_value=-100, max_value=100),
@@ -75,13 +75,13 @@ class HighLevelController:
                 self.rate_pids[i].update(self.rates[i], 1. / 240.)
 
             for i in range(4):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.forward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.forward_rpm_slider))
 
             for i in range(4, 6):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.upward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.upward_rpm_slider))
 
             for i in range(6, 8):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.sideward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.sideward_rpm_slider))
         else:
             for i in range(8):
                 self.motor_rpm_outputs[i] = 0
@@ -94,8 +94,3 @@ class HighLevelController:
 
         self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
         self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
-
-        # print(self.orientation_pids[PITCH].get_terms(), self.orientation_pids[PITCH].output, self.rate_pids[PITCH].get_terms())
-
-
-

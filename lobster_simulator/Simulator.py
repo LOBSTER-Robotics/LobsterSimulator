@@ -54,8 +54,13 @@ class Simulator:
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
 
-    def set_time_step(self, time_step: int):
-        self._time_step = SimulationTime(time_step)
+    def set_time_step(self, time_step_microseconds: int) -> None:
+        """
+        Sets the size of the time steps the simulator makes
+        :param time_step: Time step in microseconds
+        """
+
+        self._time_step = SimulationTime(time_step_microseconds)
         PybulletAPI.setTimeStep(self._time_step)
 
     def step_until(self, time: float):
@@ -68,6 +73,10 @@ class Simulator:
             self.do_step()
 
     def do_step(self):
+        """
+        Executes on simulation step of exactly one time step
+        """
+
         self._time.add_time_step(self._time_step.microseconds)
 
         if PybulletAPI.gui():
