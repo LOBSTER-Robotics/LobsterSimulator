@@ -67,7 +67,7 @@ class PybulletAPI:
     @staticmethod
     def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
         if base_orientation:
-            return p.loadURDF(fileName=file_name, basePosition=base_position.array, baseOrientation=base_orientation.data)
+            return p.loadURDF(fileName=file_name, basePosition=base_position.array, baseOrientation=base_orientation._data)
         else:
             return p.loadURDF(fileName=file_name, basePosition=base_position.array)
 
@@ -82,7 +82,7 @@ class PybulletAPI:
     @staticmethod
     def getMatrixFromQuaternion(quaternion: Quaternion):
 
-        return p.getMatrixFromQuaternion(quaternion.data)
+        return p.getMatrixFromQuaternion(quaternion._data)
 
     @staticmethod
     def gui():
