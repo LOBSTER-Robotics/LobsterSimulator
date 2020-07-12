@@ -86,8 +86,6 @@ class Simulator:
 
         self.robot.update(self._time_step, self._time)
 
-        self.robot.apply_force(Vec3([0, 0, 0]), Vec3([0, -1000, 0]), relative_direction=True)
-
         PybulletAPI.stepSimulation()
 
         self._cycle += 1
