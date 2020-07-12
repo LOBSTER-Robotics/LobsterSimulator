@@ -1,6 +1,7 @@
 import json
 
 from control.HighLevelController import HighLevelController
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.Simulator import Simulator, Models
 from lobster_simulator.tools.DebugLine import DebugLine
@@ -28,7 +29,7 @@ def main(gui=True, tcp=False):
             PybulletAPI.addUserDebugParameter("desired z", -100, 0, -10)
         ]
         roll_rate_slider = PybulletAPI.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        debug_line = DebugLine([0, 0, 0], simulator.robot.get_position(), 5)
+        debug_line = DebugLine(Vec3([0, 0, 0]), simulator.robot.get_position(), 5)
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
@@ -57,14 +58,14 @@ def main(gui=True, tcp=False):
                     PybulletAPI.readUserDebugParameter(desired_pos_sliders[2])
                 ]
                 # Add a line from the lobster to the origin
-                debug_line.update(desired_location, lobster_pos)
+                debug_line.update(Vec3(desired_location), lobster_pos)
 
                 high_level_controller.set_target_rate(ROLL, PybulletAPI.readUserDebugParameter(roll_rate_slider))
 
             simulator.set_time_step(time_step)
 
             velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity, desired_location, time_step/1000000)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity, Vec3(desired_location), time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 

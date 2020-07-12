@@ -1,16 +1,19 @@
 import math
 
+from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 
 
 class Motor:
 
-    def __init__(self, pybullet_id, name, position, direction, rpm_to_thrust, thrust_to_rpm, max_rpm_change_per_second,
+    def __init__(self, pybullet_id: int, name, position: Vec3, direction: Vec3, rpm_to_thrust, thrust_to_rpm,
+                 max_rpm_change_per_second,
                  max_rpm):
         self._name = name
         self._pybullet_id = pybullet_id
-        self._position = position
-        self._direction = direction
+        self._position: Vec3 = position
+        self._direction: Vec3 = direction
 
         self._rpm_to_thrust = rpm_to_thrust
         self._thrust_to_rpm = thrust_to_rpm
@@ -22,7 +25,7 @@ class Motor:
         self._desired_rpm = 0
 
     @staticmethod
-    def new_T200(pybullet_id, name, position, direction):
+    def new_T200(pybullet_id, name, position: Vec3, direction: Vec3):
 
         # These two lambda functions are based on data that is available of the T200 motor
         # (https://bluerobotics.com/store/thrusters/t100-t200-thrusters/t200-thruster/)

@@ -1,9 +1,16 @@
+# This is needed to resolve the Lobster class type, since it can't be imported due to a cyclic dependency
+from __future__ import annotations
+
 import math
 from enum import Enum
-from typing import List
+from typing import List, Tuple, TYPE_CHECKING
+
 
 import pybullet as p
 import pybullet_data
+
+from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Vec3 import Vec3
 
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Constants import GRAVITY
@@ -35,8 +42,8 @@ class PybulletAPI:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        p.loadURDF("plane.urdf", [0, 0, -100])
-        p.loadURDF("plane.urdf", [0, 0, 0], self.getQuaternionFromEuler([math.pi, 0, 0]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, -100]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler([math.pi, 0, 0]))
 
     def is_gui_enabled(self):
         return self._gui
@@ -58,20 +65,24 @@ class PybulletAPI:
         return PybulletAPI.__instance._physics_client_id
 
     @staticmethod
-    def loadURDF(file_name: str, base_position: List[float], base_orientation: List[float]):
-        return p.loadURDF(fileName=file_name, basePosition=base_position, baseOrientation=base_orientation)
+    def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
+        if base_orientation:
+            return p.loadURDF(fileName=file_name, basePosition=base_position.array, baseOrientation=base_orientation._data)
+        else:
+            return p.loadURDF(fileName=file_name, basePosition=base_position.array)
 
     @staticmethod
     def getQuaternionFromEuler(euler_angle: List[float]):
-        return p.getQuaternionFromEuler(euler_angle)
+        return Quaternion(p.getQuaternionFromEuler(euler_angle))
 
     @staticmethod
     def getEulerFromQuaternion(quaternion: List[float]):
         return p.getEulerFromQuaternion(quaternion)
 
     @staticmethod
-    def getMatrixFromQuaternion(quaternion: List[float]):
-        return p.getMatrixFromQuaternion(quaternion)
+    def getMatrixFromQuaternion(quaternion: Quaternion):
+
+        return p.getMatrixFromQuaternion(quaternion._data)
 
     @staticmethod
     def gui():
@@ -96,12 +107,12 @@ class PybulletAPI:
             return p.readUserDebugParameter(itemUniqueId)
 
     @staticmethod
-    def addUserDebugLine(lineFromXYZ: List[float], lineToXYZ: List[float], lineWidth: float, lineColorRGB: List[float],
+    def addUserDebugLine(lineFromXYZ: Vec3, lineToXYZ: Vec3, lineWidth: float, lineColorRGB: List[float],
                          replaceItemUniqueId: int = -1):
 
         if PybulletAPI.gui():
-            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ,
-                                      lineToXYZ=lineToXYZ,
+            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.array,
+                                      lineToXYZ=lineToXYZ.array,
                                       lineWidth=lineWidth,
                                       lineColorRGB=lineColorRGB,
                                       replaceItemUniqueId=replaceItemUniqueId)
@@ -111,36 +122,41 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: List[float]):
+    def moveCameraToPosition(position: Vec3):
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
                 cameraYaw=camera_info[8],
                 cameraPitch=camera_info[9],
-                cameraTargetPosition=position
+                cameraTargetPosition=position.array
             )
 
     @staticmethod
-    def getBasePositionAndOrientation(objectUniqueId: int):
-        return p.getBasePositionAndOrientation(objectUniqueId)
+    def getBasePositionAndOrientation(objectUniqueId: int) -> Tuple[Vec3, Quaternion]:
+
+        position, orientation = p.getBasePositionAndOrientation(objectUniqueId)
+
+        return Vec3(position), Quaternion(orientation)
 
     @staticmethod
     def resetBasePositionAndOrientation(objectUniqueId: int, posObj: List[float], ornObj: List[float]):
         p.resetBasePositionAndOrientation(objectUniqueId, posObj, ornObj)
 
     @staticmethod
-    def getBaseVelocity(objectUniqueId: int):
-        return p.getBaseVelocity(objectUniqueId)
+    def getBaseVelocity(objectUniqueId: int) -> Tuple[Vec3, Vec3]:
+        linearVelocity, angularVelocity = p.getBaseVelocity(objectUniqueId)
+        return Vec3(linearVelocity), Vec3(angularVelocity)
 
     @staticmethod
     def resetBaseVelocity(objectUniqueId: int, linearVelocity: List[float], angularVelocity: List[float]):
         p.resetBaseVelocity(objectUniqueId, linearVelocity, angularVelocity)
 
     @staticmethod
-    def applyExternalForce(objectUniqueId: int, forceObj: List[float], posObj: List[float], frame: Frame):
+    def applyExternalForce(objectUniqueId: int, forceObj: Vec3, posObj: Vec3, frame: Frame):
+        assert isinstance(forceObj, Vec3) and isinstance(posObj, Vec3)
 
-        p.applyExternalForce(objectUniqueId, -1, forceObj, posObj, frame.value)
+        p.applyExternalForce(objectUniqueId, -1, forceObj.array, posObj.array, frame.value)
 
     @staticmethod
     def disconnect():
