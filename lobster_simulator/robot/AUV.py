@@ -14,7 +14,7 @@ from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.DebugLine import DebugLine
+from lobster_simulator.tools.DebugVisualization import DebugLine, DebugSphere
 from lobster_simulator.tools.Translation import *
 
 
@@ -49,7 +49,7 @@ class UUV:
             self._desired_rpm_motors.append(0)
             self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position))
 
-        # self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
+        self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
@@ -104,6 +104,7 @@ class UUV:
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
 
+        self.up_indicator.update_position(vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
         buoyancy_force_pos = buoyancy_force_pos + lobster_pos
 

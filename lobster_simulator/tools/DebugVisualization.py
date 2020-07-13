@@ -26,3 +26,12 @@ class DebugLine:
                                                 lineWidth=self._width,
                                                 lineColorRGB=self._color,
                                                 replaceItemUniqueId=self._id)
+
+
+class DebugSphere:
+
+    def __init__(self, radius, rgba_color):
+        self.sphereId = PybulletAPI.createVisualSphere(radius, rgba_color)
+
+    def update_position(self, position: Vec3):
+        PybulletAPI.resetBasePositionAndOrientation(self.sphereId, posObj=position)

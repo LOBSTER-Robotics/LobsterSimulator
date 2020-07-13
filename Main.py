@@ -4,7 +4,7 @@ from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.Simulator import Simulator, Models
-from lobster_simulator.tools.DebugLine import DebugLine
+from lobster_simulator.tools.DebugVisualization import DebugLine
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 
