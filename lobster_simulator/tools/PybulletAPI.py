@@ -159,5 +159,11 @@ class PybulletAPI:
         p.applyExternalForce(objectUniqueId, -1, forceObj.array, posObj.array, frame.value)
 
     @staticmethod
+    def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
+        assert isinstance(torqueObj, Vec3)
+
+        p.applyExternalForce(objectUniqueId, -1, torqueObj.array, frame.value)
+
+    @staticmethod
     def disconnect():
         p.disconnect()

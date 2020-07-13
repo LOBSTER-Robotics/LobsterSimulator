@@ -129,6 +129,9 @@ class UUV:
         return orientation
 
     def get_velocity(self) -> Vec3:
+        """
+        Gets the linear velocity of the Robot in the World frame
+        """
         return PybulletAPI.getBaseVelocity(self._id)[0]
 
     def get_angular_velocity(self):
@@ -175,3 +178,22 @@ class UUV:
             angular_velocity = self.get_angular_velocity()
 
         PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
+
+    def apply_translational_drag(self):
+        velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
+
+        drag_force = Vec3([0, 0, 0])
+
+        # TODO: Calculate drag
+
+        PybulletAPI.applyExternalForce(self._id, forceObj=drag_force, posObj=Vec3([0, 0, 0]), frame=Frame.LINK_FRAME)
+
+    def apply_rotational_drag(self):
+
+        angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
+
+        drag_torque = Vec3([0, 0, 0])
+
+        # TODO: Calculate drag
+
+        PybulletAPI.applyExternalTorque(self._id, torqueObj=drag_torque, frame=Frame.LINK_FRAME)
