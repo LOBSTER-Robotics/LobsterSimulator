@@ -26,7 +26,7 @@ def main(gui=True, tcp=False):
         desired_pos_sliders = [
             PybulletAPI.addUserDebugParameter("desired x", -100, 100, 0),
             PybulletAPI.addUserDebugParameter("desired y", -100, 100, 0),
-            PybulletAPI.addUserDebugParameter("desired z", -100, 0, -10)
+            PybulletAPI.addUserDebugParameter("desired z", 0, 100, 10)
         ]
         roll_rate_slider = PybulletAPI.addUserDebugParameter("rate ROLL", -10, 10, 0)
         debug_line = DebugLine(Vec3([0, 0, 0]), simulator.robot.get_position(), 5)

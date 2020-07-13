@@ -11,7 +11,8 @@ from lobster_simulator.tools.PybulletAPI import PybulletAPI
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import UUV
     from lobster_simulator.common.Quaternion import Quaternion
-    from lobster_simulator.common.Vec3 import Vec3
+
+from lobster_simulator.common.Vec3 import Vec3
 
 from lobster_simulator.simulation_time import SimulationTime
 
@@ -32,7 +33,7 @@ class Sensor(ABC):
             The time step between two polls on the sensor in microseconds.
         """
         if orientation is None:
-            orientation = PybulletAPI.getQuaternionFromEuler([0, 0, 0])
+            orientation = PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0]))
 
         self._robot: UUV = robot
         self._position: Vec3 = position

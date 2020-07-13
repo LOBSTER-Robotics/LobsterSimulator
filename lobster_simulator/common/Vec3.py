@@ -9,7 +9,7 @@ from lobster_simulator.common.general_exceptions import InputDimensionError, Inv
 
 class Vec3:
 
-    def __init__(self, data: Union[List[float], np.ndarray]):
+    def __init__(self, data: Union[List[float], Tuple[float, float, float], np.ndarray]):
         """
         Creates a 3 dimensional vector from a data array
         :param data: Array with length 4 in the form [x, y, z]
@@ -17,7 +17,7 @@ class Vec3:
 
         if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple)):
             raise InvalidArgumentTypeError(
-                f"A Vec3 needs to be instantiated by a list of floats or a numpy array not a {type(data)}")
+                f"A Vec3 needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
 
         self._data: np.ndarray = np.asarray(data)
         assert self._data.shape
@@ -28,7 +28,7 @@ class Vec3:
                 f"A Vec3 needs to be instantiated by an array of floats, not an array of {self._data.dtype}")
 
     @staticmethod
-    def fromNWE(vector: Union['Vec3', List[float], np.ndarray]):
+    def fromNWE(vector: Union['Vec3', List[float], Tuple[float, float, float], np.ndarray]):
         if isinstance(vector, Vec3):
             # Swapping the Y and Z axes
             vector._data[1] = -vector._data[1]
@@ -39,10 +39,13 @@ class Vec3:
             vector[1] = -vector[1]
             vector[2] = -vector[2]
             return Vec3(vector)
+        elif isinstance(vector, Tuple):
+            vector: Tuple[float, float, float] = (float(vector[0]), float(-vector[1]), float(-vector[2]))
+            return Vec3(vector)
 
         raise TypeError(f"Can only create NED vector from Vec3 of array, not {type(vector)}")
 
-    def toNWE(self) -> np.ndarray:
+    def asNWE(self) -> np.ndarray:
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]
