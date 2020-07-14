@@ -18,7 +18,7 @@ from lobster_simulator.tools.DebugVisualization import DebugLine, DebugSphere
 from lobster_simulator.tools.Translation import *
 
 
-class UUV:
+class AUV:
 
     def __init__(self, config):
         if config is None:

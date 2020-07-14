@@ -28,14 +28,14 @@ class Vec3:
                 f"A Vec3 needs to be instantiated by an array of floats, not an array of {self._data.dtype}")
 
     @staticmethod
-    def fromNWE(vector: Union['Vec3', List[float], Tuple[float, float, float], np.ndarray]):
+    def fromENU(vector: Union['Vec3', List[float], Tuple[float, float, float], np.ndarray]):
         if isinstance(vector, Vec3):
-            # Swapping the Y and Z axes
+            # Negating the Y and Z axes
             vector._data[1] = -vector._data[1]
             vector._data[2] = -vector._data[2]
             return vector
         elif isinstance(vector, List) or isinstance(vector, np.ndarray):
-            # Swapping the Y and Z axes
+            # Negating the Y and Z axes
             vector[1] = -vector[1]
             vector[2] = -vector[2]
             return Vec3(vector)
@@ -45,7 +45,7 @@ class Vec3:
 
         raise TypeError(f"Can only create NED vector from Vec3 of array, not {type(vector)}")
 
-    def asNWE(self) -> np.ndarray:
+    def asENU(self) -> np.ndarray:
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]

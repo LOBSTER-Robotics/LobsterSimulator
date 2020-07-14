@@ -7,7 +7,7 @@ from pkg_resources import resource_stream
 
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
-from lobster_simulator.robot.AUV import UUV
+from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
 
@@ -117,7 +117,7 @@ class Simulator:
         with resource_stream('lobster_simulator', f'data/{model_config}') as f:
             lobster_config = json.load(f)
 
-        self.robot = UUV(lobster_config)
+        self.robot = AUV(lobster_config)
 
     def reset_robot(self):
         """
