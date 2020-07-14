@@ -1,4 +1,6 @@
-! The simulator is currently in very early stages of development, if you find any bugs or would need extra functionality, please create an [issue](https://github.com/LOBSTER-Robotics/LobsterSimulator/issues)
+> The simulator is currently in early stages of development, if you find any bugs or would need extra functionality, please create an [issue](https://github.com/LOBSTER-Robotics/LobsterSimulator/issues)
+
+The documentation can be found [here](https://docs.lobster-robotics.com/software/simulator).
 
 ###### Usage
 
