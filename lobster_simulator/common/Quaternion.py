@@ -22,7 +22,7 @@ class Quaternion:
             raise InputDimensionError("A Quaternion needs an input array of length 4")
 
     @staticmethod
-    def fromNWE(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
+    def fromENU(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
         """
         Creates a quaternion in the NED coordinate system from a given array or Quaternion in the NWU coordinate system
         :param quaternion: Quaternion or array that represents a quaternion
@@ -53,19 +53,24 @@ class Quaternion:
     def array(self):
         return self._data
 
-    def asNWE(self) -> np.ndarray:
+    def asENU(self) -> np.ndarray:
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]
         array[2] = -array[2]
         return array
 
-    def get_rotation_matrix(self):
+    def get_rotation_matrix(self) -> np.ndarray:
         from lobster_simulator.tools.PybulletAPI import PybulletAPI
         return np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(self)), (3, 3))
 
     def get_inverse_rotation_matrix(self):
         return np.linalg.inv(self.get_rotation_matrix())
+
+    # def addRotation(self, other: 'Quaternion') -> 'Quaternion':
+    #     matrix = np.multiply(self.get_rotation_matrix(), other.get_rotation_matrix())
+    #
+    #     PybulletAPI.getQ
 
     def __str__(self):
         return f"Quaternion<{self._data}>"

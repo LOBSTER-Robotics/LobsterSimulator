@@ -1,4 +1,5 @@
 import json
+import math
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
@@ -65,7 +66,7 @@ def main(gui=True, tcp=False):
             simulator.set_time_step(time_step)
 
             velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity, Vec3(desired_location), time_step/1000000)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1], Vec3(desired_location), time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
