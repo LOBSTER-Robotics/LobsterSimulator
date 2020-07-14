@@ -54,7 +54,7 @@ class Quaternion:
         return self._data
 
     def asENU(self) -> np.ndarray:
-        # Swapping the Y and Z axes
+        # Negating the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]
         array[2] = -array[2]

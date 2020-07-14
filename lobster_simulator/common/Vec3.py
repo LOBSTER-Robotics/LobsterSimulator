@@ -30,12 +30,12 @@ class Vec3:
     @staticmethod
     def fromENU(vector: Union['Vec3', List[float], Tuple[float, float, float], np.ndarray]):
         if isinstance(vector, Vec3):
-            # Swapping the Y and Z axes
+            # Negating the Y and Z axes
             vector._data[1] = -vector._data[1]
             vector._data[2] = -vector._data[2]
             return vector
         elif isinstance(vector, List) or isinstance(vector, np.ndarray):
-            # Swapping the Y and Z axes
+            # Negating the Y and Z axes
             vector[1] = -vector[1]
             vector[2] = -vector[2]
             return Vec3(vector)
