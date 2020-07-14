@@ -150,6 +150,11 @@ class PybulletAPI:
 
     @staticmethod
     def getBaseVelocity(objectUniqueId: int) -> Tuple[Vec3, Vec3]:
+        """
+        Gets the velocity and angular velocity of an object.
+        :param objectUniqueId: Id of the object.
+        :return: Tuple with velocity and angular velocity.
+        """
         linearVelocity, angularVelocity = p.getBaseVelocity(objectUniqueId)
         return Vec3.fromENU(linearVelocity), Vec3.fromENU(angularVelocity)
 

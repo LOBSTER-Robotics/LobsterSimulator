@@ -44,7 +44,8 @@ class HighLevelController:
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position: Vec3, orientation: Quaternion, velocity: Tuple[Vec3, Vec3], desired_location: Vec3, dt):
+    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, desired_location: Vec3, dt):
+
         self.relative_desired_location = Translation.vec3_world_to_local(
             position,
             orientation,
@@ -64,7 +65,7 @@ class HighLevelController:
             self.rate_pids[i].set_target(self.target_rates[i])
 
         # Translate world frame angular velocities to local frame angular velocities
-        local_rotation = vec3_rotate_vector_to_local(orientation, velocity[1])
+        local_rotation = vec3_rotate_vector_to_local(orientation, angular_velocity)
 
         roll_rate, pitch_rate, yaw_rate = local_rotation
 
