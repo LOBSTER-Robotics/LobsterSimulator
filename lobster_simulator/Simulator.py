@@ -57,16 +57,9 @@ class Simulator:
         self._time_step = SimulationTime(time_step)
         PybulletAPI.setTimeStep(self._time_step)
 
-    def step_until(self, time: float):
-        """
-        Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
-        less than the specified time (at most 1 time step off).
-        :param time: Time (in seconds) to which the simulator should run
-        """
-        while (self._time + self._time_step).seconds <= time:
-            self.do_step()
-
     def do_step(self):
+        """Progresses the simulation by exactly one time step."""
+
         self._time.add_time_step(self._time_step.microseconds)
 
         if PybulletAPI.gui():
@@ -86,17 +79,27 @@ class Simulator:
             self._previous_update_time = copy.copy(self._time)
             self._previous_update_real_time = t.perf_counter()
 
-    def get_robot(self):
+    def step_until(self, time: float):
+        """
+        Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
+        less than the specified time (at most 1 time step off).
+        :param time: Time (in seconds) to which the simulator should run
+        """
+        while (self._time + self._time_step).seconds <= time:
+            self.do_step()
+
+    def get_robot(self) -> UUV:
         """
         Gets the current instance of the robot.
         :return: Robot instance
         """
         return self.robot
 
-    def create_robot(self, model):
+    def create_robot(self, model: Models) -> UUV:
         """
         Creates a new robot based on the given model.
         :param model: Model of the robot. (Scout-alpha, PTV)
+        :return: Robot instance
         """
 
         if model == Models.SCOUT_ALPHA:
@@ -108,6 +111,8 @@ class Simulator:
             lobster_config = json.load(f)
 
         self.robot = UUV(lobster_config)
+
+        return self.robot
 
     def reset_robot(self):
         """
