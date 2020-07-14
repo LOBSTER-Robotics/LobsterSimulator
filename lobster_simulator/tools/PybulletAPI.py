@@ -76,7 +76,7 @@ class PybulletAPI:
         return Quaternion.fromNWE(p.getQuaternionFromEuler(euler_angle.asNWE()))
 
     @staticmethod
-    def getEulerFromQuaternion(quaternion: Quaternion) -> Quaternion:
+    def getEulerFromQuaternion(quaternion: Quaternion) -> Vec3:
         return Vec3.fromNWE(p.getEulerFromQuaternion(quaternion.asNWE()))
 
     @staticmethod

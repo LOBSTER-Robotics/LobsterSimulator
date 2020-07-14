@@ -31,6 +31,7 @@ class HighLevelController:
     def __init__(self, gui):
         self.relative_yaw = 0
         self.relative_pitch = 0
+        self.relative_roll = 0
         self.target_rates = [0, 0, 0]
         self.relative_desired_location = [0, 0, 0]
         self.rates = [0, 0, 0]
@@ -51,14 +52,20 @@ class HighLevelController:
             desired_location
         )
 
+        print(PybulletAPI.getEulerFromQuaternion(quaternion=orientation))
+
+
         self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
-        self.relative_yaw = np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
+        self.relative_yaw = -np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
+        self.relative_roll = -PybulletAPI.getEulerFromQuaternion(quaternion=orientation)[0]
 
         self.orientation_pids[PITCH].update(self.relative_pitch, dt)
-        self.orientation_pids[YAW].update(-self.relative_yaw, dt)
+        self.orientation_pids[YAW].update(self.relative_yaw, dt)
+        self.orientation_pids[ROLL].update(self.relative_roll, dt)
 
         self.target_rates[PITCH] = self.orientation_pids[PITCH].output
         self.target_rates[YAW] = self.orientation_pids[YAW].output
+        self.target_rates[ROLL] = self.orientation_pids[ROLL].output
 
         for i in range(3):
             self.rate_pids[i].set_target(self.target_rates[i])
