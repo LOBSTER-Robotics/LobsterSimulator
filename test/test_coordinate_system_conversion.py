@@ -21,16 +21,16 @@ class CoordinateSystemConversionTest(unittest.TestCase):
         rotated_vec = vec.rotate(q)
 
         # transform the original vector to the NED coordinate system
-        vec_NED = Vec3.fromNWE(vec)
+        vec_NED = Vec3.fromENU(vec)
 
         # transform the original quaternino to the NED coordinate system
-        q_NED = Quaternion.fromNWE(q)
+        q_NED = Quaternion.fromENU(q)
 
         # Rotate the converted vector by the converted rotation
         rotated_vec_NED = vec_NED.rotate(q_NED)
 
         # transform the rotated vector to the NED coordinate system
-        rotated_vec_NED_transformed = Vec3.fromNWE(rotated_vec)
+        rotated_vec_NED_transformed = Vec3.fromENU(rotated_vec)
 
         print(rotated_vec_NED, rotated_vec_NED_transformed)
 
