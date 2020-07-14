@@ -6,6 +6,7 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
@@ -27,7 +28,7 @@ class AUV:
         self._center_of_volume = config['center_of_volume']
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 2]),
+                                        Vec3([0, 0, 80]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         config_motors = config['motors']
@@ -56,6 +57,7 @@ class AUV:
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
+        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), None, SimulationTime(4000))
 
         self._max_thrust = 100
         self._buoyancy = 550
@@ -89,6 +91,9 @@ class AUV:
         self._accelerometer.update(time)
         self._gyroscope.update(time)
         self._magnetometer.update(time)
+        self._dvl.update(time)
+
+        PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
 
         for i in range(self._motor_count):
             self._motors[i].update(dt.microseconds)

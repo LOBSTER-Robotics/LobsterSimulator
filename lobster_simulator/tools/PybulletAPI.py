@@ -8,6 +8,8 @@ from typing import List, Tuple, TYPE_CHECKING
 import pybullet as p
 import pybullet_data
 
+import numpy as np
+
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 
@@ -83,6 +85,7 @@ class PybulletAPI:
     def getMatrixFromQuaternion(quaternion: Quaternion):
 
         return p.getMatrixFromQuaternion(quaternion.array)
+
 
     @staticmethod
     def gui():
@@ -172,6 +175,12 @@ class PybulletAPI:
     def createVisualSphere(radius, rgbaColor):
         sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
         return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
+
+    @staticmethod
+    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3) -> Tuple[float, Vec3, Vec3]:
+        _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
+
+        return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
     # @staticmethod
     # def createMultiBody()

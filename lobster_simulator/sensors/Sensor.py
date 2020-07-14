@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List, TYPE_CHECKING
 import numpy as np
 
-
+from lobster_simulator.common.Calculations import interpolate
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ class Sensor(ABC):
             orientation = PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0]))
 
         self._robot: AUV = robot
-        self._position: Vec3 = position
+        self._sensor_position: Vec3 = position
         self._sensor_orientation: Quaternion = orientation
         self._time_step = time_step
 
@@ -52,7 +52,9 @@ class Sensor(ABC):
         :param time: time in microseconds
         :return:
         """
-        # print(time, self.previous_update_time)
+        # Empty the queue to prevent it from growing too large.
+        self._queue = list()
+
         dt = time - self._previous_update_time
         real_values = self._get_real_values(dt)
 
@@ -60,14 +62,18 @@ class Sensor(ABC):
 
             value_outputs = list()
             for i in range(len(real_values)):
-                value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
-                value_output = self._previous_real_value[i] + value_dt * (
-                        self._next_sample_time - self._previous_update_time).microseconds
+                value = interpolate(x=self._next_sample_time.microseconds,
+                                    x1=self._previous_update_time.microseconds,
+                                    x2=time.microseconds,
+                                    y1=self._previous_real_value[i],
+                                    y2=real_values[i])
 
+                # value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
+                # value_output = self._previous_real_value[i] + value_dt * (
+                #         self._next_sample_time - self._previous_update_time).microseconds
 
                 # print(value_output, real_values[i], self.previous_real_value[i])
-                value_outputs.append(value_output)
-
+                value_outputs.append(value)
 
             self._queue.append(value_outputs)
             self._next_sample_time += self._time_step
@@ -86,10 +92,13 @@ class Sensor(ABC):
         return values
 
     def get_sensor_position(self):
-        return self._position
+        return self._sensor_position
 
     def get_sensor_orientation(self):
         return self._sensor_orientation
+
+    def get_last_value(self):
+        return self._queue[-1]
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:

@@ -60,12 +60,17 @@ class Quaternion:
         array[2] = -array[2]
         return array
 
-    def get_rotation_matrix(self):
+    def get_rotation_matrix(self) -> np.ndarray:
         from lobster_simulator.tools.PybulletAPI import PybulletAPI
         return np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(self)), (3, 3))
 
     def get_inverse_rotation_matrix(self):
         return np.linalg.inv(self.get_rotation_matrix())
+
+    # def addRotation(self, other: 'Quaternion') -> 'Quaternion':
+    #     matrix = np.multiply(self.get_rotation_matrix(), other.get_rotation_matrix())
+    #
+    #     PybulletAPI.getQ
 
     def __str__(self):
         return f"Quaternion<{self._data}>"

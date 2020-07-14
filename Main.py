@@ -1,4 +1,5 @@
 import json
+import math
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3

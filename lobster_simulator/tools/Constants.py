@@ -3,3 +3,7 @@ ROLL = 1
 YAW = 2
 
 GRAVITY = 9.80665
+
+X = 0
+Y = 1
+Z = 2
