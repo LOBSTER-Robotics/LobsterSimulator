@@ -22,7 +22,7 @@ class Quaternion:
             raise InputDimensionError("A Quaternion needs an input array of length 4")
 
     @staticmethod
-    def fromNWE(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
+    def fromENU(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
         """
         Creates a quaternion in the NED coordinate system from a given array or Quaternion in the NWU coordinate system
         :param quaternion: Quaternion or array that represents a quaternion
@@ -53,7 +53,7 @@ class Quaternion:
     def array(self):
         return self._data
 
-    def asNWE(self) -> np.ndarray:
+    def asENU(self) -> np.ndarray:
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]

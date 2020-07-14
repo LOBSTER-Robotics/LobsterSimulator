@@ -9,7 +9,7 @@ from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Translation import *
 
-MAGNETIC_FIELD = Vec3([1, 0, 0])
+MAGNETIC_FIELD = Vec3([0, 1, 0])
 
 
 class Magnetometer(Sensor):
