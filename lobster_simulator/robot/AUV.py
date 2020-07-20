@@ -14,11 +14,11 @@ from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.DebugLine import DebugLine
+from lobster_simulator.tools.DebugVisualization import DebugLine, DebugSphere
 from lobster_simulator.tools.Translation import *
 
 
-class UUV:
+class AUV:
 
     def __init__(self, config):
         if config is None:
@@ -27,8 +27,8 @@ class UUV:
         self._center_of_volume = config['center_of_volume']
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, -1]),
-                                        PybulletAPI.getQuaternionFromEuler([0, 0, 0]))
+                                        Vec3([0, 0, 2]),
+                                        PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         config_motors = config['motors']
 
@@ -49,9 +49,7 @@ class UUV:
             self._desired_rpm_motors.append(0)
             self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position))
 
-        # self.buoyancySphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1])
-        # self.buoyancyPointIndicator = p.createMultiBody(0, -1, self.buoyancySphereShape, [0, 0, 0],
-        #                                                 useMaximalCoordinates=0)
+        self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
@@ -98,13 +96,19 @@ class UUV:
         # Apply forces for the  facing motors
         for i in range(self._motor_count):
             self._motors[i].apply_thrust()
-            self._motor_debug_lines[i].update(self._motors[i]._position,
-                                              self._motors[i]._position
-                                              + self._motors[i]._direction * self._motors[i].get_thrust() / 100.0,
-                                              self._id)
+
+            # Update debug lines in a max frequency. Check the first line if it can be updated.
+            if self._motor_debug_lines[0].can_update():
+                for i in range(self._motor_count):
+                    self._motor_debug_lines[i].update(self._motors[i]._position,
+                                                      self._motors[i]._position
+                                                      + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
+                                                      self._id)
 
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
+
+        self.up_indicator.update_position(vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
         buoyancy_force_pos = buoyancy_force_pos + lobster_pos
 
@@ -115,7 +119,7 @@ class UUV:
         #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
         #                                frame=Frame.WORLD_FRAME)
 
-        self.apply_force(Vec3([0,0,0]), Vec3([0, 0, self._buoyancy]), relative_direction=False)
+        self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)

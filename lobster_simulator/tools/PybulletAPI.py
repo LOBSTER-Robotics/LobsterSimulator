@@ -5,7 +5,6 @@ import math
 from enum import Enum
 from typing import List, Tuple, TYPE_CHECKING
 
-
 import pybullet as p
 import pybullet_data
 
@@ -42,8 +41,8 @@ class PybulletAPI:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        self.loadURDF("plane.urdf", Vec3([0, 0, -100]))
-        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler([math.pi, 0, 0]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui
@@ -67,22 +66,23 @@ class PybulletAPI:
     @staticmethod
     def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
         if base_orientation:
-            return p.loadURDF(fileName=file_name, basePosition=base_position.array, baseOrientation=base_orientation._data)
+            return p.loadURDF(fileName=file_name, basePosition=base_position.asENU(),
+                              baseOrientation=base_orientation.asENU())
         else:
-            return p.loadURDF(fileName=file_name, basePosition=base_position.array)
+            return p.loadURDF(fileName=file_name, basePosition=base_position.asENU())
 
     @staticmethod
-    def getQuaternionFromEuler(euler_angle: List[float]):
-        return Quaternion(p.getQuaternionFromEuler(euler_angle))
+    def getQuaternionFromEuler(euler_angle: Vec3):
+        return Quaternion.fromENU(p.getQuaternionFromEuler(euler_angle.asENU()))
 
     @staticmethod
-    def getEulerFromQuaternion(quaternion: List[float]):
-        return p.getEulerFromQuaternion(quaternion)
+    def getEulerFromQuaternion(quaternion: Quaternion) -> Quaternion:
+        return Vec3.fromENU(p.getEulerFromQuaternion(quaternion.asENU()))
 
     @staticmethod
     def getMatrixFromQuaternion(quaternion: Quaternion):
 
-        return p.getMatrixFromQuaternion(quaternion._data)
+        return p.getMatrixFromQuaternion(quaternion.array)
 
     @staticmethod
     def gui():
@@ -111,8 +111,8 @@ class PybulletAPI:
                          replaceItemUniqueId: int = -1):
 
         if PybulletAPI.gui():
-            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.array,
-                                      lineToXYZ=lineToXYZ.array,
+            return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.asENU(),
+                                      lineToXYZ=lineToXYZ.asENU(),
                                       lineWidth=lineWidth,
                                       lineColorRGB=lineColorRGB,
                                       replaceItemUniqueId=replaceItemUniqueId)
@@ -129,7 +129,7 @@ class PybulletAPI:
                 cameraDistance=camera_info[10],
                 cameraYaw=camera_info[8],
                 cameraPitch=camera_info[9],
-                cameraTargetPosition=position.array
+                cameraTargetPosition=position.asENU()
             )
 
     @staticmethod
@@ -137,26 +137,44 @@ class PybulletAPI:
 
         position, orientation = p.getBasePositionAndOrientation(objectUniqueId)
 
-        return Vec3(position), Quaternion(orientation)
+        return Vec3.fromENU(position), Quaternion.fromENU(orientation)
 
     @staticmethod
-    def resetBasePositionAndOrientation(objectUniqueId: int, posObj: List[float], ornObj: List[float]):
-        p.resetBasePositionAndOrientation(objectUniqueId, posObj, ornObj)
+    def resetBasePositionAndOrientation(objectUniqueId: int, posObj: Vec3 = None, ornObj: Quaternion = None):
+        if posObj is None:
+            posObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[0]
+        if ornObj is None:
+            ornObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[1]
+
+        p.resetBasePositionAndOrientation(objectUniqueId, posObj.asENU(), ornObj.asENU())
 
     @staticmethod
     def getBaseVelocity(objectUniqueId: int) -> Tuple[Vec3, Vec3]:
+        """
+        Gets the velocity and angular velocity of an object.
+        :param objectUniqueId: Id of the object.
+        :return: Tuple with velocity and angular velocity.
+        """
         linearVelocity, angularVelocity = p.getBaseVelocity(objectUniqueId)
-        return Vec3(linearVelocity), Vec3(angularVelocity)
+        return Vec3.fromENU(linearVelocity), Vec3.fromENU(angularVelocity)
 
     @staticmethod
-    def resetBaseVelocity(objectUniqueId: int, linearVelocity: List[float], angularVelocity: List[float]):
-        p.resetBaseVelocity(objectUniqueId, linearVelocity, angularVelocity)
+    def resetBaseVelocity(objectUniqueId: int, linearVelocity: Vec3, angularVelocity: Vec3):
+        p.resetBaseVelocity(objectUniqueId, linearVelocity.asENU(), angularVelocity.asENU())
 
     @staticmethod
     def applyExternalForce(objectUniqueId: int, forceObj: Vec3, posObj: Vec3, frame: Frame):
         assert isinstance(forceObj, Vec3) and isinstance(posObj, Vec3)
 
-        p.applyExternalForce(objectUniqueId, -1, forceObj.array, posObj.array, frame.value)
+        p.applyExternalForce(objectUniqueId, -1, forceObj.asENU(), posObj.asENU(), frame.value)
+
+    @staticmethod
+    def createVisualSphere(radius, rgbaColor):
+        sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
+        return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
+
+    # @staticmethod
+    # def createMultiBody()
 
     @staticmethod
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):

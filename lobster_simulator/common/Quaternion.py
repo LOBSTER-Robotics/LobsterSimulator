@@ -1,25 +1,30 @@
-from typing import Any, List, Union
+from typing import Any, List, Union, Tuple
 
 import numpy as np
 
 from lobster_simulator.common.general_exceptions import InputDimensionError
 
+
 class Quaternion:
 
-    def __init__(self, data: Any):
+    def __init__(self, data: Union[List[float], Tuple[float, float, float, float], np.ndarray]):
         """
         Creates a quaternion from a data array
         :param data: Array with length 4 in the form [x, y, z, w]
         """
+        if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple)):
+            raise TypeError(
+                f"A Quaternion needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
+
         self._data: np.ndarray = np.asarray(data)
 
         if self._data.shape[0] != 4:
             raise InputDimensionError("A Quaternion needs an input array of length 4")
 
     @staticmethod
-    def fromNWE(quaternion: Union['Quaternion', List[float], np.ndarray]) -> 'Quaternion':
+    def fromENU(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
         """
-        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the NWU coordinate system
+        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the ENU coordinate system
         :param quaternion: Quaternion or array that represents a quaternion
         :return: Quaternion in the NED coordinate system
         """
@@ -35,10 +40,20 @@ class Quaternion:
             quaternion[1] = -quaternion[1]
             quaternion[2] = -quaternion[2]
             return Quaternion(quaternion)
+        elif isinstance(quaternion, Tuple):
+            quaternion: Tuple[float, float, float, float] = (float( quaternion[0]),
+                                                             float(-quaternion[1]),
+                                                             float(-quaternion[2]),
+                                                             float( quaternion[3]))
+            return Quaternion(quaternion)
 
         raise TypeError(f"Can only create NED quaternion from quaternion of array, not {type(quaternion)}")
 
-    def toNWE(self) -> np.ndarray:
+    @property
+    def array(self):
+        return self._data
+
+    def asENU(self) -> np.ndarray:
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import UUV
+    from lobster_simulator.robot.AUV import AUV
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.tools.Constants import GRAVITY
@@ -20,7 +20,7 @@ class DepthSensor(Sensor):
     _DENSITY_SALTWATER = 1029
     _OFFSET = 0
 
-    def __init__(self, robot: UUV, position, orientation, time_step, saltwater=False):
+    def __init__(self, robot: AUV, position, orientation, time_step, saltwater=False):
         if saltwater:
             self._water_density = self._DENSITY_SALTWATER
         else:
