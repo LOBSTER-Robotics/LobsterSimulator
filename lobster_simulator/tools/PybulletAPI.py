@@ -7,6 +7,7 @@ from typing import List, Tuple, TYPE_CHECKING
 
 import pybullet as p
 import pybullet_data
+from pkg_resources import resource_filename
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
@@ -41,8 +42,8 @@ class PybulletAPI:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
-        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
+        self.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 115]))
+        # self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui
@@ -180,7 +181,7 @@ class PybulletAPI:
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
         assert isinstance(torqueObj, Vec3)
 
-        p.applyExternalForce(objectUniqueId, -1, torqueObj.array, frame.value)
+        p.applyExternalTorque(objectUniqueId, -1, torqueObj.array, flags=frame.value)
 
     @staticmethod
     def disconnect():

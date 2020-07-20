@@ -26,8 +26,13 @@ class AUV:
 
         self._center_of_volume = config['center_of_volume']
 
+        self.dampening_matrix: np.ndarray = np.diag(config['dampening_matrix_diag'])
+
+        print("dampening matrix", self.dampening_matrix)
+
+
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 2]),
+                                        Vec3([0, 0, 90]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         config_motors = config['motors']
@@ -119,7 +124,9 @@ class AUV:
         #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
         #                                frame=Frame.WORLD_FRAME)
 
-        self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
+        self.apply_dampening()
+
+        # self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)
@@ -183,21 +190,23 @@ class AUV:
 
         PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
 
-    def apply_translational_drag(self):
+    def apply_dampening(self):
         velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
+        angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
 
         drag_force = Vec3([0, 0, 0])
 
         # TODO: Calculate drag
+        print(self.dampening_matrix)
+        print(np.concatenate((velocity.array, angular_velocity.array)))
 
-        PybulletAPI.applyExternalForce(self._id, forceObj=drag_force, posObj=Vec3([0, 0, 0]), frame=Frame.LINK_FRAME)
+        dampening = np.dot(self.dampening_matrix, np.concatenate((velocity.array, angular_velocity.array)))
 
-    def apply_rotational_drag(self):
+        # print("drag", drag)
+        linear_dampening_force = Vec3(dampening[:3])
+        angular_dampening_torque = Vec3(dampening[3:])
 
-        angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
+        PybulletAPI.applyExternalForce(self._id, forceObj=linear_dampening_force, posObj=Vec3([0, 0, 0]), frame=Frame.LINK_FRAME)
+        PybulletAPI.applyExternalTorque(self._id, torqueObj=angular_dampening_torque, frame=Frame.LINK_FRAME)
 
-        drag_torque = Vec3([0, 0, 0])
 
-        # TODO: Calculate drag
-
-        PybulletAPI.applyExternalTorque(self._id, torqueObj=drag_torque, frame=Frame.LINK_FRAME)
