@@ -13,9 +13,11 @@ class DebugLine:
     """
     _MAX_UPDATE_FREQUENCY = 0.03
 
-    def __init__(self, from_location: Vec3 = None, to_location: Vec3 = None, width=5, color=None):
+    def __init__(self, from_location: Vec3 = None, to_location: Vec3 = None, width=5, color=None, parentIndex=-1):
         if color is None:
             color = [1, 0, 0]
+
+        self.parentIndex = parentIndex
 
         if from_location is None:
             from_location = Vec3([0, 0, 0])
@@ -37,8 +39,9 @@ class DebugLine:
         if not self.can_update():
             return
         if frame_id:
-            from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
-            to_location = Translation.vec3_local_to_world_id(frame_id, to_location)
+            # from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
+            # to_location = Translation.vec3_local_to_world_id(frame_id, to_location)
+            self.parentIndex = frame_id
 
         if color:
             self._color = color
@@ -57,6 +60,7 @@ class DebugLine:
                                             lineToXYZ=to_location,
                                             lineWidth=self._width,
                                             lineColorRGB=self._color,
+                                            parentObjectUniqueId=self.parentIndex,
                                             replaceItemUniqueId=self._id)
 
 

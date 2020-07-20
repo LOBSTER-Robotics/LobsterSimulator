@@ -64,9 +64,9 @@ class DVL(Sensor):
             result = PybulletAPI.rayTest(self.get_position(), world_endpoint)
 
             if result[0] >= 0.5:
-                self.beamVisualizers[i].update(self.get_position(), world_endpoint, color=[1, 0, 0])
+                self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], frame_id=self._robot._id)
             else:
-                self.beamVisualizers[i].update(self.get_position(), world_endpoint, color=[0, 1, 0])
+                self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=[0, 1, 0], frame_id=self._robot._id)
 
             altitudes.append(result[0] * 100)
 
@@ -131,8 +131,8 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-        if self._queue:
-            print(self._queue)
+        # if self._queue:
+        #     print(self._queue)
 
     def _get_real_values(self, dt: SimulationTime) -> List[Vec3]:
         location = self._robot.get_position()

@@ -1,5 +1,6 @@
 import json
 import math
+import time
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
@@ -40,6 +41,8 @@ def main(gui=True, tcp=False):
 
     paused = False
 
+    start_time = time.time()
+    cycles = 0
     while True:
         keys = PybulletAPI.getKeyboardEvents()
         if ord('q') in keys and keys[ord('q')] & PybulletAPI.KEY_WAS_TRIGGERED:
@@ -73,6 +76,10 @@ def main(gui=True, tcp=False):
             simulator.get_robot().set_desired_rpm_motors(rpm_motors)
 
             simulator.do_step()
+
+            print(f"{cycles/(time.time()-start_time):.0f}")
+            cycles+=1
+
 
     PybulletAPI.disconnect()
 

@@ -27,6 +27,11 @@ class AUV:
 
         self._center_of_volume = config['center_of_volume']
 
+        self.dampening_matrix: np.ndarray = np.diag(config['dampening_matrix_diag'])
+
+        print("dampening matrix", self.dampening_matrix)
+
+
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
                                         Vec3([0, 0, 80]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
@@ -123,6 +128,8 @@ class AUV:
         # PybulletAPI.applyExternalForce(objectUniqueId=self._id,
         #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
         #                                frame=Frame.WORLD_FRAME)
+
+        # self.apply_dampening()
 
         self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
