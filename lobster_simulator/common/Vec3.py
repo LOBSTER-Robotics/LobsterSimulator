@@ -4,10 +4,14 @@ from typing import Any, Union, List, TYPE_CHECKING, Tuple
 import numpy as np
 
 from lobster_simulator.common.Quaternion import Quaternion
-from lobster_simulator.common.general_exceptions import InputDimensionError, InvalidArgumentTypeError
+from lobster_simulator.common.general_exceptions import InputDimensionError
 
 
 class Vec3:
+    """
+    Data class that stores 3 dimensional vectors. The vectors should always be stored in the NED coordinate system, if
+    if there ar
+    """
 
     def __init__(self, data: Union[List[float], Tuple[float, float, float], np.ndarray]):
         """
@@ -16,7 +20,7 @@ class Vec3:
         """
 
         if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple)):
-            raise InvalidArgumentTypeError(
+            raise TypeError(
                 f"A Vec3 needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
 
         self._data: np.ndarray = np.asarray(data)
@@ -24,11 +28,16 @@ class Vec3:
         if self._data.shape[0] != 3:
             raise InputDimensionError("A Vec3 needs an input array of length 3")
         elif self._data.dtype != float and self._data.dtype != int:
-            raise InvalidArgumentTypeError(
+            raise TypeError(
                 f"A Vec3 needs to be instantiated by an array of floats, not an array of {self._data.dtype}")
 
     @staticmethod
     def fromENU(vector: Union['Vec3', List[float], Tuple[float, float, float], np.ndarray]):
+        """
+        Takes a vector in from the ENU coordinate system and converts it to the NED coordinate system.
+        :param vector: Vector in the ENU coordinate system.
+        :return: Vector in the NED coordinate system.
+        """
         if isinstance(vector, Vec3):
             # Negating the Y and Z axes
             vector._data[1] = -vector._data[1]
@@ -46,6 +55,10 @@ class Vec3:
         raise TypeError(f"Can only create NED vector from Vec3 of array, not {type(vector)}")
 
     def asENU(self) -> np.ndarray:
+        """
+        Transforms the vector to the ENU coordinate system.
+        :return: Vector in the ENU coordinate system.
+        """
         # Swapping the Y and Z axes
         array = self._data.copy()
         array[1] = -array[1]
@@ -57,9 +70,19 @@ class Vec3:
         return self._data
 
     def rotate(self, quaternion: Quaternion) -> 'Vec3':
+        """
+        Rotates the vector by the given quaternion.
+        :param quaternion: Rotation
+        :return: Rotated vector
+        """
         return Vec3(quaternion.get_rotation_matrix().dot(self._data))
 
     def rotate_inverse(self, quaternion: Quaternion) -> 'Vec3':
+        """
+        Inversely rotates the vector by the given quaternion.
+        :param quaternion: Rotation
+        :return: Rotated vector
+        """
         return Vec3(quaternion.get_inverse_rotation_matrix().dot(self._data))
 
     def __add__(self, other):
@@ -69,7 +92,7 @@ class Vec3:
             to_return = other + self._data
             return Vec3(to_return)
 
-        raise InvalidArgumentTypeError(f"A {type(other)} cannot be added to a Vec3")
+        raise TypeError(f"A {type(other)} cannot be added to a Vec3")
 
     def __radd__(self, other):
         if isinstance(other, np.ndarray):
@@ -78,13 +101,13 @@ class Vec3:
         elif isinstance(other, float):
             return Vec3(other + self._data)
 
-        raise InvalidArgumentTypeError(f"A Vec3 cannot be added to a {type(other)}]")
+        raise TypeError(f"A Vec3 cannot be added to a {type(other)}]")
 
     def __sub__(self, other) -> 'Vec3':
         if isinstance(other, Vec3):
             return Vec3(self._data - other._data)
 
-        raise InvalidArgumentTypeError(f"A {type(other)} cannot be subtracted from a Vec3")
+        raise TypeError(f"A {type(other)} cannot be subtracted from a Vec3")
 
     def __rsub__(self, other):
         return other - self._data
@@ -95,13 +118,13 @@ class Vec3:
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
 
-        raise InvalidArgumentTypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
+        raise TypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
 
     def __truediv__(self, other):
         if isinstance(other, float) or isinstance(other, int):
             return Vec3(self._data / other)
 
-        raise InvalidArgumentTypeError(f"A Vec3 cannot be divided by a {type(other)}")
+        raise TypeError(f"A Vec3 cannot be divided by a {type(other)}")
 
     def __getitem__(self, key):
         return self._data[key]

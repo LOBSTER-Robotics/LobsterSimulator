@@ -5,10 +5,6 @@ class ArgumentNoneError(Exception):
     pass
 
 
-class InvalidArgumentTypeError(Exception):
-    pass
-
-
 class InputDimensionError(Exception):
     """
     Raised when the size of the input dimension is correct
