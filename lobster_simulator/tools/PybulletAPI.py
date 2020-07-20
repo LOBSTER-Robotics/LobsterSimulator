@@ -34,9 +34,18 @@ class PybulletAPI:
 
         self._physics_client_id = -1
         if gui:
-            self._physics_client_id = p.connect(p.GUI)
+            self._physics_client_id = p.connect(p.GUI_SERVER)
+            p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
+
         else:
             self._physics_client_id = p.connect(p.DIRECT)
+
+        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
