@@ -1,3 +1,4 @@
+from lobster_simulator.common import Vec3
 from typing import List
 
 import time
@@ -22,7 +23,7 @@ class DebugLine:
         self._id = self._add_debug_line(from_location, to_location)
         self._latest_update_time = time.time()
 
-    def update(self, from_location: List[float], to_location: List[float], frame_id: int = None) -> None:
+    def update(self, from_location: Vec3, to_location: Vec3, frame_id: int = None) -> None:
         """
         Update the pose of the debug line.
         """
@@ -35,15 +36,26 @@ class DebugLine:
         self._id = self._add_debug_line(from_location, to_location)
         self._latest_update_time = time.time()
 
+
     def can_update(self) -> bool:
         """
         Checks if time has passed to allow a new debug line to be created.
         """
         return time.time() - self._latest_update_time > self._MAX_UPDATE_FREQUENCY
 
+
     def _add_debug_line(self, from_location, to_location) -> int:
         return PybulletAPI.addUserDebugLine(lineFromXYZ=from_location,
-                                  lineToXYZ=to_location,
-                                  lineWidth=self._width,
-                                  lineColorRGB=self._color,
-                                  replaceItemUniqueId=self._id)
+                                            lineToXYZ=to_location,
+                                            lineWidth=self._width,
+                                            lineColorRGB=self._color,
+                                            replaceItemUniqueId=self._id)
+
+
+class DebugSphere:
+
+    def __init__(self, radius, rgba_color):
+        self.sphereId = PybulletAPI.createVisualSphere(radius, rgba_color)
+
+    def update_position(self, position: Vec3):
+        PybulletAPI.resetBasePositionAndOrientation(self.sphereId, posObj=position)
