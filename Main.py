@@ -1,3 +1,4 @@
+import argparse
 import json
 
 from control.HighLevelController import HighLevelController
@@ -15,7 +16,13 @@ def read_config():
     return config
 
 
-def main(gui=True, tcp=False):
+def main():
+
+    parser = argparse.ArgumentParser("Learning to See in the Dark PyTorch")
+    parser.add_argument('--gui', type=bool, help='Run with or without GUI')
+    args = parser.parse_args()
+
+    gui = args.gui
 
     time_step = 4000
 
@@ -74,4 +81,8 @@ def main(gui=True, tcp=False):
             simulator.do_step()
 
     PybulletAPI.disconnect()
+
+
+if __name__ == '__main__':
+    main()
 
