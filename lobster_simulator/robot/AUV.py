@@ -96,10 +96,14 @@ class AUV:
         # Apply forces for the  facing motors
         for i in range(self._motor_count):
             self._motors[i].apply_thrust()
-            self._motor_debug_lines[i].update(self._motors[i]._position,
-                                              self._motors[i]._position
-                                              + self._motors[i]._direction * self._motors[i].get_thrust() / 100.0,
-                                              self._id)
+
+            # Update debug lines in a max frequency. Check the first line if it can be updated.
+            if self._motor_debug_lines[0].can_update():
+                for i in range(self._motor_count):
+                    self._motor_debug_lines[i].update(self._motors[i]._position,
+                                                      self._motors[i]._position
+                                                      + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
+                                                      self._id)
 
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
