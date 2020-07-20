@@ -95,10 +95,14 @@ class UUV:
         # Apply forces for the  facing motors
         for i in range(self._motor_count):
             self._motors[i].apply_thrust()
-            self._motor_debug_lines[i].update(self._motors[i]._position,
-                                              self._motors[i]._position
-                                              + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
-                                              self._id)
+
+        # Update debug lines in a max frequency. Check the first line if it can be updated.
+        if self._motor_debug_lines[0].can_update():
+            for i in range(self._motor_count):
+                self._motor_debug_lines[i].update(self._motors[i]._position,
+                                                  self._motors[i]._position
+                                                  + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
+                                                  self._id)
 
         # Determine the point where the buoyancy force acts on the robot
         buoyancy_force_pos = np.reshape(np.array(PybulletAPI.getMatrixFromQuaternion(lobster_orn)), (3, 3)).dot(

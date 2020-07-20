@@ -1,16 +1,16 @@
 from typing import List
 
-import pybullet as p
 import time
 
 from lobster_simulator.tools import Translation
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 
 class DebugLine:
     """
     Class used to create a debug line in the GUI.
     """
-    _MAX_UPDATE_FREQUENCY = 0.05
+    _MAX_UPDATE_FREQUENCY = 0.03
 
     def __init__(self, from_location: List[float], to_location: List[float], width: float = 5, color: List[int] = None):
         if color is None:
@@ -42,7 +42,7 @@ class DebugLine:
         return time.time() - self._latest_update_time > self._MAX_UPDATE_FREQUENCY
 
     def _add_debug_line(self, from_location, to_location) -> int:
-        return p.addUserDebugLine(lineFromXYZ=from_location,
+        return PybulletAPI.addUserDebugLine(lineFromXYZ=from_location,
                                   lineToXYZ=to_location,
                                   lineWidth=self._width,
                                   lineColorRGB=self._color,
