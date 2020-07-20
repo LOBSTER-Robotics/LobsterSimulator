@@ -53,7 +53,6 @@ class PybulletAPI:
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
         self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
-        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui
