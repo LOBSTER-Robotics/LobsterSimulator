@@ -1,9 +1,11 @@
-from typing import Tuple, List
+from typing import List
 
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.Translation import *
+
+import numpy as np
 
 
 class HighLevelController:

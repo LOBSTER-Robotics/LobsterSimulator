@@ -2,7 +2,7 @@ from typing import Any, List, Union, Tuple
 
 import numpy as np
 
-from lobster_simulator.common.general_exceptions import InputDimensionError, InvalidArgumentTypeError
+from lobster_simulator.common.general_exceptions import InputDimensionError
 
 
 class Quaternion:
@@ -13,7 +13,7 @@ class Quaternion:
         :param data: Array with length 4 in the form [x, y, z, w]
         """
         if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple)):
-            raise InvalidArgumentTypeError(
+            raise TypeError(
                 f"A Quaternion needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
 
         self._data: np.ndarray = np.asarray(data)
@@ -24,7 +24,7 @@ class Quaternion:
     @staticmethod
     def fromENU(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
         """
-        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the NWU coordinate system
+        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the ENU coordinate system
         :param quaternion: Quaternion or array that represents a quaternion
         :return: Quaternion in the NED coordinate system
         """

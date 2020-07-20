@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import numpy as np
 from typing import List, TYPE_CHECKING
 
 from lobster_simulator.common.Calculations import *
@@ -12,6 +13,8 @@ from lobster_simulator.simulation_time import *
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.DebugVisualization import DebugLine
 from lobster_simulator.tools.Translation import *
+
+
 
 SEAFLOOR_DEPTH = 100  # meters
 

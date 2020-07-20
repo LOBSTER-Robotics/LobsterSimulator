@@ -8,14 +8,13 @@ from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 class CoordinateSystemConversionTest(unittest.TestCase):
 
-    @staticmethod
-    def test_conversion():
+    def test_conversion(self):
 
         # Creating random vector
         vec = Vec3(np.random.rand(3))
 
         # Creating random rotation
-        q = PybulletAPI.getQuaternionFromEuler(np.random.rand(3))
+        q = PybulletAPI.getQuaternionFromEuler(Vec3(np.random.rand(3)))
 
         # Rotate the vector by the rotation
         rotated_vec = vec.rotate(q)
@@ -32,9 +31,4 @@ class CoordinateSystemConversionTest(unittest.TestCase):
         # transform the rotated vector to the NED coordinate system
         rotated_vec_NED_transformed = Vec3.fromENU(rotated_vec)
 
-        print(rotated_vec_NED, rotated_vec_NED_transformed)
-
-        assert rotated_vec_NED == rotated_vec_NED_transformed
-
-
-
+        self.assertEqual(rotated_vec_NED, rotated_vec_NED_transformed)
