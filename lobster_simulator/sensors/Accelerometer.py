@@ -13,7 +13,7 @@ from lobster_simulator.tools.Translation import *
 
 class Accelerometer(Sensor):
 
-    GRAVITY_VEC = np.array([0, 0, GRAVITY])
+    GRAVITY_VEC = Vec3([0, 0, GRAVITY])
 
     def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
         self._previous_linear_velocity = Vec3([0, 0, 0])

@@ -1,11 +1,8 @@
-<<<<<<< HEAD:lobster_simulator/tools/DebugVisualization.py
 from lobster_simulator.common import Vec3
-=======
 from typing import List
 
 import time
 
->>>>>>> master:lobster_simulator/tools/DebugLine.py
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
