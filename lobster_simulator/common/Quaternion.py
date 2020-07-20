@@ -24,7 +24,7 @@ class Quaternion:
     @staticmethod
     def fromENU(quaternion: Union[List[float], Tuple[float, float, float, float], np.ndarray]) -> 'Quaternion':
         """
-        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the NWU coordinate system
+        Creates a quaternion in the NED coordinate system from a given array or Quaternion in the ENU coordinate system
         :param quaternion: Quaternion or array that represents a quaternion
         :return: Quaternion in the NED coordinate system
         """
