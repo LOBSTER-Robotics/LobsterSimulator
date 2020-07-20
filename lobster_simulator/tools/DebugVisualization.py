@@ -20,7 +20,7 @@ class DebugLine:
         self._width = width
         self._color = color
         self._id = -1
-        self._id = self._add_debug_line(from_location, to_location)
+        self._id = self._update_debug_line(from_location, to_location)
         self._latest_update_time = time.time()
 
     def update(self, from_location: Vec3, to_location: Vec3, frame_id: int = None) -> None:
@@ -33,9 +33,8 @@ class DebugLine:
             from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
             to_location = Translation.vec3_local_to_world_id(frame_id, to_location)
 
-        self._id = self._add_debug_line(from_location, to_location)
+        self._id = self._update_debug_line(from_location, to_location)
         self._latest_update_time = time.time()
-
 
     def can_update(self) -> bool:
         """
@@ -43,8 +42,7 @@ class DebugLine:
         """
         return time.time() - self._latest_update_time > self._MIN_UPDATE_INTERVAL
 
-
-    def _add_debug_line(self, from_location, to_location) -> int:
+    def _update_debug_line(self, from_location, to_location) -> int:
         return PybulletAPI.addUserDebugLine(lineFromXYZ=from_location,
                                             lineToXYZ=to_location,
                                             lineWidth=self._width,
