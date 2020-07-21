@@ -1,0 +1,32 @@
+<?xml version="0.0" ?>
+<robot name="terrain">
+  <link name="terrainLink">
+  <contact>
+      <lateral_friction value="1"/>
+  </contact>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value=".0"/>
+       <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0"
+              xyz="-100 -50 0"/>
+      <geometry>
+				<mesh filename="terrain.obj" scale="5 5 5"/>
+      </geometry>
+       <material name="dirt">
+        <color rgba="0.50196078431 0.22352941176 0.11764705882 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-100 -50 -10"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh filename="terrain.obj" scale="5 5 5"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
+

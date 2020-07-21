@@ -66,7 +66,7 @@ class Vec3:
         return array
 
     @property
-    def array(self):
+    def array(self) -> np.ndarray:
         return self._data
 
     def rotate(self, quaternion: Quaternion) -> 'Vec3':
