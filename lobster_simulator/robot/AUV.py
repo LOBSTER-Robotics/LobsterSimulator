@@ -28,9 +28,6 @@ class AUV:
 
         self.dampening_matrix: np.ndarray = np.diag(config['dampening_matrix_diag'])
 
-        print("dampening matrix", self.dampening_matrix)
-
-
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
                                         Vec3([0, 0, 90]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
@@ -43,7 +40,8 @@ class AUV:
                                                Vec3(config_motors[i]['position']),
                                                Vec3(config_motors[i]['direction'])))
 
-        PybulletAPI.changeDynamics(self._id, linearDamping=0.9, angularDamping=0.9)
+        # Set damping to zero, because default is not zero
+        PybulletAPI.changeDynamics(self._id, linearDamping=0.0, angularDamping=0.0)
 
         self._motor_debug_lines = list()
         self._motor_count = len(config_motors)
@@ -120,13 +118,9 @@ class AUV:
         # print(lobster_pos + buoyancy_force_pos, buoyancy_force_pos + lobster_pos)
 
         # Apply the buoyancy force
-        # PybulletAPI.applyExternalForce(objectUniqueId=self._id,
-        #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
-        #                                frame=Frame.WORLD_FRAME)
+        self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self.apply_dampening()
-
-        # self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)
@@ -176,7 +170,7 @@ class AUV:
 
         PybulletAPI.resetBasePositionAndOrientation(self._id, position, orientation)
 
-    def set_velocity(self, linear_velocity=None, angular_velocity=None) -> None:
+    def set_velocity(self, linear_velocity=None, angular_velocity=None, local_frame=False) -> None:
         """
         Sets the linear and/or angular velocity of the robot (should only be used for testing purposes).
         :param linear_velocity:
@@ -188,21 +182,18 @@ class AUV:
         if angular_velocity is None:
             angular_velocity = self.get_angular_velocity()
 
+        if local_frame:
+            linear_velocity = vec3_rotate_vector_to_world(self.get_orientation(), linear_velocity)
+            angular_velocity = vec3_rotate_vector_to_world(self.get_orientation(), angular_velocity)
+
         PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
 
     def apply_dampening(self):
         velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
         angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
 
-        drag_force = Vec3([0, 0, 0])
+        dampening = -np.dot(self.dampening_matrix, np.concatenate((velocity.array, angular_velocity.array)))
 
-        # TODO: Calculate drag
-        print(self.dampening_matrix)
-        print(np.concatenate((velocity.array, angular_velocity.array)))
-
-        dampening = np.dot(self.dampening_matrix, np.concatenate((velocity.array, angular_velocity.array)))
-
-        # print("drag", drag)
         linear_dampening_force = Vec3(dampening[:3])
         angular_dampening_torque = Vec3(dampening[3:])
 

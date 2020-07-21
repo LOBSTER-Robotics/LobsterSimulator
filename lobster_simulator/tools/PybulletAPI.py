@@ -42,7 +42,7 @@ class PybulletAPI:
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        self.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 115]))
+        self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
         # self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
@@ -181,7 +181,14 @@ class PybulletAPI:
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
         assert isinstance(torqueObj, Vec3)
 
-        p.applyExternalTorque(objectUniqueId, -1, torqueObj.array, flags=frame.value)
+        # There is a bug in Pybullet that the Link Frame and World frame are swapped when applying a torque to the
+        # base link of a robot (https://github.com/bulletphysics/bullet3/issues/1949)
+        if frame == Frame.WORLD_FRAME:
+            frame = Frame.LINK_FRAME
+        else:
+            frame = Frame.WORLD_FRAME
+
+        p.applyExternalTorque(objectUniqueId, -1, torqueObj.asENU(), flags=frame.value)
 
     @staticmethod
     def disconnect():
