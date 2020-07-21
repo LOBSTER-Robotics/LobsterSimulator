@@ -51,7 +51,6 @@ class DVL(Sensor):
     def update(self, time: SimulationTime):
 
         altitudes = list()
-        bottom_locks = list()
 
         for i in range(4):
             # The beam end points are multiplied by 2, to be able to handle the transition between not having a lock and
@@ -63,17 +62,17 @@ class DVL(Sensor):
 
             result = PybulletAPI.rayTest(self.get_position(), world_endpoint)
 
-            if result[0] >= 0.5:
-                self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], frame_id=self._robot._id)
-            else:
-                self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=[0, 1, 0], frame_id=self._robot._id)
-
             altitudes.append(result[0] * 100)
+
+            # Change the color of the beam visualizer only if the state of the lock changes.
+            if (self._previous_altitudes[i] >= 0.5) != (altitudes[i] >= 0.5):
+                color = [1, 0, 0] if altitudes[i] >= 0.5 else [0, 1, 0]
+                self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
+                                               frame_id=self._robot._id)
 
         # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
         current_altitude = float(np.mean(altitudes))
         current_velocity = self._robot.get_velocity()
-        bottom_lock = all(bottom_locks)
 
         self._queue = list()
 

@@ -15,7 +15,7 @@ class DebugLine:
 
     def __init__(self, from_location: Vec3 = None, to_location: Vec3 = None, width=5, color=None, parentIndex=-1):
         if color is None:
-            color = [1, 0, 0]
+            color = [1, 1, 1]
 
         self.parentIndex = parentIndex
 
