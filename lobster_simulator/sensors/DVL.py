@@ -28,7 +28,7 @@ MAXIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 4)))
 class DVL(Sensor):
 
     def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
-        self.beamVisualizers = [DebugLine(width=2) for _ in range(4)]
+        self.beamVisualizers = [DebugLine(width=2, parentIndex=robot._id) for _ in range(4)]
 
         angle = math.radians(22.5)
         beam_offset = 50 * math.tan(angle)
@@ -55,12 +55,18 @@ class DVL(Sensor):
         for i in range(4):
             # The beam end points are multiplied by 2, to be able to handle the transition between not having a lock and
             # having a lock
-            local_endpoint = vec3_local_to_world(self._sensor_position, self._sensor_orientation,
-                                                 2 * self.beam_end_points[i])
-            world_endpoint = vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(),
-                                                 local_endpoint)
+            # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
+            # smoothly interpolate between the transition between not having a lock and having a lock
+            raytest_endpoint = 2 * self.beam_end_points[i]
 
-            result = PybulletAPI.rayTest(self.get_position(), world_endpoint)
+            auv_frame_endpoint = vec3_local_to_world(self._sensor_position, self._sensor_orientation,
+                                                     raytest_endpoint)
+            world_frame_endpoint = vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(),
+                                                       auv_frame_endpoint)
+
+            result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
+
+            print(result[0])
 
             altitudes.append(result[0] * 100)
 

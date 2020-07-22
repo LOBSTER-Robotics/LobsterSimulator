@@ -2,6 +2,8 @@ import json
 import math
 import time
 
+from pkg_resources import resource_filename
+
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.Constants import *
@@ -23,6 +25,8 @@ def main(gui=True, tcp=False):
 
     simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
+    PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
+
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
         desired_pos_sliders = [
@@ -31,7 +35,7 @@ def main(gui=True, tcp=False):
             PybulletAPI.addUserDebugParameter("desired z", 0, 100, 10)
         ]
         roll_rate_slider = PybulletAPI.addUserDebugParameter("rate ROLL", -10, 10, 0)
-        debug_line = DebugLine(Vec3([0, 0, 0]), simulator.robot.get_position(), 5)
+        debug_line = DebugLine(Vec3([0, 0, 0]), simulator.robot.get_position(), 5, color=[1, 0, 0])
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
@@ -77,7 +81,7 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
-            print(f"{cycles/(time.time()-start_time):.0f}")
+            # print(f"{cycles/(time.time()-start_time):.0f}")
             cycles+=1
 
 

@@ -33,7 +33,7 @@ class AUV:
 
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 80]),
+                                        Vec3([0, 0, 90]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         config_motors = config['motors']
