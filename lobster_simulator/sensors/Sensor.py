@@ -98,7 +98,7 @@ class Sensor(ABC):
 
         self.noise_stds = noise_stds
 
-    def apply_noise(self, values):
+    def _apply_noise(self, values):
         """Applies the noise of the sensor to the output values"""
 
 
