@@ -25,28 +25,34 @@ class DebugLine:
         if to_location is None:
             to_location = Vec3([0, 0, 0])
 
+        self.from_location = from_location
+        self.to_location = to_location
+
         self._width = width
         self._color = color
 
         self._id = -1
-        self._id = self._add_debug_line(from_location, to_location)
+        self._id = self._update_debug_line()
         self._latest_update_time = 0
 
-    def update(self, from_location: Vec3, to_location: Vec3, frame_id: int = None, color=None) -> None:
+    def update(self, from_location: Vec3 = None, to_location: Vec3 = None, frame_id: int = None, color=None) -> None:
         """
         Update the pose of the debug line.
         """
+        if from_location:
+            self.from_location = from_location
+        if to_location:
+            self.to_location = to_location
+
         if not self.can_update():
             return
         if frame_id:
-            # from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
-            # to_location = Translation.vec3_local_to_world_id(frame_id, to_location)
             self.parentIndex = frame_id
 
         if color:
             self._color = color
 
-        self._id = self._add_debug_line(from_location, to_location)
+        self._id = self._update_debug_line()
         self._latest_update_time = time.time()
 
     def can_update(self) -> bool:
@@ -55,9 +61,9 @@ class DebugLine:
         """
         return time.time() - self._latest_update_time > self._MAX_UPDATE_FREQUENCY
 
-    def _add_debug_line(self, from_location, to_location) -> int:
-        return PybulletAPI.addUserDebugLine(lineFromXYZ=from_location,
-                                            lineToXYZ=to_location,
+    def _update_debug_line(self) -> int:
+        return PybulletAPI.addUserDebugLine(lineFromXYZ=self.from_location,
+                                            lineToXYZ=self.to_location,
                                             lineWidth=self._width,
                                             lineColorRGB=self._color,
                                             parentObjectUniqueId=self.parentIndex,
