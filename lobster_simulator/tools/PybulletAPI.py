@@ -38,6 +38,9 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_KEYBOARD_SHORTCUTS, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         else:
             self._physics_client_id = p.connect(p.DIRECT)
 
