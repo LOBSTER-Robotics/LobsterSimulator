@@ -77,7 +77,7 @@ class PybulletAPI:
         return Quaternion.fromENU(p.getQuaternionFromEuler(euler_angle.asENU()))
 
     @staticmethod
-    def getEulerFromQuaternion(quaternion: Quaternion) -> Quaternion:
+    def getEulerFromQuaternion(quaternion: Quaternion) -> Vec3:
         return Vec3.fromENU(p.getEulerFromQuaternion(quaternion.asENU()))
 
     @staticmethod
@@ -149,6 +149,7 @@ class PybulletAPI:
             posObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[0]
         if ornObj is None:
             ornObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[1]
+
 
         p.resetBasePositionAndOrientation(objectUniqueId, posObj.asENU(), ornObj.asENU())
 

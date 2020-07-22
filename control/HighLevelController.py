@@ -1,11 +1,17 @@
 from typing import List
 
+from pkg_resources import resource_filename
+
+from lobster_simulator.robot.AUV import AUV
+from lobster_simulator.tools.DebugVisualization import DebugLine
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.Translation import *
 
 import numpy as np
+
+import pybullet as p
 
 
 class HighLevelController:
@@ -35,7 +41,7 @@ class HighLevelController:
         self.relative_pitch = 0
         self.relative_roll = 0
         self.target_rates = [0, 0, 0]
-        self.relative_desired_location = [0, 0, 0]
+        self.desired_pitch_yaw_vector = [0, 0, 0]
         self.rates = [0, 0, 0]
         self.gui = gui
 
@@ -44,22 +50,35 @@ class HighLevelController:
             self.upward_rpm_slider = PybulletAPI.addUserDebugParameter("upward rpm", -3700, 3900, 0)
             self.sideward_rpm_slider = PybulletAPI.addUserDebugParameter("sideward rpm", -3700, 3900, 0)
 
+        self.visualisation = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
+                                                                    "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
+        print(self.visualisation)
+
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, desired_location: Vec3, dt):
+    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3,
+               desired_location: Vec3, desired_orientation: Quaternion, dt):
 
-        self.relative_desired_location = Translation.vec3_world_to_local(
+        PybulletAPI.resetBasePositionAndOrientation(self.visualisation, position, desired_orientation)
+
+        self.desired_pitch_yaw_vector = Translation.vec3_world_to_local(
             position,
             orientation,
             desired_location
         )
 
-        print(PybulletAPI.getEulerFromQuaternion(quaternion=orientation))
+        self.desired_pitch_yaw_vector = Vec3([1, 0, 0]).rotate(desired_orientation).rotate_inverse(orientation)
 
 
-        self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
-        self.relative_yaw = -np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
+        print(p.getAxisAngleFromQuaternion(desired_orientation.array))
+        print(p.getAxisDifferenceQuaternion(orientation.array, desired_orientation.array))
+        print(self.desired_pitch_yaw_vector)
+        print()
+
+        self.relative_pitch = np.arctan2(self.desired_pitch_yaw_vector[1], self.desired_pitch_yaw_vector[0])
+        self.relative_yaw = -np.arctan2(self.desired_pitch_yaw_vector[2], self.desired_pitch_yaw_vector[0])
+
         self.relative_roll = -PybulletAPI.getEulerFromQuaternion(quaternion=orientation)[0]
 
         self.orientation_pids[PITCH].update(self.relative_pitch, dt)

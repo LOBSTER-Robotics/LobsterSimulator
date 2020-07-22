@@ -7,6 +7,7 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.tools.DebugVisualization import DebugLine
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
