@@ -53,7 +53,8 @@ class AUV:
         for i in range(self._motor_count):
             self._rpm_motors.append(0)
             self._desired_rpm_motors.append(0)
-            self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position))
+            self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position,
+                                                     parentIndex=self._id, color=[0, 0, 1]))
 
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
