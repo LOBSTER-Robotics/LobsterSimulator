@@ -14,8 +14,8 @@ MAGNETIC_FIELD = [1, 0, 0]
 
 class Gyroscope(Sensor):
 
-    def __init__(self, robot: AUV, position: np.array, orientation: np.array, time_step: SimulationTime):
-        super().__init__(robot, position, orientation, time_step)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
+        super().__init__(robot, position, time_step, orientation)
 
     def _get_real_values(self, dt: SimulationTime):
         rotation = self._robot.get_angular_velocity()
@@ -24,7 +24,7 @@ class Gyroscope(Sensor):
         robot_rotation = vec3_rotate_vector_to_local(self._robot.get_orientation(), rotation)
 
         # Rotate rotational velocity to sensor reference frame
-        sensor_rotation = vec3_rotate_vector_to_local(self._sensor_orientation, rotation)
+        sensor_rotation = vec3_rotate_vector_to_local(self._sensor_orientation, robot_rotation)
 
         return [sensor_rotation]
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 import numpy as np
 
 from lobster_simulator.common.Calculations import interpolate
@@ -19,7 +19,8 @@ from lobster_simulator.simulation_time import SimulationTime
 
 class Sensor(ABC):
 
-    def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion,
+                 noise_stds = None):
         """
         Parameters
         ----------
@@ -39,6 +40,8 @@ class Sensor(ABC):
         self._sensor_position: Vec3 = position
         self._sensor_orientation: Quaternion = orientation
         self._time_step = time_step
+
+        self.noise_stds = noise_stds
 
         self._queue = list()
 
@@ -73,13 +76,31 @@ class Sensor(ABC):
                 #         self._next_sample_time - self._previous_update_time).microseconds
 
                 # print(value_output, real_values[i], self.previous_real_value[i])
+
+                if self.noise_stds:
+                    value += np.random.normal(0, self.noise_stds[i])
+
                 value_outputs.append(value)
+
+            if self.noise_stds:
+                for i in range(len(self.noise_stds)):
+                    value_outputs[i] += np.random.normal(0, self.noise_stds[i])
 
             self._queue.append(value_outputs)
             self._next_sample_time += self._time_step
 
         self._previous_real_value = real_values
         self._previous_update_time = SimulationTime(time.microseconds)
+
+    def set_noise(self, noise_stds: Union[List[float], float]):
+        if not isinstance(noise_stds, List):
+            noise_stds = [noise_stds]
+
+        self.noise_stds = noise_stds
+
+    def apply_noise(self, values):
+        """Applies the noise of the sensor to the output values"""
+
 
     def pop_next_value(self):
         if len(self._queue) == 0:

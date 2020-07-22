@@ -58,11 +58,11 @@ class AUV:
 
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
-        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), None, SimulationTime(4000))
+        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
+        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
+        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000))
+        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
+        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
 
         self._max_thrust = 100
         self._buoyancy = 550
@@ -132,6 +132,8 @@ class AUV:
         # self.apply_dampening()
 
         self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
+
+        print(self._depth_sensor.get_pressure(), self._depth_sensor.get_last_value())
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)

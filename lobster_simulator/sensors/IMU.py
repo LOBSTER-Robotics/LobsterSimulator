@@ -18,7 +18,7 @@ class IMU(Sensor):
 
     def __init__(self, robot: AUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
         self._previous_linear_velocity = np.array([0, 0, 0])
-        super().__init__(robot, position, orientation, time_step)
+        super().__init__(robot, position, time_step, orientation)
 
     def update(self, time: SimulationTime):
         super().update(time)

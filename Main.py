@@ -81,6 +81,7 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
+
             # print(f"{cycles/(time.time()-start_time):.0f}")
             cycles+=1
 

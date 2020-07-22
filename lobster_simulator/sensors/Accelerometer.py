@@ -15,9 +15,9 @@ class Accelerometer(Sensor):
 
     GRAVITY_VEC = Vec3([0, 0, GRAVITY])
 
-    def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
         self._previous_linear_velocity = Vec3([0, 0, 0])
-        super().__init__(robot, position, orientation, time_step)
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation)
 
     def update(self, time: SimulationTime):
         super().update(time)

@@ -25,8 +25,8 @@ MAXIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 4)))
 
 class DVL(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
-        super().__init__(robot, position, orientation, time_step)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
@@ -61,7 +61,7 @@ class DVL(Sensor):
 
             result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
 
-            altitudes.append(result[0] * 100)
+            altitudes.append(result[0] * 2 * MAXIMUM_ALTITUDE)
 
             # Change the color of the beam visualizer only if the state of the lock changes.
             if (self._previous_altitudes[i] >= MAXIMUM_ALTITUDE) != (altitudes[i] >= MAXIMUM_ALTITUDE):

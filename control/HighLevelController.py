@@ -55,9 +55,6 @@ class HighLevelController:
             desired_location
         )
 
-        print(PybulletAPI.getEulerFromQuaternion(quaternion=orientation))
-
-
         self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
         self.relative_yaw = -np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
         self.relative_roll = -PybulletAPI.getEulerFromQuaternion(quaternion=orientation)[0]

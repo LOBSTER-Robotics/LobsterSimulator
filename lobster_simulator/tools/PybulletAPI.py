@@ -77,7 +77,7 @@ class PybulletAPI:
         return Quaternion.fromENU(p.getQuaternionFromEuler(euler_angle.asENU()))
 
     @staticmethod
-    def getEulerFromQuaternion(quaternion: Quaternion) -> Quaternion:
+    def getEulerFromQuaternion(quaternion: Quaternion) -> Vec3:
         return Vec3.fromENU(p.getEulerFromQuaternion(quaternion.asENU()))
 
     @staticmethod
