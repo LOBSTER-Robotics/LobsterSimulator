@@ -14,8 +14,6 @@ from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.DebugVisualization import DebugLine
 from lobster_simulator.tools.Translation import *
 
-
-
 SEAFLOOR_DEPTH = 100  # meters
 
 MINIMUM_ALTITUDE = 0.05  # meters
@@ -28,16 +26,14 @@ MAXIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 4)))
 class DVL(Sensor):
 
     def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
-        self.beamVisualizers = [DebugLine(width=2, parentIndex=robot._id) for _ in range(4)]
+        super().__init__(robot, position, orientation, time_step)
+
+        self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
+                                    2 * MAXIMUM_ALTITUDE]
+        self._previous_velocity = Vec3([0, 0, 0])
 
         angle = math.radians(22.5)
         beam_offset = 50 * math.tan(angle)
-
-        self._previous_altitudes = [0, 0, 0, 0]
-        self._previous_velocity = Vec3([0, 0, 0])
-
-        print(beam_offset)
-
         self.beam_end_points = [
             Vec3([0, beam_offset, 50]),
             Vec3([0, -beam_offset, 50]),
@@ -45,7 +41,8 @@ class DVL(Sensor):
             Vec3([-beam_offset, 0, 50])
         ]
 
-        super().__init__(robot, position, orientation, time_step)
+        self.beamVisualizers = [DebugLine(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], width=2,
+                                          parentIndex=self._robot._id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
     def update(self, time: SimulationTime):
@@ -53,8 +50,6 @@ class DVL(Sensor):
         altitudes = list()
 
         for i in range(4):
-            # The beam end points are multiplied by 2, to be able to handle the transition between not having a lock and
-            # having a lock
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
             # smoothly interpolate between the transition between not having a lock and having a lock
             raytest_endpoint = 2 * self.beam_end_points[i]
@@ -66,24 +61,18 @@ class DVL(Sensor):
 
             result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
 
-            print(result[0])
-
             altitudes.append(result[0] * 100)
 
             # Change the color of the beam visualizer only if the state of the lock changes.
-            if (self._previous_altitudes[i] >= 0.5) != (altitudes[i] >= 0.5):
-                color = [1, 0, 0] if altitudes[i] >= 0.5 else [0, 1, 0]
+            if (self._previous_altitudes[i] >= MAXIMUM_ALTITUDE) != (altitudes[i] >= MAXIMUM_ALTITUDE):
+                color = [1, 0, 0] if altitudes[i] >= MAXIMUM_ALTITUDE else [0, 1, 0]
+
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot._id)
 
-        # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
-        current_altitude = float(np.mean(altitudes))
         current_velocity = self._robot.get_velocity()
 
         self._queue = list()
-
-        dt = time - self._previous_update_time
-        real_values = self._get_real_values(dt)
 
         while self._next_sample_time <= time:
             interpolated_altitudes = list()
@@ -100,6 +89,7 @@ class DVL(Sensor):
                                                     y1=self._previous_velocity,
                                                     y2=current_velocity)
 
+            # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
             average_interpolated_altitude = float(np.mean(interpolated_altitudes))
 
             interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
@@ -118,19 +108,16 @@ class DVL(Sensor):
                 }
             )
 
-
             # The timestep of the DVL depends on the altitude (higher altitude is lower frequency)
             time_step_micros = interpolate(average_interpolated_altitude,
                                            MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
                                            MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
-
+            time_step_micros = clip(time_step_micros, MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
             self._time_step = SimulationTime(int(time_step_micros))
 
             self._next_sample_time += self._time_step
-
-
 
         self._previous_update_time = SimulationTime(time.microseconds)
         self._previous_altitudes = altitudes

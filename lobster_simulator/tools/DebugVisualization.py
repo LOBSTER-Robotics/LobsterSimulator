@@ -30,7 +30,7 @@ class DebugLine:
 
         self._id = -1
         self._id = self._add_debug_line(from_location, to_location)
-        self._latest_update_time = time.time()
+        self._latest_update_time = 0
 
     def update(self, from_location: Vec3, to_location: Vec3, frame_id: int = None, color=None) -> None:
         """

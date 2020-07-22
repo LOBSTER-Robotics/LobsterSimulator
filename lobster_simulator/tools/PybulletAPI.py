@@ -38,16 +38,12 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
-
-            # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
         else:
             self._physics_client_id = p.connect(p.DIRECT)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        # self.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 115]))
-        # self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui

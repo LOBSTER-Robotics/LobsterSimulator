@@ -58,7 +58,6 @@ class AUV:
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
