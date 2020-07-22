@@ -11,19 +11,15 @@ from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 class QuaternionTest(unittest.TestCase):
 
-    # @staticmethod
-    # def test_multiply():
-    #     for _ in range(10):
-    #         vec = Vec3(np.random.rand(3))
-    #
-    #         rotation1 = PybulletAPI.getQuaternionFromEuler(np.random.rand(3) * 2 * math.pi)
-    #
-    #         rotation2 = PybulletAPI.getQuaternionFromEuler(np.random.rand(3) * 2 * math.pi)
-    #
-    #
-    #
-    #         numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.array))
-    #
-    #         rotate_method = vec.rotate(rotation)
-    #
-    #         assert numpy_method == rotate_method
+    @staticmethod
+    def test_multiply():
+        for _ in range(10):
+            vec = Vec3(np.random.rand(3))
+
+            rotation = PybulletAPI.getQuaternionFromEuler(Vec3(np.random.rand(3) * 2 * math.pi))
+
+            numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.array))
+
+            rotate_method = vec.rotate(rotation)
+
+            assert numpy_method == rotate_method
