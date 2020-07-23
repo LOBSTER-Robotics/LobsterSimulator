@@ -50,7 +50,7 @@ def main(gui=True, tcp=False):
     desired_location = simulator.robot.get_position()
     desired_orientation = [0.0, 0.0, 0.0]
 
-    terrain_loader = Terrain(10)
+    terrain_loader = Terrain(30)
 
     paused = False
 
@@ -67,17 +67,17 @@ def main(gui=True, tcp=False):
 
         desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
         if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
-            desired_location[Z] -= 0.003
+            desired_location[Z] -= 0.004
         if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
-            desired_location[Z] += 0.003
+            desired_location[Z] += 0.004
         if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
-            desired_location[X] += 0.003
+            desired_location[X] += 0.004
         if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
-            desired_location[X] -= 0.003
+            desired_location[X] -= 0.004
         if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
-            desired_location[Y] -= 0.003
+            desired_location[Y] -= 0.004
         if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
-            desired_location[Y] += 0.003
+            desired_location[Y] += 0.004
         desired_location = Translation.vec3_rotate_vector_to_world(lobster_orn, desired_location)
 
         if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
