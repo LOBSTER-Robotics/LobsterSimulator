@@ -1,18 +1,14 @@
 import copy
 
 import json
-import math
 import time as t
 
 from pkg_resources import resource_stream
 
-from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
-
-import pybullet as p
 
 class Models(Enum):
     SCOUT_ALPHA = auto()
@@ -85,9 +81,6 @@ class Simulator:
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
         PybulletAPI.moveCameraToPosition(self.robot.get_position())
-        # p.setVRCameraState(rootOrientation=p.getQuaternionFromEuler([math.pi, math.pi, 0]))
-        # p.rotateVector()
-
 
         self.robot.update(self._time_step, self._time)
 
@@ -95,9 +88,6 @@ class Simulator:
 
         self._cycle += 1
         if self._cycle % 50 == 0:
-            # print("test"+str(
-            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
-            #         t.perf_counter() - self.previous_update_real_time)))
             self._previous_update_time = copy.copy(self._time)
             self._previous_update_real_time = t.perf_counter()
 

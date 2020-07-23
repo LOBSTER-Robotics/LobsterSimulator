@@ -22,6 +22,9 @@ MAXIMUM_ALTITUDE = 50  # meters
 MINIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 26)))
 MAXIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 4)))
 
+RED = [1, 0, 0]
+GREEN = [0, 1, 0]
+
 
 class DVL(Sensor):
 
@@ -65,7 +68,7 @@ class DVL(Sensor):
 
             # Change the color of the beam visualizer only if the state of the lock changes.
             if (self._previous_altitudes[i] >= MAXIMUM_ALTITUDE) != (altitudes[i] >= MAXIMUM_ALTITUDE):
-                color = [1, 0, 0] if altitudes[i] >= MAXIMUM_ALTITUDE else [0, 1, 0]
+                color = RED if altitudes[i] >= MAXIMUM_ALTITUDE else GREEN
 
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot._id)
@@ -123,17 +126,5 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-        # if self._queue:
-        #     print(self._queue)
-
-    def _get_real_values(self, dt: SimulationTime) -> List[Vec3]:
-        location = self._robot.get_position()
-
-        distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
-
-        velocity = self._robot.get_velocity()
-
     def get_position(self):
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
-
-    # def get_orientation(self):

@@ -48,10 +48,11 @@ class Sensor(ABC):
 
     def update(self, time: SimulationTime):
         """
-
-        :param time: time in microseconds
-        :return:
+        Updates a sensor, by generating new outputs by interpolating between values on the current and previous time
+        step
+        :param time: Current time in the simulator
         """
+
         # Empty the queue to prevent it from growing too large.
         self._queue = list()
 
@@ -68,11 +69,6 @@ class Sensor(ABC):
                                     y1=self._previous_real_value[i],
                                     y2=real_values[i])
 
-                # value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
-                # value_output = self._previous_real_value[i] + value_dt * (
-                #         self._next_sample_time - self._previous_update_time).microseconds
-
-                # print(value_output, real_values[i], self.previous_real_value[i])
                 value_outputs.append(value)
 
             self._queue.append(value_outputs)
@@ -91,10 +87,10 @@ class Sensor(ABC):
         self._queue = list()
         return values
 
-    def get_sensor_position(self):
+    def get_sensor_position(self) -> Vec3:
         return self._sensor_position
 
-    def get_sensor_orientation(self):
+    def get_sensor_orientation(self) -> Quaternion:
         return self._sensor_orientation
 
     def get_last_value(self):
