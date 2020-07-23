@@ -27,6 +27,7 @@ class Vec3:
         if self._data.shape[0] != 3:
             raise InputDimensionError("A Vec3 needs an input array of length 3")
         elif self._data.dtype != float and self._data.dtype != int:
+            print(self._data)
             raise TypeError(
                 f"A Vec3 needs to be instantiated by an array of floats, not an array of {self._data.dtype}")
 

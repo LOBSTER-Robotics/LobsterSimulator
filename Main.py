@@ -6,6 +6,7 @@ from pkg_resources import resource_filename
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Terrain import Terrain
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -29,7 +30,7 @@ def main(gui=True, tcp=False):
 
     simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
-    PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
+    # PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
 
 
     # Only try to add debug sliders and visualisation when the gui is showing
@@ -46,8 +47,10 @@ def main(gui=True, tcp=False):
 
     high_level_controller = HighLevelController(gui)
 
-    desired_location = Vec3([0, 0, 90])
+    desired_location = simulator.robot.get_position()
     desired_orientation = [0.0, 0.0, 0.0]
+
+    terrain_loader = Terrain(10)
 
     paused = False
 
@@ -59,6 +62,8 @@ def main(gui=True, tcp=False):
             paused = not paused
 
         lobster_pos, lobster_orn = simulator.robot.get_position_and_orientation()
+
+        terrain_loader.update(lobster_pos)
 
         desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
         if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
