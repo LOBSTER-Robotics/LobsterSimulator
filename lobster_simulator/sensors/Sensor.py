@@ -94,7 +94,10 @@ class Sensor(ABC):
         return self._sensor_orientation
 
     def get_last_value(self):
-        return self._queue[-1]
+        if self._queue:
+            return self._queue[-1]
+
+        return None
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:
