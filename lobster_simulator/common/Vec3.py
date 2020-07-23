@@ -125,7 +125,7 @@ class Vec3:
         raise TypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
 
     def __rmul__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(x, numbers.Number):
             return Vec3(self._data * other)
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
