@@ -24,15 +24,20 @@ class Sensor(ABC):
         """
         Parameters
         ----------
-        pybullet_id : int
-            The pybullet id of the robot the sensor is attached to.
+        robot : AUV
+            The robot the sensor is attached to.
         position : array[3]
             The local position of the sensor on the robot.
         orientation : array[4]
             The orientation of the sensor on the robot as a quaternion.
         time_step : int
             The time step between two polls on the sensor in microseconds.
+        orientation : Quaternion
+            Orientation of the sensor w.r.t. the robot.
+        noise_stds :Union[List[float], float]
+            Number or list of numbers with the standard deviation for each of the outputs of the sensor.
         """
+        
         if orientation is None:
             orientation = PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0]))
 
