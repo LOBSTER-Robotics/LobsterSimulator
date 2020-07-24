@@ -45,10 +45,10 @@ def main(gui=True, tcp=False):
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
-    high_level_controller = HighLevelController(gui)
+    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]))
 
-    desired_location = simulator.robot.get_position()
-    desired_orientation = [0.0, 0.0, 0.0]
+    # desired_location = simulator.robot.get_position()
+    # desired_orientation = [0.0, 0.0, 0.0]
 
     terrain_loader = Terrain(30)
 
@@ -65,33 +65,33 @@ def main(gui=True, tcp=False):
 
         terrain_loader.update(lobster_pos)
 
-        desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
-        if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
-            desired_location[Z] -= 0.004
-        if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
-            desired_location[Z] += 0.004
-        if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
-            desired_location[X] += 0.004
-        if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
-            desired_location[X] -= 0.004
-        if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
-            desired_location[Y] -= 0.004
-        if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
-            desired_location[Y] += 0.004
-        desired_location = Translation.vec3_rotate_vector_to_world(lobster_orn, desired_location)
-
-        if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
-            desired_orientation[Z] -= 0.003
-        if ord('l') in keys and keys[ord('l')] == p.KEY_IS_DOWN:
-            desired_orientation[Z] += 0.003
-        if ord('u') in keys and keys[ord('u')] == p.KEY_IS_DOWN:
-            desired_orientation[X] -= 0.003
-        if ord('o') in keys and keys[ord('o')] == p.KEY_IS_DOWN:
-            desired_orientation[X] += 0.003
-        if ord('i') in keys and keys[ord('i')] == p.KEY_IS_DOWN:
-            desired_orientation[Y] -= 0.003
-        if ord('k') in keys and keys[ord('k')] == p.KEY_IS_DOWN:
-            desired_orientation[Y] += 0.003
+        # desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
+        # if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
+        #     desired_location[Z] -= 0.004
+        # if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
+        #     desired_location[Z] += 0.004
+        # if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
+        #     desired_location[X] += 0.004
+        # if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
+        #     desired_location[X] -= 0.004
+        # if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
+        #     desired_location[Y] -= 0.004
+        # if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
+        #     desired_location[Y] += 0.004
+        # desired_location = Translation.vec3_rotate_vector_to_world(lobster_orn, desired_location)
+        #
+        # if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
+        #     desired_orientation[Z] -= 0.003
+        # if ord('l') in keys and keys[ord('l')] == p.KEY_IS_DOWN:
+        #     desired_orientation[Z] += 0.003
+        # if ord('u') in keys and keys[ord('u')] == p.KEY_IS_DOWN:
+        #     desired_orientation[X] -= 0.003
+        # if ord('o') in keys and keys[ord('o')] == p.KEY_IS_DOWN:
+        #     desired_orientation[X] += 0.003
+        # if ord('i') in keys and keys[ord('i')] == p.KEY_IS_DOWN:
+        #     desired_orientation[Y] -= 0.003
+        # if ord('k') in keys and keys[ord('k')] == p.KEY_IS_DOWN:
+        #     desired_orientation[Y] += 0.003
 
         if not paused:
 
@@ -110,9 +110,7 @@ def main(gui=True, tcp=False):
             simulator.set_time_step(time_step)
 
             velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1],
-                                         desired_location,
-                                         PybulletAPI.getQuaternionFromEuler(Vec3(desired_orientation)), time_step/1000000)
+            high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1], time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
@@ -120,7 +118,7 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
-            # print(f"{cycles/(time.time()-start_time):.0f}")
+            print(f"{cycles/(time.time()-start_time):.0f}")
             cycles+=1
 
 

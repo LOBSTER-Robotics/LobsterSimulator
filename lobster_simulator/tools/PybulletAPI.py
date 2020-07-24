@@ -14,8 +14,12 @@ import numpy as np
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 
+
+if TYPE_CHECKING:
+    from lobster_simulator.robot.AUV import AUV
+
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.Constants import GRAVITY
+from lobster_simulator.tools.Constants import *
 
 
 class Frame(Enum):
@@ -128,15 +132,23 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: Vec3):
+    def moveCameraToAUV(robot: AUV, rotate=False):
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
 
+            if rotate:
+                orn = PybulletAPI.getEulerFromQuaternion(robot.get_orientation())
+                yaw = - orn[YAW] * 360 / (2*math.pi) - 90
+                pitch = orn[ROLL] * 360 / (2*math.pi) - 20
+            else:
+                yaw = camera_info[8]
+                pitch = camera_info[9]
+
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
-                cameraYaw=camera_info[8],
-                cameraPitch=camera_info[9],
-                cameraTargetPosition=position.asENU()
+                cameraYaw=yaw,
+                cameraPitch=pitch,
+                cameraTargetPosition=robot.get_position().asENU()
             )
 
     @staticmethod

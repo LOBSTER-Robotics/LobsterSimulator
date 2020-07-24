@@ -85,7 +85,7 @@ class Simulator:
         if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
-        PybulletAPI.moveCameraToPosition(self.robot.get_position())
+        PybulletAPI.moveCameraToAUV(self.robot, rotate=False)
         # p.setVRCameraState(rootOrientation=p.getQuaternionFromEuler([math.pi, math.pi, 0]))
         # p.rotateVector()
 

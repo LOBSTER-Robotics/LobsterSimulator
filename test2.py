@@ -15,7 +15,7 @@ def get_height_field_perlin2(chunk_x, chunk_y, points_per_chunk, point_spacing):
             lacunarity = 2.0
             seed = 1
 
-            print(world_x, world_y)
+            # print(world_x, world_y)
 
             height = noise.pnoise2(world_x / scale, world_y / scale,
                                    octaves=octaves,

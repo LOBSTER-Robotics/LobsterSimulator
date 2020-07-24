@@ -57,7 +57,7 @@ class Terrain:
                 lacunarity = 2.0
                 seed = 0
 
-                print(world_x, world_y)
+                # print(world_x, world_y)
 
                 height = noise.pnoise2(world_x / scale, world_y / scale,
                                        octaves=octaves,
@@ -96,7 +96,7 @@ class Terrain:
 
         middle = (max(height_field_data) + min(height_field_data)) / 2
 
-        print(middle)
+        # print(middle)
 
         terrainShape = p.createCollisionShape(shapeType=p.GEOM_HEIGHTFIELD,
                                               meshScale=[self.point_spacing, self.point_spacing, 1],
@@ -114,14 +114,14 @@ class Terrain:
         return terrain
 
     def remove_chunk(self, id):
-        print("Removing", id)
-        # p.removeBody(id)
+        # print("Removing", id)
+        p.removeBody(id)
 
     def update(self, position):
         current_chunk = (int(position[X] // self.chunk_size), int(position[Y] // self.chunk_size))
 
         if self.current_chunk[X] != current_chunk[X] or self.current_chunk[Y] != current_chunk[Y]:
-            print("Updated chunk", current_chunk, self.current_chunk)
+            # print("Updated chunk", current_chunk, self.current_chunk)
 
             new_chunks = dict()
 
@@ -135,7 +135,7 @@ class Terrain:
 
             for key, value in self.chunks.items():
                 if key not in new_chunks.keys():
-                    print(f"{key} not in {new_chunks.keys()} so removing")
+                    # print(f"{key} not in {new_chunks.keys()} so removing")
                     self.remove_chunk(value)
 
             self.chunks = new_chunks

@@ -2,6 +2,7 @@ from typing import List
 
 from pkg_resources import resource_filename
 
+from lobster_simulator.common.Gamepad import Gamepad
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.tools.DebugVisualization import DebugLine
 from .PID import PID
@@ -11,8 +12,9 @@ from lobster_simulator.tools.Translation import *
 
 import numpy as np
 
-import pybullet as p
+import inputs
 
+import pybullet as p
 
 class HighLevelController:
     """
@@ -31,19 +33,19 @@ class HighLevelController:
     rate_pids = [
         PID(p=500, i=100, d=400, min_value=-4000, max_value=4000),  # PITCH
         PID(p=500, i=100, d=400, min_value=-4000, max_value=4000),  # ROLL
-        PID(p=500, i=100, d=400, min_value=-4000, max_value=4000)   # YAW
+        PID(p=500, i=100, d=400, min_value=-4000, max_value=4000)  # YAW
     ]
 
     position_pids = [
         PID(p=2, i=0, d=0.5, min_value=-3, max_value=3),  # X
         PID(p=2, i=0, d=0.5, min_value=-3, max_value=3),  # Y
-        PID(p=2, i=0, d=0.5, min_value=-3, max_value=3)   # Z
+        PID(p=2, i=0, d=0.5, min_value=-3, max_value=3)  # Z
     ]
 
     velocity_pids = [
         PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900),  # X
         PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900),  # Y
-        PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900)   # Z
+        PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900)  # Z
     ]
 
     # acceleration_pids = [
@@ -54,7 +56,10 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self, gui):
+    def __init__(self, gui, desired_position, desired_orientation):
+        self.desired_position: Vec3 = desired_position
+        self.desired_orientation: Vec3 = desired_orientation
+
         self.relative_yaw = 0
         self.relative_pitch = 0
         self.relative_roll = 0
@@ -72,18 +77,67 @@ class HighLevelController:
         self.visualisation = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
                                                                     "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
 
+        self.gamepad = Gamepad()
+
+        # for event in events:
+        #     print(event.ev_type, event.code, event.state)
+
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3,
-               desired_location: Vec3, desired_orientation: Quaternion, dt):
+    def _update_desired(self, orientation):
+        keys = PybulletAPI.getKeyboardEvents()
+        desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
+        if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
+            desired_position[Z] -= 0.004
+        if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
+            desired_position[Z] += 0.004
+        if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
+            desired_position[X] += 0.004
+        if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
+            desired_position[X] -= 0.004
+        if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
+            desired_position[Y] -= 0.004
+        if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
+            desired_position[Y] += 0.004
 
-        PybulletAPI.resetBasePositionAndOrientation(self.visualisation, desired_location, desired_orientation)
+        desired_position[X] += self.gamepad.y / 200
+        desired_position[Y] += self.gamepad.x / 200
+        desired_position[Z] += self.gamepad.z / 200 - self.gamepad.rz / 200
+
+
+        self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
+
+        if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
+            print(self.desired_orientation[Z])
+            self.desired_orientation[Z] -= 0.003
+            print(self.desired_orientation[Z])
+        if ord('l') in keys and keys[ord('l')] == p.KEY_IS_DOWN:
+            self.desired_orientation[Z] += 0.003
+        if ord('u') in keys and keys[ord('u')] == p.KEY_IS_DOWN:
+            self.desired_orientation[X] -= 0.003
+        if ord('o') in keys and keys[ord('o')] == p.KEY_IS_DOWN:
+            self.desired_orientation[X] += 0.003
+        if ord('i') in keys and keys[ord('i')] == p.KEY_IS_DOWN:
+            self.desired_orientation[Y] -= 0.003
+        if ord('k') in keys and keys[ord('k')] == p.KEY_IS_DOWN:
+            self.desired_orientation[Y] += 0.003
+
+        self.desired_orientation[Y] -= self.gamepad.ry / 200
+        self.desired_orientation[Z] += self.gamepad.rx / 200
+
+
+    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, dt):
+
+        self._update_desired(orientation=orientation)
+
+        PybulletAPI.resetBasePositionAndOrientation(self.visualisation, self.desired_position,
+                                                    PybulletAPI.getQuaternionFromEuler(self.desired_orientation))
 
         #
         # Position
         #
-        local_frame_desired_location = Translation.vec3_rotate_vector_to_local(orientation, desired_location)
+        local_frame_desired_location = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
         local_frame_location = Translation.vec3_rotate_vector_to_local(orientation, position)
 
         self.position_pids[X].set_target(local_frame_desired_location[X])
@@ -135,13 +189,14 @@ class HighLevelController:
         #
         # Orientation
         #
-        self.desired_pitch_yaw_vector = Translation.vec3_world_to_local(
-            position,
-            orientation,
-            desired_location
-        )
+        # self.desired_pitch_yaw_vector = Translation.vec3_world_to_local(
+        #     position,
+        #     orientation,
+        #     desired_location
+        # )
 
-        self.desired_pitch_yaw_vector = Vec3([1, 0, 0]).rotate(desired_orientation).rotate_inverse(orientation)
+        self.desired_pitch_yaw_vector = Vec3([1, 0, 0]).rotate(PybulletAPI.getQuaternionFromEuler(
+            self.desired_orientation)).rotate_inverse(orientation)
 
         self.relative_pitch = np.arctan2(self.desired_pitch_yaw_vector[1], self.desired_pitch_yaw_vector[0])
         self.relative_yaw = -np.arctan2(self.desired_pitch_yaw_vector[2], self.desired_pitch_yaw_vector[0])
