@@ -120,7 +120,7 @@ class AUV:
         # Apply the buoyancy force
         self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
-        self.apply_dampening()
+        self.apply_damping()
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         """
@@ -200,7 +200,7 @@ class AUV:
 
         PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
 
-    def apply_dampening(self):
+    def apply_damping(self):
         """
         Applies damping to the robot on its linear and angular velocity.
         See https://docs.lobster-robotics.com/scout/robots/scout-alpha/scout-simulator-model
