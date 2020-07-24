@@ -83,10 +83,6 @@ class Sensor(ABC):
 
                 value_outputs.append(value)
 
-            if self.noise_stds:
-                for i in range(len(self.noise_stds)):
-                    value_outputs[i] += np.random.normal(0, self.noise_stds[i])
-
             self._queue.append(value_outputs)
             self._next_sample_time += self._time_step
 
