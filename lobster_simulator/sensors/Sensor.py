@@ -37,7 +37,7 @@ class Sensor(ABC):
         noise_stds :Union[List[float], float]
             Number or list of numbers with the standard deviation for each of the outputs of the sensor.
         """
-        
+
         if orientation is None:
             orientation = PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0]))
 
@@ -98,10 +98,6 @@ class Sensor(ABC):
             noise_stds = [noise_stds]
 
         self.noise_stds = noise_stds
-
-    def _apply_noise(self, values):
-        """Applies the noise of the sensor to the output values"""
-
 
     def pop_next_value(self):
         if len(self._queue) == 0:
