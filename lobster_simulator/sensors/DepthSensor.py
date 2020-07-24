@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.simulation_time import SimulationTime
 
 if TYPE_CHECKING:
