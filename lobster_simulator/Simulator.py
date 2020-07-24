@@ -6,10 +6,9 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
-from lobster_simulator.robot.UUV import UUV
+from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
-
 
 class Models(Enum):
     SCOUT_ALPHA = auto()
@@ -53,8 +52,13 @@ class Simulator:
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
 
-    def set_time_step(self, time_step: int):
-        self._time_step = SimulationTime(time_step)
+    def set_time_step(self, time_step_microseconds: int) -> None:
+        """
+        Sets the size of the time steps the simulator makes
+        :param time_step: Time step in microseconds
+        """
+
+        self._time_step = SimulationTime(time_step_microseconds)
         PybulletAPI.setTimeStep(self._time_step)
 
     def do_step(self):
@@ -73,9 +77,6 @@ class Simulator:
 
         self._cycle += 1
         if self._cycle % 50 == 0:
-            # print("test"+str(
-            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
-            #         t.perf_counter() - self.previous_update_real_time)))
             self._previous_update_time = copy.copy(self._time)
             self._previous_update_real_time = t.perf_counter()
 
@@ -110,7 +111,7 @@ class Simulator:
         with resource_stream('lobster_simulator', f'data/{model_config}') as f:
             lobster_config = json.load(f)
 
-        self.robot = UUV(lobster_config)
+        self.robot = AUV(lobster_config)
 
         return self.robot
 

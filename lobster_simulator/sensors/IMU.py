@@ -5,7 +5,7 @@ from typing import List, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot import UUV
+    from lobster_simulator.robot import AUV
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
@@ -16,7 +16,7 @@ ACCELERATION = 0
 
 class IMU(Sensor):
 
-    def __init__(self, robot: UUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
+    def __init__(self, robot: AUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
         self._previous_linear_velocity = np.array([0, 0, 0])
         super().__init__(robot, position, orientation, time_step)
 

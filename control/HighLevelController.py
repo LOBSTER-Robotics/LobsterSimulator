@@ -1,7 +1,11 @@
+from typing import List
+
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.Translation import *
+
+import numpy as np
 
 
 class HighLevelController:
@@ -10,7 +14,7 @@ class HighLevelController:
     purposes.
     """
 
-    motor_rpm_outputs = [0, 0, 0, 0, 0, 0, 0, 0]
+    motor_rpm_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
         PID(p=20, i=0, d=0, min_value=-100, max_value=100),
@@ -19,9 +23,9 @@ class HighLevelController:
     ]
 
     rate_pids = [
-        PID(p=1000, i=0, d=800, min_value=-4000, max_value=4000),  # PITCH
-        PID(p=1000, i=0, d=2, min_value=-4000, max_value=4000),  # ROLL
-        PID(p=1000, i=0, d=800, min_value=-4000, max_value=4000)   # YAW
+        PID(p=500, i=0, d=400, min_value=-4000, max_value=4000),  # PITCH
+        PID(p=500, i=0, d=400, min_value=-4000, max_value=4000),  # ROLL
+        PID(p=500, i=0, d=400, min_value=-4000, max_value=4000)   # YAW
     ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
@@ -29,6 +33,7 @@ class HighLevelController:
     def __init__(self, gui):
         self.relative_yaw = 0
         self.relative_pitch = 0
+        self.relative_roll = 0
         self.target_rates = [0, 0, 0]
         self.relative_desired_location = [0, 0, 0]
         self.rates = [0, 0, 0]
@@ -42,7 +47,8 @@ class HighLevelController:
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
-    def update(self, position, orientation, velocity, desired_location, dt):
+    def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, desired_location: Vec3, dt):
+
         self.relative_desired_location = Translation.vec3_world_to_local(
             position,
             orientation,
@@ -50,19 +56,22 @@ class HighLevelController:
         )
 
         self.relative_pitch = np.arctan2(self.relative_desired_location[1], self.relative_desired_location[0])
-        self.relative_yaw = np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
+        self.relative_yaw = -np.arctan2(self.relative_desired_location[2], self.relative_desired_location[0])
+        self.relative_roll = -PybulletAPI.getEulerFromQuaternion(quaternion=orientation)[0]
 
         self.orientation_pids[PITCH].update(self.relative_pitch, dt)
-        self.orientation_pids[YAW].update(-self.relative_yaw, dt)
+        self.orientation_pids[YAW].update(self.relative_yaw, dt)
+        self.orientation_pids[ROLL].update(self.relative_roll, dt)
 
         self.target_rates[PITCH] = self.orientation_pids[PITCH].output
         self.target_rates[YAW] = self.orientation_pids[YAW].output
+        self.target_rates[ROLL] = self.orientation_pids[ROLL].output
 
         for i in range(3):
             self.rate_pids[i].set_target(self.target_rates[i])
 
         # Translate world frame angular velocities to local frame angular velocities
-        local_rotation = vec3_rotate_vector_to_local(orientation, velocity[1])
+        local_rotation = vec3_rotate_vector_to_local(orientation, angular_velocity)
 
         roll_rate, pitch_rate, yaw_rate = local_rotation
 
@@ -73,13 +82,13 @@ class HighLevelController:
                 self.rate_pids[i].update(self.rates[i], 1. / 240.)
 
             for i in range(4):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.forward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.forward_rpm_slider))
 
             for i in range(4, 6):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.upward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.upward_rpm_slider))
 
             for i in range(6, 8):
-                self.motor_rpm_outputs[i] = PybulletAPI.readUserDebugParameter(self.sideward_rpm_slider)
+                self.motor_rpm_outputs[i] = int(PybulletAPI.readUserDebugParameter(self.sideward_rpm_slider))
         else:
             for i in range(8):
                 self.motor_rpm_outputs[i] = 0
@@ -92,8 +101,3 @@ class HighLevelController:
 
         self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
         self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
-
-        # print(self.orientation_pids[PITCH].get_terms(), self.orientation_pids[PITCH].output, self.rate_pids[PITCH].get_terms())
-
-
-
