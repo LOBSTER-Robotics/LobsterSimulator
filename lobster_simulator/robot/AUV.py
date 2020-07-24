@@ -47,10 +47,10 @@ class AUV:
         self._motor_debug_lines = list()
         self._motor_count = len(config_motors)
         self._rpm_motors = list()
-        self._desired_rpm_motors = list()
+        self._desired_rpm_motors: List[float] = list()
         for i in range(self._motor_count):
             self._rpm_motors.append(0)
-            self._desired_rpm_motors.append(0)
+            self._desired_rpm_motors.append(0.0)
             self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position,
                                                      parentIndex=self._id, color=[0, 0, 1]))
 
@@ -63,20 +63,24 @@ class AUV:
         self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), None, SimulationTime(4000))
 
         self._max_thrust = 100
-        self._buoyancy = 550
+        self._buoyancy: float = 550
 
-    def set_buoyancy(self, value):
-
+    # TODO: This should in the future be based on the volume of the robot.
+    def set_buoyancy(self, value: float):
+        """
+        Sets the force of the buoyance that acts on the robot
+        :param value: Bouyance force in Newtons.
+        """
         self._buoyancy = value
 
-    def set_desired_rpm_motors(self, desired_rpm_motors):
+    def set_desired_rpm_motors(self, desired_rpm_motors: List[float]):
         for i in range(len(desired_rpm_motors)):
             self._motors[i].set_desired_rpm(desired_rpm_motors[i])
 
-    def set_desired_rpm_motor(self, index, desired_rpm):
+    def set_desired_rpm_motor(self, index: int, desired_rpm: float):
         self._desired_rpm_motors[index] = desired_rpm
 
-    def set_desired_thrust_motors(self, desired_thrusts):
+    def set_desired_thrust_motors(self, desired_thrusts: List[float]):
         for i in range(len(desired_thrusts)):
             self._motors[i].set_desired_thrust(desired_thrusts[i])
 
@@ -114,8 +118,8 @@ class AUV:
                                                       + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
                                                       self._id)
 
-        self.up_indicator.update_position(vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
-
+        self.up_indicator.update_position(
+            vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
         # Apply the buoyancy force
         self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
@@ -169,7 +173,7 @@ class AUV:
         # Apply the force in the local frame
         PybulletAPI.applyExternalForce(self._id, force, force_pos, Frame.LINK_FRAME)
 
-    def set_position_and_orientation(self, position=None, orientation=None) -> None:
+    def set_position_and_orientation(self, position: Vec3 = None, orientation: Quaternion = None) -> None:
         """
         Sets the position and/or the orientation of the robot (should only be used for testing purposes).
         :param position: Position
@@ -182,7 +186,7 @@ class AUV:
 
         PybulletAPI.resetBasePositionAndOrientation(self._id, position, orientation)
 
-    def set_velocity(self, linear_velocity=None, angular_velocity=None, local_frame=False) -> None:
+    def set_velocity(self, linear_velocity: Vec3 = None, angular_velocity: Vec3 = None, local_frame=False) -> None:
         """
         Sets the linear and/or angular velocity of the robot (should only be used for testing purposes).
         :param linear_velocity: The linear velocity that the robot should have.
@@ -217,7 +221,6 @@ class AUV:
         linear_damping_force = Vec3(damping[:3])
         angular_damping_torque = Vec3(damping[3:])
 
-        PybulletAPI.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]), frame=Frame.LINK_FRAME)
+        PybulletAPI.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
+                                       frame=Frame.LINK_FRAME)
         PybulletAPI.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
-
-
