@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple
 
 import pybullet as p
 import pybullet_data
 from pkg_resources import resource_filename
+
+import numpy as np
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
@@ -36,14 +38,23 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
+            p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
+
         else:
             self._physics_client_id = p.connect(p.DIRECT)
+
+        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
-        self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
-        # self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui
@@ -85,6 +96,7 @@ class PybulletAPI:
 
         return p.getMatrixFromQuaternion(quaternion.array)
 
+
     @staticmethod
     def gui():
         return PybulletAPI.__instance.is_gui_enabled()
@@ -109,13 +121,14 @@ class PybulletAPI:
 
     @staticmethod
     def addUserDebugLine(lineFromXYZ: Vec3, lineToXYZ: Vec3, lineWidth: float, lineColorRGB: List[float],
-                         replaceItemUniqueId: int = -1):
+                         parentObjectUniqueId: int = -1, replaceItemUniqueId: int = -1):
 
         if PybulletAPI.gui():
             return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.asENU(),
                                       lineToXYZ=lineToXYZ.asENU(),
                                       lineWidth=lineWidth,
                                       lineColorRGB=lineColorRGB,
+                                      parentObjectUniqueId=parentObjectUniqueId,
                                       replaceItemUniqueId=replaceItemUniqueId)
 
     @staticmethod
@@ -126,6 +139,7 @@ class PybulletAPI:
     def moveCameraToPosition(position: Vec3):
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
+
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
                 cameraYaw=camera_info[8],
@@ -173,6 +187,12 @@ class PybulletAPI:
     def createVisualSphere(radius, rgbaColor):
         sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
         return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
+
+    @staticmethod
+    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3) -> Tuple[float, Vec3, Vec3]:
+        _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
+
+        return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
     # @staticmethod
     # def createMultiBody()

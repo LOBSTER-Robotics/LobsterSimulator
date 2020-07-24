@@ -1,4 +1,4 @@
-from lobster_simulator.common import Vec3
+from lobster_simulator.common.Vec3 import Vec3
 from typing import List
 
 import time
@@ -11,44 +11,63 @@ class DebugLine:
     """
     Class used to create a debug line in the GUI.
     """
-    _MAX_UPDATE_FREQUENCY = 0.03
+    _MIN_UPDATE_INTERVAL = 0.03
 
-    def __init__(self, from_location: List[float], to_location: List[float], width: float = 5, color: List[int] = None):
+    def __init__(self, from_location: Vec3 = None, to_location: Vec3 = None, width=5, color=None, parentIndex=-1):
         if color is None:
-            color = [1, 0, 0]
+            color = [1, 1, 1]
+
+        self.parentIndex = parentIndex
+
+        if from_location is None:
+            from_location = Vec3([0, 0, 0])
+
+        if to_location is None:
+            to_location = Vec3([0, 0, 0])
+
+        self.from_location = from_location
+        self.to_location = to_location
 
         self._width = width
         self._color = color
-        self._id = -1
-        self._id = self._add_debug_line(from_location, to_location)
-        self._latest_update_time = time.time()
 
-    def update(self, from_location: Vec3, to_location: Vec3, frame_id: int = None) -> None:
+        self._id = -1
+        self._id = self._update_debug_line()
+        self._latest_update_time = 0
+
+
+    def update(self, from_location: Vec3 = None, to_location: Vec3 = None, frame_id: int = None, color=None) -> None:
         """
         Update the pose of the debug line.
         """
+        if from_location:
+            self.from_location = from_location
+        if to_location:
+            self.to_location = to_location
+
         if not self.can_update():
             return
         if frame_id:
-            from_location = Translation.vec3_local_to_world_id(frame_id, from_location)
-            to_location = Translation.vec3_local_to_world_id(frame_id, to_location)
+            self.parentIndex = frame_id
 
-        self._id = self._add_debug_line(from_location, to_location)
+        if color:
+            self._color = color
+
+        self._id = self._update_debug_line()
         self._latest_update_time = time.time()
-
 
     def can_update(self) -> bool:
         """
         Checks if time has passed to allow a new debug line to be created.
         """
-        return time.time() - self._latest_update_time > self._MAX_UPDATE_FREQUENCY
+        return time.time() - self._latest_update_time > self._MIN_UPDATE_INTERVAL
 
-
-    def _add_debug_line(self, from_location, to_location) -> int:
-        return PybulletAPI.addUserDebugLine(lineFromXYZ=from_location,
-                                            lineToXYZ=to_location,
+    def _update_debug_line(self) -> int:
+        return PybulletAPI.addUserDebugLine(lineFromXYZ=self.from_location,
+                                            lineToXYZ=self.to_location,
                                             lineWidth=self._width,
                                             lineColorRGB=self._color,
+                                            parentObjectUniqueId=self.parentIndex,
                                             replaceItemUniqueId=self._id)
 
 

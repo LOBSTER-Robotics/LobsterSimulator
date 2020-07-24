@@ -6,6 +6,7 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Motor import Motor
@@ -24,7 +25,7 @@ class AUV:
         if config is None:
             raise ArgumentNoneError("config parameter should not be None")
 
-        self._center_of_volume = config['center_of_volume']
+        self._center_of_volume = Vec3(config['center_of_volume'])
 
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
@@ -50,15 +51,16 @@ class AUV:
         for i in range(self._motor_count):
             self._rpm_motors.append(0)
             self._desired_rpm_motors.append(0)
-            self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position))
+            self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position,
+                                                     parentIndex=self._id, color=[0, 0, 1]))
 
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
-        # self.imu = IMU(self.id, [0, 0, 0], [0, 0, 0, 0], SimulationTime(1000))
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
         self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), None, SimulationTime(4000))
+        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), None, SimulationTime(4000))
 
         self._max_thrust = 100
         self._buoyancy = 550
@@ -89,10 +91,13 @@ class AUV:
         """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        self._depth_sensor.update(time)
-        self._accelerometer.update(time)
-        self._gyroscope.update(time)
-        self._magnetometer.update(time)
+        self._depth_sensor.update(time, dt)
+        self._accelerometer.update(time, dt)
+        self._gyroscope.update(time, dt)
+        self._magnetometer.update(time, dt)
+        self._dvl.update(time, dt)
+
+        PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
 
         for i in range(self._motor_count):
             self._motors[i].update(dt.microseconds)
@@ -109,17 +114,11 @@ class AUV:
                                                       + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
                                                       self._id)
 
-        # Determine the point where the buoyancy force acts on the robot
-        buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
-
         self.up_indicator.update_position(vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
-        buoyancy_force_pos = buoyancy_force_pos + lobster_pos
-
-        # print(lobster_pos + buoyancy_force_pos, buoyancy_force_pos + lobster_pos)
 
         # Apply the buoyancy force
-        self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
+        self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self.apply_dampening()
 

@@ -5,12 +5,10 @@ import time as t
 
 from pkg_resources import resource_stream
 
-from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
-
 
 class Models(Enum):
     SCOUT_ALPHA = auto()
@@ -94,9 +92,6 @@ class Simulator:
 
         self._cycle += 1
         if self._cycle % 50 == 0:
-            # print("test"+str(
-            #     (self.time - self.previous_update_time).microseconds / seconds_to_microseconds(
-            #         t.perf_counter() - self.previous_update_real_time)))
             self._previous_update_time = copy.copy(self._time)
             self._previous_update_real_time = t.perf_counter()
 

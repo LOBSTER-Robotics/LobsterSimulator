@@ -11,20 +11,20 @@
     </inertial>
     <visual>
       <origin rpy="0 0 0"
-              xyz="-100 -50 0"/>
+              xyz="-50 -50 0"/>
       <geometry>
-				<mesh filename="terrain.obj" scale="5 5 5"/>
+				<mesh filename="terrain.obj" scale="1 1 1"/>
       </geometry>
        <material name="dirt">
-        <color rgba="0.50196078431 0.22352941176 0.11764705882 1"/>
+        <color rgba="0.29 0.36 0.306 1"/>
       </material>
     </visual>
-    <collision>
+    <collision concave="yes">
       <origin
-        xyz="-100 -50 -10"
+        xyz="-50 -50 0"
         rpy="0 0 0" />
       <geometry>
-        <mesh filename="terrain.obj" scale="5 5 5"/>
+        <mesh filename="terrain.obj" scale="1 1 1"/>
       </geometry>
     </collision>
   </link>
