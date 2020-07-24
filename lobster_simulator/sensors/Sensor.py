@@ -46,17 +46,18 @@ class Sensor(ABC):
         self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_real_value = self._get_real_values(SimulationTime(1))
 
-    def update(self, time: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime):
         """
         Updates a sensor, by generating new outputs by interpolating between values on the current and previous time
         step
+        :param dt:
         :param time: Current time in the simulator
         """
 
         # Empty the queue to prevent it from growing too large.
         self._queue = list()
 
-        dt = time - self._previous_update_time
+        # dt = time - self._previous_update_time
         real_values = self._get_real_values(dt)
 
         while self._next_sample_time <= time:

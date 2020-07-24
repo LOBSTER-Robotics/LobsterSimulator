@@ -48,11 +48,10 @@ class DVL(Sensor):
                                           parentIndex=self._robot._id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
-    def update(self, time: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime):
 
         altitudes = list()
 
-        dt = time - self._previous_update_time
         current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
 
         for i in range(4):

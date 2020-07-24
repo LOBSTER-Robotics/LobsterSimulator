@@ -87,11 +87,11 @@ class AUV:
         """
         lobster_pos, lobster_orn = self.get_position_and_orientation()
 
-        self._depth_sensor.update(time)
-        self._accelerometer.update(time)
-        self._gyroscope.update(time)
-        self._magnetometer.update(time)
-        self._dvl.update(time)
+        self._depth_sensor.update(time, dt)
+        self._accelerometer.update(time, dt)
+        self._gyroscope.update(time, dt)
+        self._magnetometer.update(time, dt)
+        self._dvl.update(time, dt)
 
         PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
 
