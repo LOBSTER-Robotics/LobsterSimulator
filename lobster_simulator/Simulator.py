@@ -89,14 +89,14 @@ class Simulator:
         while (self._time + self._time_step).seconds <= time:
             self.do_step()
 
-    def get_robot(self) -> UUV:
+    def get_robot(self) -> AUV:
         """
         Gets the current instance of the robot.
         :return: Robot instance
         """
         return self.robot
 
-    def create_robot(self, model: Models) -> UUV:
+    def create_robot(self, model: Models) -> AUV:
         """
         Creates a new robot based on the given model.
         :param model: Model of the robot. (Scout-alpha, PTV)
