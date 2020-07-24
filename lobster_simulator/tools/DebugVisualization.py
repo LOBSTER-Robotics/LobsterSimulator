@@ -11,7 +11,7 @@ class DebugLine:
     """
     Class used to create a debug line in the GUI.
     """
-    _MAX_UPDATE_FREQUENCY = 0.03
+    _MIN_UPDATE_INTERVAL = 0.03
 
     def __init__(self, from_location: Vec3 = None, to_location: Vec3 = None, width=5, color=None, parentIndex=-1):
         if color is None:
@@ -34,6 +34,7 @@ class DebugLine:
         self._id = -1
         self._id = self._update_debug_line()
         self._latest_update_time = 0
+
 
     def update(self, from_location: Vec3 = None, to_location: Vec3 = None, frame_id: int = None, color=None) -> None:
         """
@@ -59,7 +60,7 @@ class DebugLine:
         """
         Checks if time has passed to allow a new debug line to be created.
         """
-        return time.time() - self._latest_update_time > self._MAX_UPDATE_FREQUENCY
+        return time.time() - self._latest_update_time > self._MIN_UPDATE_INTERVAL
 
     def _update_debug_line(self) -> int:
         return PybulletAPI.addUserDebugLine(lineFromXYZ=self.from_location,
