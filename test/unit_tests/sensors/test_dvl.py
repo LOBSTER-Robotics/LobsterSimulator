@@ -12,7 +12,7 @@ class DVLTest(unittest.TestCase):
 
         previous_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
 
-        for _ in range(1000):
+        for _ in range(100):
             simulator.do_step()
             actual_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
             sensor_data = simulator.robot._dvl.get_last_value()
@@ -26,7 +26,8 @@ class DVLTest(unittest.TestCase):
 
                 # Make sure the sensor altitude is between the actual altitudes, since it is interpolated between the
                 # two
-                self.assertTrue(min_altitude <= sensor_altitude <= max_altitude)
+                self.assertLessEqual(min_altitude, sensor_altitude)
+                self.assertLessEqual(sensor_altitude, max_altitude)
 
             previous_altitude = actual_altitude
 
@@ -37,7 +38,7 @@ class DVLTest(unittest.TestCase):
         previous_velocity = simulator.robot.get_velocity()
         simulator.do_step()
 
-        for _ in range(1000):
+        for _ in range(100):
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
             sensor_data = simulator.robot._dvl.get_last_value()
@@ -57,8 +58,11 @@ class DVLTest(unittest.TestCase):
 
                 # Make sure the sensor velocities are between the actual velocities, since it is interpolated between
                 # the two
-                self.assertTrue(min_vx <= vx <= max_vx)
-                self.assertTrue(min_vy <= vy <= max_vy)
-                self.assertTrue(min_vz <= vz <= max_vz)
+                self.assertLessEqual(min_vx, vx)
+                self.assertLessEqual(min_vy, vy)
+                self.assertLessEqual(min_vz, vz)
+                self.assertLessEqual(vx, max_vx)
+                self.assertLessEqual(vy, max_vy)
+                self.assertLessEqual(vz, max_vz)
 
             previous_velocity = Vec3(actual_velocity)
