@@ -23,7 +23,7 @@ def read_config():
 
 def main():
 
-    parser = argparse.ArgumentParser("Learning to See in the Dark PyTorch")
+    parser = argparse.ArgumentParser("Lobster Simulator")
     parser.add_argument('--gui', type=bool, help='Run with or without GUI')
     args = parser.parse_args()
 
