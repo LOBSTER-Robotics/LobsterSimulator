@@ -18,11 +18,7 @@ class Vec3:
         Creates a 3 dimensional vector from a data array
         :param data: Array with length 4 in the form [x, y, z]
         """
-
-        if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple) or
-                isinstance(data, Vec3)):
-            raise TypeError(
-                f"A Vec3 needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
+        assert isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple) or isinstance(data, Vec3)
 
         if isinstance(data, Vec3):
             self._data: np.ndarray = np.asarray(data.array.copy())
