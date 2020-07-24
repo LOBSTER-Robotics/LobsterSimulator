@@ -38,6 +38,9 @@ class Simulator:
 
         config = base_config
 
+        self.rotate_camera_with_robot = bool(config['rotate_camera_with_robot'])
+
+
         self._time: SimulationTime = SimulationTime(0)
         self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_update_real_time: float = t.perf_counter()  # in seconds
@@ -53,6 +56,8 @@ class Simulator:
 
         self._model = model
         self.create_robot(model)
+
+
 
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
@@ -85,7 +90,7 @@ class Simulator:
         if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
-        PybulletAPI.moveCameraToAUV(self.robot, rotate=False)
+        PybulletAPI.moveCameraToAUV(self.robot, rotate=self.rotate_camera_with_robot)
         # p.setVRCameraState(rootOrientation=p.getQuaternionFromEuler([math.pi, math.pi, 0]))
         # p.rotateVector()
 
