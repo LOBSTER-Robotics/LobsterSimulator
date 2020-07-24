@@ -1,3 +1,4 @@
+import numbers
 from enum import Enum, auto
 from typing import Any, Union, List, TYPE_CHECKING, Tuple
 
@@ -125,7 +126,7 @@ class Vec3:
         raise TypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
 
     def __rmul__(self, other):
-        if isinstance(x, numbers.Number):
+        if isinstance(other, numbers.Number):
             return Vec3(self._data * other)
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
