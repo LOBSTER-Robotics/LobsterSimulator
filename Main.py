@@ -1,4 +1,6 @@
+import argparse
 import json
+import time
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
@@ -15,7 +17,13 @@ def read_config():
     return config
 
 
-def main(gui=True, tcp=False):
+def main():
+
+    parser = argparse.ArgumentParser("Learning to See in the Dark PyTorch")
+    parser.add_argument('--gui', type=bool, help='Run with or without GUI')
+    args = parser.parse_args()
+
+    gui = args.gui
 
     time_step = 4000
 
@@ -25,7 +33,7 @@ def main(gui=True, tcp=False):
     if gui:
         desired_pos_sliders = [
             PybulletAPI.addUserDebugParameter("desired x", -100, 100, 0),
-            PybulletAPI.addUserDebugParameter("desired y", -100, 100, 0),
+            PybulletAPI.addUserDebugParameter("desired y", -100, 100, 10),
             PybulletAPI.addUserDebugParameter("desired z", 0, 100, 10)
         ]
         roll_rate_slider = PybulletAPI.addUserDebugParameter("rate ROLL", -10, 10, 0)
@@ -38,6 +46,10 @@ def main(gui=True, tcp=False):
     desired_location = [0, 0, 2]
 
     paused = False
+
+    cycles = 0
+    previous_time = time.time()
+    cycles_per_second = 0
 
     while True:
         keys = PybulletAPI.getKeyboardEvents()
@@ -73,5 +85,15 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
+            previous_weight = 0.99
+            cycles_per_second = previous_weight * cycles_per_second + (1-previous_weight)/(time.time() - previous_time)
+
+            print(f'{cycles_per_second:.0f}', end='\r')
+            previous_time = time.time()
+
     PybulletAPI.disconnect()
+
+
+if __name__ == '__main__':
+    main()
 

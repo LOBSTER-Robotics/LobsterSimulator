@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple
 
 import pybullet as p
 import pybullet_data
@@ -35,14 +35,24 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
+            p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
+
         else:
             self._physics_client_id = p.connect(p.DIRECT)
+
+        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
         self.loadURDF("plane.urdf", Vec3([0, 0, 100]))
-        self.loadURDF("plane.urdf", Vec3([0, 0, 0]), self.getQuaternionFromEuler(Vec3([math.pi, 0, 0])))
 
     def is_gui_enabled(self):
         return self._gui

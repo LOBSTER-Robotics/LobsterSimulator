@@ -24,10 +24,10 @@ class AUV:
         if config is None:
             raise ArgumentNoneError("config parameter should not be None")
 
-        self._center_of_volume = config['center_of_volume']
+        self._center_of_volume = Vec3(config['center_of_volume'])
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 2]),
+                                        Vec3([0, 0, 95]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         config_motors = config['motors']
@@ -105,21 +105,11 @@ class AUV:
                                                       + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
                                                       self._id)
 
-        # Determine the point where the buoyancy force acts on the robot
-        buoyancy_force_pos = Vec3(lobster_orn.get_rotation_matrix().dot(np.array(self._center_of_volume)))
-
         self.up_indicator.update_position(vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
-        buoyancy_force_pos = buoyancy_force_pos + lobster_pos
-
-        # print(lobster_pos + buoyancy_force_pos, buoyancy_force_pos + lobster_pos)
 
         # Apply the buoyancy force
-        # PybulletAPI.applyExternalForce(objectUniqueId=self._id,
-        #                                forceObj=Vec3([0, 0, self._buoyancy]), posObj=buoyancy_force_pos,
-        #                                frame=Frame.WORLD_FRAME)
-
-        self.apply_force(Vec3([0, 0, 0]), Vec3([0, 0, -self._buoyancy]), relative_direction=False)
+        self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         return PybulletAPI.getBasePositionAndOrientation(self._id)
