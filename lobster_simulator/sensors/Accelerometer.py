@@ -19,8 +19,8 @@ class Accelerometer(Sensor):
         self._previous_linear_velocity = Vec3([0, 0, 0])
         super().__init__(robot, position=position, time_step=time_step, orientation=orientation)
 
-    def update(self, time: SimulationTime):
-        super().update(time)
+    def update(self, time: SimulationTime, dt: SimulationTime):
+        super().update(time, dt)
         self._previous_linear_velocity = self._get_linear_velocity()
 
     def _get_real_values(self, dt: SimulationTime) -> List[Vec3]:

@@ -1,8 +1,10 @@
+import argparse
 import json
 import math
 import time
 
 from pkg_resources import resource_filename
+
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Vec3 import Vec3
@@ -19,7 +21,13 @@ def read_config():
     return config
 
 
-def main(gui=True, tcp=False):
+def main():
+
+    parser = argparse.ArgumentParser("Lobster Simulator")
+    parser.add_argument('--gui', type=bool, help='Run with or without GUI')
+    args = parser.parse_args()
+
+    gui = args.gui
 
     time_step = 4000
 
@@ -45,8 +53,11 @@ def main(gui=True, tcp=False):
 
     paused = False
 
-    start_time = time.time()
+
     cycles = 0
+    previous_time = time.time()
+    cycles_per_second = 0
+    
     while True:
         keys = PybulletAPI.getKeyboardEvents()
         if ord('q') in keys and keys[ord('q')] & PybulletAPI.KEY_WAS_TRIGGERED:
@@ -81,10 +92,15 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
+            previous_weight = 0.99
+            cycles_per_second = previous_weight * cycles_per_second + (1-previous_weight)/(time.time() - previous_time)
 
-            # print(f"{cycles/(time.time()-start_time):.0f}")
-            cycles+=1
-
+            print(f'{cycles_per_second:.0f}', end='\r')
+            previous_time = time.time()
 
     PybulletAPI.disconnect()
+
+
+if __name__ == '__main__':
+    main()
 
