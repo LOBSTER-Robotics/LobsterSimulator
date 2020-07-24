@@ -9,6 +9,10 @@ def seconds_to_microseconds(seconds: float) -> float:
     return seconds * MICROSECONDS_IN_SECONDS
 
 
+def microseconds_to_milliseconds(microseconds: float) -> float:
+    return microseconds / 1000
+
+
 class SimulationTime:
 
     def __init__(self, initial_microseconds: int = 0):
@@ -18,6 +22,10 @@ class SimulationTime:
     @property
     def seconds(self) -> float:
         return microseconds_to_seconds(self._micro_seconds)
+
+    @property
+    def milliseconds(self) -> float:
+        return microseconds_to_milliseconds(self._micro_seconds)
 
     @property
     def microseconds(self) -> int:
