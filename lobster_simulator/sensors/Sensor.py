@@ -46,16 +46,18 @@ class Sensor(ABC):
         self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_real_value = self._get_real_values(SimulationTime(1))
 
-    def update(self, time: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime):
+        """
+        Updates a sensor, by generating new outputs by interpolating between values on the current and previous time
+        step
+        :param dt:
+        :param time: Current time in the simulator
         """
 
-        :param time: time in microseconds
-        :return:
-        """
         # Empty the queue to prevent it from growing too large.
         self._queue = list()
 
-        dt = time - self._previous_update_time
+        # dt = time - self._previous_update_time
         real_values = self._get_real_values(dt)
 
         while self._next_sample_time <= time:
@@ -68,11 +70,6 @@ class Sensor(ABC):
                                     y1=self._previous_real_value[i],
                                     y2=real_values[i])
 
-                # value_dt = (real_values[i] - self._previous_real_value[i]) / dt.microseconds
-                # value_output = self._previous_real_value[i] + value_dt * (
-                #         self._next_sample_time - self._previous_update_time).microseconds
-
-                # print(value_output, real_values[i], self.previous_real_value[i])
                 value_outputs.append(value)
 
             self._queue.append(value_outputs)
@@ -91,14 +88,17 @@ class Sensor(ABC):
         self._queue = list()
         return values
 
-    def get_sensor_position(self):
+    def get_sensor_position(self) -> Vec3:
         return self._sensor_position
 
-    def get_sensor_orientation(self):
+    def get_sensor_orientation(self) -> Quaternion:
         return self._sensor_orientation
 
     def get_last_value(self):
-        return self._queue[-1]
+        if self._queue:
+            return self._queue[-1]
+
+        return None
 
     @abstractmethod
     def _get_real_values(self, dt: SimulationTime) -> List[float]:

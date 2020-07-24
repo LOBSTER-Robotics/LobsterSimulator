@@ -24,7 +24,7 @@ class TestDebugLine(unittest.TestCase):
 
     def test_updating_when_time_has_passed(self):
         # Mocking time to return number bigger than update frequency
-        with patch('time.time', mock.MagicMock(return_value=DebugLine._MAX_UPDATE_FREQUENCY + 1E-6)):
+        with patch('time.time', mock.MagicMock(return_value=DebugLine._MIN_UPDATE_INTERVAL + 1E-6)):
             self._debug_line.update([0, 0, 0], [0, 0, 0])
         # Assert debug line is not called twice because cannot create line too frequent
         self.assertEqual(2, self._debug_line._update_debug_line.call_count)
