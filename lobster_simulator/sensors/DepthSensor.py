@@ -23,7 +23,7 @@ class DepthSensor(Sensor):
     _DENSITY_SALTWATER = 1029
     _OFFSET = 0
 
-    def __init__(self, robot: AUV, position, time_step: SimulationTime, orientation: Quaternion = None,
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None,
                  saltwater=False):
         if saltwater:
             self._water_density = self._DENSITY_SALTWATER
