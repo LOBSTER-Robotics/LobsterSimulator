@@ -20,7 +20,7 @@ from lobster_simulator.simulation_time import SimulationTime
 class Sensor(ABC):
 
     def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion,
-                 noise_stds = None):
+                 noise_stds: Union[List[float], float] = None):
         """
         Parameters
         ----------
