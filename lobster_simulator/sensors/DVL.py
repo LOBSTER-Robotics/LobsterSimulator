@@ -52,6 +52,9 @@ class DVL(Sensor):
 
         altitudes = list()
 
+        dt = time - self._previous_update_time
+        current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
+
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
             # smoothly interpolate between the transition between not having a lock and having a lock
@@ -72,8 +75,6 @@ class DVL(Sensor):
 
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot._id)
-
-        current_velocity = self._robot.get_velocity()
 
         self._queue = list()
 
@@ -105,7 +106,7 @@ class DVL(Sensor):
                     'vz': interpolated_velocity[Z],
                     # TODO check whether the dvl gives the altitude straight down or relative to its orientation
                     # 'altitude': average_interpolated_altitude,
-                    'altitude': SEAFLOOR_DEPTH - self.get_position()[Z],
+                    'altitude': current_distance_to_seafloor,
                     'velocity_valid': interpolated_bottom_lock,
                     "format": "json_v1"
                 }
