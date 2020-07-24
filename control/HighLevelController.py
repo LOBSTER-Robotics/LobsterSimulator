@@ -99,5 +99,5 @@ class HighLevelController:
         self.motor_rpm_outputs[2] += self.rate_pids[PITCH].output
         self.motor_rpm_outputs[3] -= self.rate_pids[PITCH].output
 
-        self.motor_rpm_outputs[4] -= self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[5] += self.rate_pids[ROLL].output
+        self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
+        self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
