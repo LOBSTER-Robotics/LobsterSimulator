@@ -33,6 +33,7 @@ class PybulletAPI:
     """
 
     KEY_WAS_TRIGGERED = p.KEY_WAS_TRIGGERED
+    KEY_IS_DOWN = p.KEY_IS_DOWN
 
     __instance = None
 

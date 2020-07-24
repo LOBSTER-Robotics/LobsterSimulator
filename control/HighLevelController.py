@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from pkg_resources import resource_filename
 
@@ -85,47 +85,49 @@ class HighLevelController:
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
 
+    @staticmethod
+    def key_is_down(key: str, keyboard_events: Dict):
+        return keyboard_events.get(ord(key)) == PybulletAPI.KEY_IS_DOWN
+
     def _update_desired(self, orientation):
-        keys = PybulletAPI.getKeyboardEvents()
+        keyboard_events = PybulletAPI.getKeyboardEvents()
+        print(type(keyboard_events))
         desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
-        if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
+        if self.key_is_down('q', keyboard_events):
             desired_position[Z] -= 0.004
-        if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
+
+        if self.key_is_down('e', keyboard_events):
             desired_position[Z] += 0.004
-        if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
+        if self.key_is_down('w', keyboard_events):
             desired_position[X] += 0.004
-        if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
+        if self.key_is_down('s', keyboard_events):
             desired_position[X] -= 0.004
-        if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
+        if self.key_is_down('a', keyboard_events):
             desired_position[Y] -= 0.004
-        if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
+        if self.key_is_down('d', keyboard_events):
             desired_position[Y] += 0.004
 
         desired_position[X] += self.gamepad.y / 200
         desired_position[Y] += self.gamepad.x / 200
         desired_position[Z] += self.gamepad.z / 200 - self.gamepad.rz / 200
 
-
         self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
 
-        if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
-            print(self.desired_orientation[Z])
+        if self.key_is_down('j', keyboard_events):
             self.desired_orientation[Z] -= 0.003
-            print(self.desired_orientation[Z])
-        if ord('l') in keys and keys[ord('l')] == p.KEY_IS_DOWN:
+        if self.key_is_down('l', keyboard_events):
             self.desired_orientation[Z] += 0.003
-        if ord('u') in keys and keys[ord('u')] == p.KEY_IS_DOWN:
+        if self.key_is_down('u', keyboard_events):
             self.desired_orientation[X] -= 0.003
-        if ord('o') in keys and keys[ord('o')] == p.KEY_IS_DOWN:
+        if self.key_is_down('o', keyboard_events):
             self.desired_orientation[X] += 0.003
-        if ord('i') in keys and keys[ord('i')] == p.KEY_IS_DOWN:
+        if self.key_is_down('i', keyboard_events):
             self.desired_orientation[Y] -= 0.003
-        if ord('k') in keys and keys[ord('k')] == p.KEY_IS_DOWN:
+        if self.key_is_down('k', keyboard_events):
             self.desired_orientation[Y] += 0.003
 
         self.desired_orientation[Y] -= self.gamepad.ry / 200
         self.desired_orientation[Z] += self.gamepad.rx / 200
-
 
     def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, dt):
 
