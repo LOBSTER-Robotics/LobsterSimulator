@@ -119,8 +119,6 @@ class Vec3:
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
 
-        raise TypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
-
     def __rmul__(self, other):
         if isinstance(other, numbers.Number):
             return Vec3(self._data * other)
@@ -132,6 +130,8 @@ class Vec3:
     def __truediv__(self, other):
         if isinstance(other, float) or isinstance(other, int):
             return Vec3(self._data / other)
+        elif isinstance(other, Vec3):
+            return Vec3(self._data / other._data)
 
         raise TypeError(f"A Vec3 cannot be divided by a {type(other)}")
 
@@ -142,7 +142,7 @@ class Vec3:
         self._data[key] = value
 
     def __str__(self):
-        return f"Vec3<{self._data}>"
+        return f"Vec3<{self[0]:.4f}, {self[1]:.4f}, {self[2]:.4f}>"
 
     def __eq__(self, other):
         if isinstance(other, Vec3):

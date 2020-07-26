@@ -49,6 +49,8 @@ class Simulator:
         self._model = model
         self.create_robot(model)
 
+        self._camera_position = self.robot.get_position()
+
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
 
@@ -69,7 +71,9 @@ class Simulator:
         if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
-        PybulletAPI.moveCameraToPosition(self.robot.get_position())
+
+        self.update_camera_position()
+
 
         self.robot.update(self._time_step, self._time)
 
@@ -88,6 +92,11 @@ class Simulator:
         """
         while (self._time + self._time_step).seconds <= time:
             self.do_step()
+            
+    def update_camera_position(self):
+        smoothing = 0.95
+        self._camera_position = smoothing * self._camera_position + (1 - smoothing) * self.robot.get_position()
+        PybulletAPI.moveCameraToPosition(self._camera_position)
 
     def get_robot(self) -> AUV:
         """
