@@ -2,15 +2,10 @@ import math
 
 import noise
 import pybullet as p
-import matplotlib.pyplot as plt
 
-from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
-import numpy as np
-
-from test2 import get_height_field_perlin2
 
 
 class Terrain:
