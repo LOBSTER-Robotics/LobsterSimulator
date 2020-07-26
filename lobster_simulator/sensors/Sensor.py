@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union, Optional
 import numpy as np
 
 from lobster_simulator.common.Calculations import interpolate
+from lobster_simulator.common.general_exceptions import ArgumentLengthError
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
@@ -20,7 +21,7 @@ from lobster_simulator.simulation_time import SimulationTime
 class Sensor(ABC):
 
     def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion,
-                 noise_stds: Union[List[float], float] = None):
+                 noise_stds: Optional[Union[List[float], float]]):
         """
         Parameters
         ----------
@@ -46,15 +47,14 @@ class Sensor(ABC):
         self._sensor_orientation: Quaternion = orientation
         self._time_step = time_step
 
-        if not isinstance(noise_stds, List):
-            noise_stds = [noise_stds]
-        self.noise_stds =  noise_stds
-
         self._queue = list()
 
         self._next_sample_time: SimulationTime = SimulationTime(0)
         self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_real_value = self._get_real_values(SimulationTime(1))
+
+        self.noise_stds = None
+        self.set_noise(noise_stds)
 
     def update(self, time: SimulationTime, dt: SimulationTime):
         """
@@ -91,8 +91,15 @@ class Sensor(ABC):
         self._previous_update_time = SimulationTime(time.microseconds)
 
     def set_noise(self, noise_stds: Union[List[float], float]):
+        if not noise_stds:
+            return
+
         if not isinstance(noise_stds, List):
             noise_stds = [noise_stds]
+
+        if len(self._previous_real_value) != len(noise_stds):
+            raise ArgumentLengthError("The length of the list of standard deviations of the noise should be the "
+                                      "same length as the amount of values the sensor produces.")
 
         self.noise_stds = noise_stds
 
@@ -122,6 +129,6 @@ class Sensor(ABC):
     def _get_real_values(self, dt: SimulationTime) -> List[float]:
         """
         :param dt: dt in microseconds
-        :return:
+        :return: The real values of the data that the sensor meassures.
         """
         raise NotImplementedError("This method should be implemented")

@@ -29,7 +29,7 @@ GREEN = [0, 1, 0]
 class DVL(Sensor):
 
     def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
-        super().__init__(robot, position=position, time_step=time_step, orientation=orientation)
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
