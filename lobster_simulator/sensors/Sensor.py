@@ -46,7 +46,9 @@ class Sensor(ABC):
         self._sensor_orientation: Quaternion = orientation
         self._time_step = time_step
 
-        self.noise_stds = noise_stds
+        if not isinstance(noise_stds, List):
+            noise_stds = [noise_stds]
+        self.noise_stds =  noise_stds
 
         self._queue = list()
 
@@ -65,7 +67,6 @@ class Sensor(ABC):
         # Empty the queue to prevent it from growing too large.
         self._queue = list()
 
-        # dt = time - self._previous_update_time
         real_values = self._get_real_values(dt)
 
         while self._next_sample_time <= time:
