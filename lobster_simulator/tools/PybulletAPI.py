@@ -38,12 +38,12 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_KEYBOARD_SHORTCUTS, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
-
             p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
-
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
 
@@ -88,7 +88,7 @@ class PybulletAPI:
         return Quaternion.fromENU(p.getQuaternionFromEuler(euler_angle.asENU()))
 
     @staticmethod
-    def getEulerFromQuaternion(quaternion: Quaternion) -> Quaternion:
+    def getEulerFromQuaternion(quaternion: Quaternion) -> Vec3:
         return Vec3.fromENU(p.getEulerFromQuaternion(quaternion.asENU()))
 
     @staticmethod
@@ -160,6 +160,7 @@ class PybulletAPI:
             posObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[0]
         if ornObj is None:
             ornObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[1]
+
 
         p.resetBasePositionAndOrientation(objectUniqueId, posObj.asENU(), ornObj.asENU())
 

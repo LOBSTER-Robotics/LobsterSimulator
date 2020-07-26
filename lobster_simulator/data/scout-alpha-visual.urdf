@@ -11,14 +11,9 @@
         xyz="0 0 0"
         rpy="0 0 0" />
       <mass
-        value="54.954" />
+        value="0" />
       <inertia
-        ixx="0.31418"
-        ixy="-2.7081E-08"
-        ixz="-4.271E-07"
-        iyy="14.391"
-        iyz="-1.2655E-08"
-        izz="14.391" />
+        ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
     </inertial>
     <visual>
       <origin
@@ -31,17 +26,8 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="1 1 1 0.5" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="./base_link.STL" />
-      </geometry>
-    </collision>
   </link>
 </robot>
