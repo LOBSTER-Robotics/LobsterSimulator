@@ -5,6 +5,8 @@ import time as t
 
 from pkg_resources import resource_stream
 
+from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.tools.DebugVisualization import DebugLine
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
@@ -49,6 +51,8 @@ class Simulator:
         self._model = model
         self.create_robot(model)
 
+        self._camera_position = self.robot.get_position()
+
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
 
@@ -61,26 +65,17 @@ class Simulator:
         self._time_step = SimulationTime(time_step_microseconds)
         PybulletAPI.setTimeStep(self._time_step)
 
-    def step_until(self, time: float):
-        """
-        Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
-        less than the specified time (at most 1 time step off).
-        :param time: Time (in seconds) to which the simulator should run
-        """
-        while (self._time + self._time_step).seconds <= time:
-            self.do_step()
-
     def do_step(self):
-        """
-        Executes on simulation step of exactly one time step
-        """
+        """Progresses the simulation by exactly one time step."""
 
         self._time.add_time_step(self._time_step.microseconds)
 
         if PybulletAPI.gui():
             self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
-        PybulletAPI.moveCameraToPosition(self.robot.get_position())
+
+        self.update_camera_position()
+
 
         self.robot.update(self._time_step, self._time)
 
@@ -91,17 +86,32 @@ class Simulator:
             self._previous_update_time = copy.copy(self._time)
             self._previous_update_real_time = t.perf_counter()
 
-    def get_robot(self):
+    def step_until(self, time: float):
+        """
+        Execute steps until time (in seconds) has reached. The given time will never be exceeded, but could be slightly
+        less than the specified time (at most 1 time step off).
+        :param time: Time (in seconds) to which the simulator should run
+        """
+        while (self._time + self._time_step).seconds <= time:
+            self.do_step()
+            
+    def update_camera_position(self):
+        smoothing = 0.95
+        self._camera_position = smoothing * self._camera_position + (1 - smoothing) * self.robot.get_position()
+        PybulletAPI.moveCameraToPosition(self._camera_position)
+
+    def get_robot(self) -> AUV:
         """
         Gets the current instance of the robot.
         :return: Robot instance
         """
         return self.robot
 
-    def create_robot(self, model):
+    def create_robot(self, model: Models) -> AUV:
         """
         Creates a new robot based on the given model.
         :param model: Model of the robot. (Scout-alpha, PTV)
+        :return: Robot instance
         """
 
         if model == Models.SCOUT_ALPHA:
@@ -113,6 +123,8 @@ class Simulator:
             lobster_config = json.load(f)
 
         self.robot = AUV(lobster_config)
+
+        return self.robot
 
     def reset_robot(self):
         """

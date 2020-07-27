@@ -38,12 +38,12 @@ class PybulletAPI:
         self._physics_client_id = -1
         if gui:
             self._physics_client_id = p.connect(p.GUI)
+
+            p.configureDebugVisualizer(p.COV_ENABLE_KEYBOARD_SHORTCUTS, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
-
             p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
-
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
         else:
@@ -159,6 +159,7 @@ class PybulletAPI:
         if ornObj is None:
             ornObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[1]
 
+
         p.resetBasePositionAndOrientation(objectUniqueId, posObj.asENU(), ornObj.asENU())
 
     @staticmethod
@@ -192,9 +193,18 @@ class PybulletAPI:
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
-    # @staticmethod
-    # def createMultiBody()
+    def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
+        assert isinstance(torqueObj, Vec3)
+
+        # There is a bug in Pybullet that the Link Frame and World frame are swapped when applying a torque to the
+        # base link of a robot (https://github.com/bulletphysics/bullet3/issues/1949)
+        if frame == Frame.WORLD_FRAME:
+            frame = Frame.LINK_FRAME
+        else:
+            frame = Frame.WORLD_FRAME
+
+        p.applyExternalTorque(objectUniqueId, -1, torqueObj.asENU(), flags=frame.value)
 
     @staticmethod
-    def disconnect() -> None:
+    def disconnect():
         p.disconnect()
