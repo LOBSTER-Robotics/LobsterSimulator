@@ -193,6 +193,7 @@ class PybulletAPI:
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
+    @staticmethod
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
         assert isinstance(torqueObj, Vec3)
 
