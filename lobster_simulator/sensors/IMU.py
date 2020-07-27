@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import numpy as np
 
@@ -16,11 +16,12 @@ ACCELERATION = 0
 
 class IMU(Sensor):
 
-    def __init__(self, robot: AUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime):
+    def __init__(self, robot: AUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime,
+                 noise_stds: Union[List[float], float]):
         self._previous_linear_velocity = np.array([0, 0, 0])
-        super().__init__(robot, position, orientation, time_step)
+        super().__init__(robot, position, time_step, orientation, noise_stds)
 
-    def update(self, time: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime):
         super().update(time)
         self._previous_linear_velocity = self._get_linear_velocity()
 

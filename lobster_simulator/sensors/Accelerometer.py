@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Union
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
@@ -15,9 +15,9 @@ class Accelerometer(Sensor):
 
     GRAVITY_VEC = Vec3([0, 0, GRAVITY])
 
-    def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
         self._previous_linear_velocity = Vec3([0, 0, 0])
-        super().__init__(robot, position, orientation, time_step)
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=noise_stds)
 
     def update(self, time: SimulationTime, dt: SimulationTime):
         super().update(time, dt)
