@@ -54,7 +54,9 @@ class Sensor(ABC):
         self._previous_real_value = self._get_real_values(SimulationTime(1))
 
         self.noise_stds = None
-        self.set_noise(noise_stds)
+        if noise_stds:
+            self.set_noise(noise_stds)
+
 
     def update(self, time: SimulationTime, dt: SimulationTime):
         """
@@ -91,9 +93,6 @@ class Sensor(ABC):
         self._previous_update_time = SimulationTime(time.microseconds)
 
     def set_noise(self, noise_stds: Union[List[float], float]):
-        if not noise_stds:
-            return
-
         if not isinstance(noise_stds, List):
             noise_stds = [noise_stds]
 
