@@ -56,6 +56,7 @@ class Sensor(ABC):
         self.noise_stds = None
         self.set_noise(noise_stds)
 
+
     def update(self, time: SimulationTime, dt: SimulationTime):
         """
         Updates a sensor, by generating new outputs by interpolating between values on the current and previous time
@@ -91,9 +92,6 @@ class Sensor(ABC):
         self._previous_update_time = SimulationTime(time.microseconds)
 
     def set_noise(self, noise_stds: Union[List[float], float]):
-        if not noise_stds:
-            return
-
         if not isinstance(noise_stds, List):
             noise_stds = [noise_stds]
 
