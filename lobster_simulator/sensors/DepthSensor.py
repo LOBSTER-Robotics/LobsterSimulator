@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
+
+from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.simulation_time import SimulationTime
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
@@ -20,13 +24,14 @@ class DepthSensor(Sensor):
     _DENSITY_SALTWATER = 1029
     _OFFSET = 0
 
-    def __init__(self, robot: AUV, position, orientation, time_step, saltwater=False):
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None,
+                 saltwater=False, noise_stds: Union[List[float], float] = None):
         if saltwater:
             self._water_density = self._DENSITY_SALTWATER
         else:
             self._water_density = self._DENSITY_FRESHWATER
 
-        super(DepthSensor, self).__init__(robot, position, orientation, time_step)
+        super(DepthSensor, self).__init__(robot, position, time_step, orientation, noise_stds)
 
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")

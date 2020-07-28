@@ -22,11 +22,14 @@ MAXIMUM_ALTITUDE = 50  # meters
 MINIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 26)))
 MAXIMUM_TIME_STEP = SimulationTime(int(seconds_to_microseconds(1 / 4)))
 
+RED = [1, 0, 0]
+GREEN = [0, 1, 0]
+
 
 class DVL(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, orientation: Quaternion, time_step: SimulationTime):
-        super().__init__(robot, position, orientation, time_step)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
@@ -45,9 +48,11 @@ class DVL(Sensor):
                                           parentIndex=self._robot._id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
-    def update(self, time: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime):
 
         altitudes = list()
+
+        current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
@@ -61,16 +66,14 @@ class DVL(Sensor):
 
             result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
 
-            altitudes.append(result[0] * 100)
+            altitudes.append(result[0] * 2 * MAXIMUM_ALTITUDE)
 
             # Change the color of the beam visualizer only if the state of the lock changes.
             if (self._previous_altitudes[i] >= MAXIMUM_ALTITUDE) != (altitudes[i] >= MAXIMUM_ALTITUDE):
-                color = [1, 0, 0] if altitudes[i] >= MAXIMUM_ALTITUDE else [0, 1, 0]
+                color = RED if altitudes[i] >= MAXIMUM_ALTITUDE else GREEN
 
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot._id)
-
-        current_velocity = self._robot.get_velocity()
 
         self._queue = list()
 
@@ -102,7 +105,7 @@ class DVL(Sensor):
                     'vz': interpolated_velocity[Z],
                     # TODO check whether the dvl gives the altitude straight down or relative to its orientation
                     # 'altitude': average_interpolated_altitude,
-                    'altitude': SEAFLOOR_DEPTH - self.get_position()[Z],
+                    'altitude': current_distance_to_seafloor,
                     'velocity_valid': interpolated_bottom_lock,
                     "format": "json_v1"
                 }
@@ -123,17 +126,14 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-        # if self._queue:
-        #     print(self._queue)
+    def get_position(self):
+        return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
-    def _get_real_values(self, dt: SimulationTime) -> List[Vec3]:
-        location = self._robot.get_position()
+    def _get_real_values(self, dt: SimulationTime) -> List:
+        location = self.get_position()
 
         distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
 
         velocity = self._robot.get_velocity()
 
-    def get_position(self):
-        return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
-
-    # def get_orientation(self):
+        return [distance_to_seafloor, velocity]

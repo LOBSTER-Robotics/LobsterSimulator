@@ -25,9 +25,9 @@ class HighLevelController:
     motor_rpm_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
-        PID(p=20, i=0, d=0, min_value=-100, max_value=100),
+        PID(p=20, i=10, d=0, min_value=-100, max_value=100),
         PID(p=8, i=0, d=0, min_value=-10, max_value=10),  # Not used
-        PID(p=20, i=0, d=0, min_value=-100, max_value=100)
+        PID(p=20, i=10, d=0, min_value=-100, max_value=100)
     ]
 
     rate_pids = [
@@ -37,15 +37,15 @@ class HighLevelController:
     ]
 
     position_pids = [
-        PID(p=2, i=0, d=0.5, min_value=-3, max_value=3),  # X
-        PID(p=2, i=0, d=0.5, min_value=-3, max_value=3),  # Y
-        PID(p=2, i=0, d=0.5, min_value=-3, max_value=3)  # Z
+        PID(p=2, i=2, d=5, min_value=-3, max_value=3),  # X
+        PID(p=2, i=2, d=5, min_value=-3, max_value=3),  # Y
+        PID(p=2, i=2, d=5, min_value=-3, max_value=3)  # Z
     ]
 
     velocity_pids = [
-        PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900),  # X
-        PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900),  # Y
-        PID(p=1000, i=50, d=10, min_value=-3700, max_value=3900)  # Z
+        PID(p=2000, i=50, d=1000, min_value=-3700, max_value=3900),  # X
+        PID(p=1000, i=50, d=1000, min_value=-3700, max_value=3900),  # Y
+        PID(p=1000, i=50, d=1000, min_value=-3700, max_value=3900)  # Z
     ]
 
     # acceleration_pids = [
@@ -56,7 +56,7 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self, gui, desired_position, desired_orientation):
+    def __init__(self, gui, desired_position, desired_orientation, position_control=True):
         self.desired_position: Vec3 = desired_position
         self.desired_orientation: Vec3 = desired_orientation
 
@@ -69,18 +69,21 @@ class HighLevelController:
         self.gui = gui
         self.previous_velocity = Vec3([0, 0, 0])
 
+        self.position_control = position_control
+
+        self.desired_velocity = Vec3([0, 0, 0])
+        self.desired_rates = Vec3([0, 0, 0])
+
         if gui:
             self.forward_velocity_slider = PybulletAPI.addUserDebugParameter("forward", -3, 3, 0)
             self.upward_velocity_slider = PybulletAPI.addUserDebugParameter("upward", -3, 3, 0)
             self.sideward_velocity_slider = PybulletAPI.addUserDebugParameter("sideward", -3, 3, 0)
 
-        self.visualisation = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
-                                                                    "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
+        if self.position_control:
+            self.visualisation = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
+                                                                        "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
 
         self.gamepad = Gamepad()
-
-        # for event in events:
-        #     print(event.ev_type, event.code, event.state)
 
     def set_target_rate(self, direction, target):
         self.target_rates[direction] = target
@@ -91,91 +94,89 @@ class HighLevelController:
 
     def _update_desired(self, orientation):
         keyboard_events = PybulletAPI.getKeyboardEvents()
-        print(type(keyboard_events))
-        desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
-        if self.key_is_down('q', keyboard_events):
-            desired_position[Z] -= 0.004
 
-        if self.key_is_down('e', keyboard_events):
-            desired_position[Z] += 0.004
-        if self.key_is_down('w', keyboard_events):
-            desired_position[X] += 0.004
-        if self.key_is_down('s', keyboard_events):
-            desired_position[X] -= 0.004
-        if self.key_is_down('a', keyboard_events):
-            desired_position[Y] -= 0.004
-        if self.key_is_down('d', keyboard_events):
-            desired_position[Y] += 0.004
+        if self.position_control:
+            desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
+            if self.key_is_down('q', keyboard_events):
+                desired_position[Z] -= 0.004
 
-        desired_position[X] += self.gamepad.y / 200
-        desired_position[Y] += self.gamepad.x / 200
-        desired_position[Z] += self.gamepad.z / 200 - self.gamepad.rz / 200
+            if self.key_is_down('e', keyboard_events):
+                desired_position[Z] += 0.004
+            if self.key_is_down('w', keyboard_events):
+                desired_position[X] += 0.004
+            if self.key_is_down('s', keyboard_events):
+                desired_position[X] -= 0.004
+            if self.key_is_down('a', keyboard_events):
+                desired_position[Y] -= 0.004
+            if self.key_is_down('d', keyboard_events):
+                desired_position[Y] += 0.004
 
-        self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
+            desired_position[X] += self.gamepad.y / 200
+            desired_position[Y] += self.gamepad.x / 200
+            desired_position[Z] += self.gamepad.z / 200 - self.gamepad.rz / 200
 
-        if self.key_is_down('j', keyboard_events):
-            self.desired_orientation[Z] -= 0.003
-        if self.key_is_down('l', keyboard_events):
-            self.desired_orientation[Z] += 0.003
-        if self.key_is_down('u', keyboard_events):
-            self.desired_orientation[X] -= 0.003
-        if self.key_is_down('o', keyboard_events):
-            self.desired_orientation[X] += 0.003
-        if self.key_is_down('i', keyboard_events):
-            self.desired_orientation[Y] -= 0.003
-        if self.key_is_down('k', keyboard_events):
-            self.desired_orientation[Y] += 0.003
+            self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
 
-        self.desired_orientation[Y] -= self.gamepad.ry / 200
-        self.desired_orientation[Z] += self.gamepad.rx / 200
+            if self.key_is_down('j', keyboard_events):
+                self.desired_orientation[Z] -= 0.003
+            if self.key_is_down('l', keyboard_events):
+                self.desired_orientation[Z] += 0.003
+            if self.key_is_down('u', keyboard_events):
+                self.desired_orientation[X] -= 0.003
+            if self.key_is_down('o', keyboard_events):
+                self.desired_orientation[X] += 0.003
+            if self.key_is_down('i', keyboard_events):
+                self.desired_orientation[Y] -= 0.003
+            if self.key_is_down('k', keyboard_events):
+                self.desired_orientation[Y] += 0.003
+
+            self.desired_orientation[Y] -= self.gamepad.ry / 200
+            self.desired_orientation[Z] += self.gamepad.rx / 200
+        else:
+            self.desired_velocity[X] = self.gamepad.y * 3
+            self.desired_velocity[Y] = self.gamepad.x * 3
+            self.desired_velocity[Z] = self.gamepad.z * 3 - self.gamepad.rz * 3
+
+            self.desired_rates[Y] = self.gamepad.ry
+            self.desired_rates[Z] = self.gamepad.rx
 
     def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, dt):
 
         self._update_desired(orientation=orientation)
 
-        PybulletAPI.resetBasePositionAndOrientation(self.visualisation, self.desired_position,
-                                                    PybulletAPI.getQuaternionFromEuler(self.desired_orientation))
+        if self.position_control:
+            PybulletAPI.resetBasePositionAndOrientation(self.visualisation, self.desired_position,
+                                                        PybulletAPI.getQuaternionFromEuler(self.desired_orientation))
 
         #
         # Position
         #
-        local_frame_desired_location = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
-        local_frame_location = Translation.vec3_rotate_vector_to_local(orientation, position)
+        if self.position_control:
+            local_frame_desired_location = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
+            local_frame_location = Translation.vec3_rotate_vector_to_local(orientation, position)
 
-        self.position_pids[X].set_target(local_frame_desired_location[X])
-        self.position_pids[Y].set_target(local_frame_desired_location[Y])
-        self.position_pids[Z].set_target(local_frame_desired_location[Z])
+            self.position_pids[X].set_target(local_frame_desired_location[X])
+            self.position_pids[Y].set_target(local_frame_desired_location[Y])
+            self.position_pids[Z].set_target(local_frame_desired_location[Z])
 
-        self.position_pids[X].update(local_frame_location[X], dt)
-        self.position_pids[Y].update(local_frame_location[Y], dt)
-        self.position_pids[Z].update(local_frame_location[Z], dt)
+            self.position_pids[X].update(local_frame_location[X], dt)
+            self.position_pids[Y].update(local_frame_location[Y], dt)
+            self.position_pids[Z].update(local_frame_location[Z], dt)
 
-        # if self.gui:
-        #     self.velocity_pids[X].set_target(PybulletAPI.readUserDebugParameter(self.forward_velocity_slider))
-        #     self.velocity_pids[Y].set_target(PybulletAPI.readUserDebugParameter(self.sideward_velocity_slider))
-        #     self.velocity_pids[Z].set_target(PybulletAPI.readUserDebugParameter(self.upward_velocity_slider))
-        self.velocity_pids[X].set_target(self.position_pids[X].output)
-        self.velocity_pids[Y].set_target(-self.position_pids[Y].output)
-        self.velocity_pids[Z].set_target(-self.position_pids[Z].output)
+            self.desired_velocity = Vec3([self.position_pids[X].output,
+                                          -self.position_pids[Y].output,
+                                          -self.position_pids[Z].output])
+
+        self.velocity_pids[X].set_target(self.desired_velocity[X])
+        self.velocity_pids[Y].set_target(self.desired_velocity[Y])
+        self.velocity_pids[Z].set_target(self.desired_velocity[Z])
 
         local_frame_velocity = Translation.vec3_rotate_vector_to_local(orientation, velocity)
         self.velocity_pids[X].update(local_frame_velocity[X], dt)
         self.velocity_pids[Y].update(local_frame_velocity[Y], dt)
         self.velocity_pids[Z].update(local_frame_velocity[Z], dt)
 
-        # self.acceleration_pids[X].set_target(self.velocity_pids[X].output)
-        # self.acceleration_pids[Y].set_target(self.velocity_pids[Y].output)
-        # self.acceleration_pids[Z].set_target(self.velocity_pids[Z].output)
-
-        acceleration = (self.previous_velocity - local_frame_velocity) / dt
-        # print(acceleration)
-        # self.acceleration_pids[X].update(acceleration[X], dt)
-        # self.acceleration_pids[Y].update(acceleration[Y], dt)
-        # self.acceleration_pids[Z].update(acceleration[Z], dt)
-
         self.previous_velocity = Vec3(local_frame_velocity.array.copy())
-
-        # print(self.velocity_pids[X].output, self.velocity_pids[X].target, local_frame_velocity[X])
 
         for i in range(4):
             self.motor_rpm_outputs[i] = self.velocity_pids[X].output
@@ -186,17 +187,10 @@ class HighLevelController:
         for i in range(6, 8):
             self.motor_rpm_outputs[i] = -self.velocity_pids[Z].output
 
-        # print(self.motor_rpm_outputs)
-
         #
         # Orientation
         #
-        # self.desired_pitch_yaw_vector = Translation.vec3_world_to_local(
-        #     position,
-        #     orientation,
-        #     desired_location
-        # )
-
+        # if self.position_control:
         self.desired_pitch_yaw_vector = Vec3([1, 0, 0]).rotate(PybulletAPI.getQuaternionFromEuler(
             self.desired_orientation)).rotate_inverse(orientation)
 
@@ -209,9 +203,13 @@ class HighLevelController:
         self.orientation_pids[YAW].update(self.relative_yaw, dt)
         self.orientation_pids[ROLL].update(self.relative_roll, dt)
 
-        self.target_rates[PITCH] = self.orientation_pids[PITCH].output
-        self.target_rates[YAW] = self.orientation_pids[YAW].output
-        self.target_rates[ROLL] = self.orientation_pids[ROLL].output
+        self.desired_rates = Vec3([self.orientation_pids[PITCH].output,
+                                   self.orientation_pids[YAW].output,
+                                   self.orientation_pids[ROLL].output])
+
+        self.target_rates[PITCH] = self.desired_rates[PITCH]
+        self.target_rates[YAW] = self.desired_rates[YAW]
+        self.target_rates[ROLL] = self.desired_rates[ROLL]
 
         for i in range(3):
             self.rate_pids[i].set_target(self.target_rates[i])

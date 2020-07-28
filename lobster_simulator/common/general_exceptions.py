@@ -4,6 +4,12 @@ class ArgumentNoneError(Exception):
     """
     pass
 
+class ArgumentLengthError(Exception):
+    """
+    Raised when an argument of a function was not the right length.
+    """
+    pass
+
 
 class InputDimensionError(Exception):
     """

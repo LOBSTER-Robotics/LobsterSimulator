@@ -28,10 +28,7 @@ class Gamepad:
             try:
                 events = inputs.get_gamepad()
                 for event in events:
-                    # print(event.ev_type, event.code, event.state)
                     self.state[event.code] = event.state
-                    print(f"\r{self.state}", end='')
-                # sleep(1/60)
             except RuntimeError:
                 self.state['ABS_X'] = 0
                 self.state['ABS_Y'] = 0

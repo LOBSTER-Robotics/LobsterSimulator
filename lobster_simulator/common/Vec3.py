@@ -1,3 +1,4 @@
+import numbers
 from enum import Enum, auto
 from typing import Any, Union, List, TYPE_CHECKING, Tuple
 
@@ -12,17 +13,18 @@ class Vec3:
     if there ar
     """
 
-    def __init__(self, data: Union[List[float], Tuple[float, float, float], np.ndarray]):
+    def __init__(self, data: Union[List[float], Tuple[float, float, float], np.ndarray, 'Vec3']):
         """
         Creates a 3 dimensional vector from a data array
         :param data: Array with length 4 in the form [x, y, z]
         """
+        assert isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple) or isinstance(data, Vec3)
 
-        if not (isinstance(data, np.ndarray) or isinstance(data, List) or isinstance(data, Tuple)):
-            raise TypeError(
-                f"A Vec3 needs to be instantiated by a list of floats a tuple of floats or a numpy array not a {type(data)}")
+        if isinstance(data, Vec3):
+            self._data: np.ndarray = np.asarray(data.array.copy())
+        else:
+            self._data: np.ndarray = np.asarray(data)
 
-        self._data: np.ndarray = np.asarray(data)
         assert self._data.shape
         if self._data.shape[0] != 3:
             raise InputDimensionError("A Vec3 needs an input array of length 3")
@@ -118,10 +120,8 @@ class Vec3:
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
 
-        raise TypeError(f"A Vec3 cannot be multiplied with a {type(other)}")
-
     def __rmul__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, numbers.Number):
             return Vec3(self._data * other)
         elif isinstance(other, Vec3):
             return Vec3(self._data * other._data)
@@ -131,6 +131,8 @@ class Vec3:
     def __truediv__(self, other):
         if isinstance(other, float) or isinstance(other, int):
             return Vec3(self._data / other)
+        elif isinstance(other, Vec3):
+            return Vec3(self._data / other._data)
 
         raise TypeError(f"A Vec3 cannot be divided by a {type(other)}")
 
@@ -141,7 +143,7 @@ class Vec3:
         self._data[key] = value
 
     def __str__(self):
-        return f"Vec3<{self._data}>"
+        return f"Vec3<{self[0]:.4f}, {self[1]:.4f}, {self[2]:.4f}>"
 
     def __eq__(self, other):
         if isinstance(other, Vec3):

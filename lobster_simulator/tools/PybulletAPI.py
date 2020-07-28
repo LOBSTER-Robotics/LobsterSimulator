@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, Dict, TYPE_CHECKING
 
 import pybullet as p
 import pybullet_data
@@ -37,7 +37,7 @@ class PybulletAPI:
 
     __instance = None
 
-    def __init__(self, time_step: SimulationTime, gui=False):
+    def __init__(self, time_step: SimulationTime, gui: bool = False):
         self._gui = gui
 
         self._physics_client_id = -1
@@ -45,23 +45,30 @@ class PybulletAPI:
             self._physics_client_id = p.connect(p.GUI)
 
             p.configureDebugVisualizer(p.COV_ENABLE_KEYBOARD_SHORTCUTS, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
         else:
             self._physics_client_id = p.connect(p.DIRECT)
+
+        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
         p.setGravity(0, 0, -GRAVITY)
 
-    def is_gui_enabled(self):
+    def is_gui_enabled(self) -> bool:
         return self._gui
 
     @staticmethod
-    def initialize(time_step: SimulationTime, gui: bool):
+    def initialize(time_step: SimulationTime, gui: bool) -> None:
         PybulletAPI.__instance = PybulletAPI(time_step, gui)
 
     @staticmethod
-    def changeDynamics(bodyUniqueId: int, linearDamping: float, angularDamping: float):
+    def changeDynamics(bodyUniqueId: int, linearDamping: float, angularDamping: float) -> None:
 
         p.changeDynamics(bodyUniqueId=bodyUniqueId,
                          linkIndex=-1,
@@ -69,11 +76,11 @@ class PybulletAPI:
                          angularDamping=angularDamping)
 
     @staticmethod
-    def get_pybullet_id():
+    def get_pybullet_id() -> int:
         return PybulletAPI.__instance._physics_client_id
 
     @staticmethod
-    def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None):
+    def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None) -> int:
         if base_orientation:
             return p.loadURDF(fileName=file_name, basePosition=base_position.asENU(),
                               baseOrientation=base_orientation.asENU())
@@ -81,7 +88,7 @@ class PybulletAPI:
             return p.loadURDF(fileName=file_name, basePosition=base_position.asENU())
 
     @staticmethod
-    def getQuaternionFromEuler(euler_angle: Vec3):
+    def getQuaternionFromEuler(euler_angle: Vec3) -> Quaternion:
         return Quaternion.fromENU(p.getQuaternionFromEuler(euler_angle.asENU()))
 
     @staticmethod
@@ -89,25 +96,24 @@ class PybulletAPI:
         return Vec3.fromENU(p.getEulerFromQuaternion(quaternion.asENU()))
 
     @staticmethod
-    def getMatrixFromQuaternion(quaternion: Quaternion):
+    def getMatrixFromQuaternion(quaternion: Quaternion) -> np.ndarray:
 
         return p.getMatrixFromQuaternion(quaternion.array)
 
-
     @staticmethod
-    def gui():
+    def gui() -> bool:
         return PybulletAPI.__instance.is_gui_enabled()
 
     @staticmethod
-    def setTimeStep(time_step: SimulationTime):
+    def setTimeStep(time_step: SimulationTime) -> None:
         p.setTimeStep(time_step.seconds)
 
     @staticmethod
-    def stepSimulation():
+    def stepSimulation() -> None:
         p.stepSimulation()
 
     @staticmethod
-    def addUserDebugParameter(name, rangeMin, rangeMax, startValue):
+    def addUserDebugParameter(name: str, rangeMin: float, rangeMax: float, startValue: float) -> int:
         if PybulletAPI.gui():
             return p.addUserDebugParameter(name, rangeMin, rangeMax, startValue)
 
@@ -118,7 +124,7 @@ class PybulletAPI:
 
     @staticmethod
     def addUserDebugLine(lineFromXYZ: Vec3, lineToXYZ: Vec3, lineWidth: float, lineColorRGB: List[float],
-                         parentObjectUniqueId: int = -1, replaceItemUniqueId: int = -1):
+                         parentObjectUniqueId: int = -1, replaceItemUniqueId: int = -1) -> int:
 
         if PybulletAPI.gui():
             return p.addUserDebugLine(lineFromXYZ=lineFromXYZ.asENU(),
@@ -129,16 +135,16 @@ class PybulletAPI:
                                       replaceItemUniqueId=replaceItemUniqueId)
 
     @staticmethod
-    def getKeyboardEvents():
+    def getKeyboardEvents() -> Dict:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToAUV(robot: AUV, rotate=False):
+    def moveCameraToPosition(position: Vec3, orientation: Quaternion = None) -> None:
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
 
-            if rotate:
-                orn = PybulletAPI.getEulerFromQuaternion(robot.get_orientation())
+            if orientation:
+                orn = PybulletAPI.getEulerFromQuaternion(orientation)
                 yaw = - orn[YAW] * 360 / (2*math.pi) - 90
                 pitch = orn[ROLL] * 360 / (2*math.pi) - 20
             else:
@@ -149,7 +155,7 @@ class PybulletAPI:
                 cameraDistance=camera_info[10],
                 cameraYaw=yaw,
                 cameraPitch=pitch,
-                cameraTargetPosition=robot.get_position().asENU()
+                cameraTargetPosition=position.asENU()
             )
 
     @staticmethod
@@ -160,7 +166,7 @@ class PybulletAPI:
         return Vec3.fromENU(position), Quaternion.fromENU(orientation)
 
     @staticmethod
-    def resetBasePositionAndOrientation(objectUniqueId: int, posObj: Vec3 = None, ornObj: Quaternion = None):
+    def resetBasePositionAndOrientation(objectUniqueId: int, posObj: Vec3 = None, ornObj: Quaternion = None) -> None:
         if posObj is None:
             posObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[0]
         if ornObj is None:
@@ -180,17 +186,17 @@ class PybulletAPI:
         return Vec3.fromENU(linearVelocity), Vec3.fromENU(angularVelocity)
 
     @staticmethod
-    def resetBaseVelocity(objectUniqueId: int, linearVelocity: Vec3, angularVelocity: Vec3):
+    def resetBaseVelocity(objectUniqueId: int, linearVelocity: Vec3, angularVelocity: Vec3) -> None:
         p.resetBaseVelocity(objectUniqueId, linearVelocity.asENU(), angularVelocity.asENU())
 
     @staticmethod
-    def applyExternalForce(objectUniqueId: int, forceObj: Vec3, posObj: Vec3, frame: Frame):
+    def applyExternalForce(objectUniqueId: int, forceObj: Vec3, posObj: Vec3, frame: Frame) -> None:
         assert isinstance(forceObj, Vec3) and isinstance(posObj, Vec3)
 
         p.applyExternalForce(objectUniqueId, -1, forceObj.asENU(), posObj.asENU(), frame.value)
 
     @staticmethod
-    def createVisualSphere(radius, rgbaColor):
+    def createVisualSphere(radius, rgbaColor) -> int:
         sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
         return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
 
@@ -200,8 +206,18 @@ class PybulletAPI:
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
-    # @staticmethod
-    # def createMultiBody()
+    @staticmethod
+    def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
+        assert isinstance(torqueObj, Vec3)
+
+        # There is a bug in Pybullet that the Link Frame and World frame are swapped when applying a torque to the
+        # base link of a robot (https://github.com/bulletphysics/bullet3/issues/1949)
+        if frame == Frame.WORLD_FRAME:
+            frame = Frame.LINK_FRAME
+        else:
+            frame = Frame.WORLD_FRAME
+
+        p.applyExternalTorque(objectUniqueId, -1, torqueObj.asENU(), flags=frame.value)
 
     @staticmethod
     def disconnect():

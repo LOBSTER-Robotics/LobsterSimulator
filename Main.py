@@ -1,8 +1,10 @@
+import argparse
 import json
 import math
 import time
 
 from pkg_resources import resource_filename
+
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Quaternion import Quaternion
@@ -24,7 +26,13 @@ def read_config():
     return config
 
 
-def main(gui=True, tcp=False):
+def main():
+
+    parser = argparse.ArgumentParser("Lobster Simulator")
+    parser.add_argument('--gui', type=bool, help='Run with or without GUI')
+    args = parser.parse_args()
+
+    gui = args.gui
 
     time_step = 4000
 
@@ -54,8 +62,11 @@ def main(gui=True, tcp=False):
 
     paused = False
 
-    start_time = time.time()
+
     cycles = 0
+    previous_time = time.time()
+    cycles_per_second = 0
+    
     while True:
         keys = PybulletAPI.getKeyboardEvents()
         if ord('p') in keys and keys[ord('p')] == PybulletAPI.KEY_WAS_TRIGGERED:
@@ -64,34 +75,6 @@ def main(gui=True, tcp=False):
         lobster_pos, lobster_orn = simulator.robot.get_position_and_orientation()
 
         terrain_loader.update(lobster_pos)
-
-        # desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
-        # if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
-        #     desired_location[Z] -= 0.004
-        # if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
-        #     desired_location[Z] += 0.004
-        # if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
-        #     desired_location[X] += 0.004
-        # if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
-        #     desired_location[X] -= 0.004
-        # if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
-        #     desired_location[Y] -= 0.004
-        # if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
-        #     desired_location[Y] += 0.004
-        # desired_location = Translation.vec3_rotate_vector_to_world(lobster_orn, desired_location)
-        #
-        # if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
-        #     desired_orientation[Z] -= 0.003
-        # if ord('l') in keys and keys[ord('l')] == p.KEY_IS_DOWN:
-        #     desired_orientation[Z] += 0.003
-        # if ord('u') in keys and keys[ord('u')] == p.KEY_IS_DOWN:
-        #     desired_orientation[X] -= 0.003
-        # if ord('o') in keys and keys[ord('o')] == p.KEY_IS_DOWN:
-        #     desired_orientation[X] += 0.003
-        # if ord('i') in keys and keys[ord('i')] == p.KEY_IS_DOWN:
-        #     desired_orientation[Y] -= 0.003
-        # if ord('k') in keys and keys[ord('k')] == p.KEY_IS_DOWN:
-        #     desired_orientation[Y] += 0.003
 
         if not paused:
 
@@ -118,9 +101,15 @@ def main(gui=True, tcp=False):
 
             simulator.do_step()
 
-            print(f"{cycles/(time.time()-start_time):.0f}")
-            cycles+=1
+            previous_weight = 0.99
+            cycles_per_second = previous_weight * cycles_per_second + (1-previous_weight)/(time.time() - previous_time)
 
+            print(f'{cycles_per_second:.0f}', end='\r')
+            previous_time = time.time()
 
     PybulletAPI.disconnect()
+
+
+if __name__ == '__main__':
+    main()
 
