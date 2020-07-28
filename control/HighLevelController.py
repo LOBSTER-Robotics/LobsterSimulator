@@ -3,8 +3,6 @@ from typing import List, Dict
 from pkg_resources import resource_filename
 
 from lobster_simulator.common.Gamepad import Gamepad
-from lobster_simulator.robot.AUV import AUV
-from lobster_simulator.tools.DebugVisualization import DebugLine
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -12,9 +10,6 @@ from lobster_simulator.tools.Translation import *
 
 import numpy as np
 
-import inputs
-
-import pybullet as p
 
 class HighLevelController:
     """
@@ -47,12 +42,6 @@ class HighLevelController:
         PID(p=20000, i=0, d=0, min_value=-4000, max_value=4000),  # Y
         PID(p=1000, i=0, d=0, min_value=-4000, max_value=4000)  # Z
     ]
-
-    # acceleration_pids = [
-    #     PID(p=2000, i=0, d=10000, min_value=-3700, max_value=3900),  # X
-    #     PID(p=2000, i=0, d=10000, min_value=-3700, max_value=3900),  # Y
-    #     PID(p=2000, i=0, d=10000, min_value=-3700, max_value=3900)   # Z
-    # ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
@@ -219,22 +208,6 @@ class HighLevelController:
         self.rate_pids[YAW].update(-rates[YAW], dt)
         self.rate_pids[ROLL].update(-rates[ROLL], dt)
 
-        # print(f"ROLL rate: {rates[ROLL]:+0.4f}, "
-        #       f"desired ROLL rate: {self.desired_rates[ROLL]:+6.4f}, "
-        #       f"p: {self.rate_pids[ROLL].p_term:+0.4f}, "
-        #       f"i: {self.rate_pids[ROLL].i_term:+0.4f}, "
-        #       f"ki: {self.rate_pids[ROLL].ki:+0.4f}, "
-        #       f"ki*i: {self.rate_pids[ROLL].i_term * self.rate_pids[ROLL].ki:+0.4f}, "
-        #       f"d: {(self.rate_pids[ROLL].kd * self.rate_pids[ROLL].d_term):+0.4f}")
-        
-        # print(f"X velocity: {velocity[X]:+0.4f}, "
-        #       f"desired X velocity: {self.desired_velocity[X]:+6.4f}, "
-        #       f"p: {self.velocity_pids[X].p_term:+0.4f}, "
-        #       f"i: {self.velocity_pids[X].i_term:+0.4f}, "
-        #       f"ki: {self.velocity_pids[X].ki:+0.4f}, "
-        #       f"ki*i: {self.velocity_pids[X].i_term * self.velocity_pids[X].ki:+0.4f}, "
-        #       f"d: {(self.velocity_pids[X].kd * self.velocity_pids[X].d_term):+0.4f}")
-
         # Translate world frame angular velocities to local frame angular velocities
         self.motor_rpm_outputs[0] -= self.rate_pids[PITCH].output
         self.motor_rpm_outputs[1] += self.rate_pids[PITCH].output
@@ -246,5 +219,3 @@ class HighLevelController:
         self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
         self.motor_rpm_outputs[6] -= self.rate_pids[ROLL].output
         self.motor_rpm_outputs[7] += self.rate_pids[ROLL].output
-
-        print(self.desired_velocity[X], local_frame_velocity[X])
