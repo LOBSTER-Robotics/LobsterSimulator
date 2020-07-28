@@ -104,7 +104,7 @@ def main():
             previous_weight = 0.99
             cycles_per_second = previous_weight * cycles_per_second + (1-previous_weight)/(time.time() - previous_time)
 
-            print(f'{cycles_per_second:.0f}', end='\r')
+            # print(f'{cycles_per_second:.0f}', end='\r')
             previous_time = time.time()
 
     PybulletAPI.disconnect()
