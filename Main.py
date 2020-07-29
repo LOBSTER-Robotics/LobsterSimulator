@@ -50,7 +50,7 @@ def main(gui=True, tcp=False):
     desired_location = simulator.robot.get_position()
     desired_orientation = [0.0, 0.0, 0.0]
 
-    terrain_loader = Terrain(30)
+    terrain_loader = Terrain.perlin_noise_terrain(30)
 
     paused = False
 

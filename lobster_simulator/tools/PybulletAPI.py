@@ -187,8 +187,9 @@ class PybulletAPI:
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
 
-    # @staticmethod
-    # def createMultiBody()
+    @staticmethod
+    def removeBody(objectUniqueId: int):
+        p.removeBody(objectUniqueId)
 
     @staticmethod
     def disconnect():
