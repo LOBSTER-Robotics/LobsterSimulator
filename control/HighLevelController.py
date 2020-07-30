@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from pkg_resources import resource_filename
 
-from lobster_simulator.common.Gamepad import Gamepad
+from control.Gamepad import Gamepad
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *

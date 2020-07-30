@@ -1,8 +1,6 @@
 import threading
-from time import sleep
 
 import inputs
-from inputs import GamePad
 
 
 class Gamepad:
@@ -12,19 +10,17 @@ class Gamepad:
         print(list(inputs.devices))
 
         self.state = dict()
+        self.running = False
 
         thread = threading.Thread(target=self._polling, args=())
         thread.start()  # Start the execution
 
     def _polling(self):
-        self.state['ABS_X'] = 0
-        self.state['ABS_Y'] = 0
-        self.state['ABS_Z'] = 0
-        self.state['ABS_RX'] = 0
-        self.state['ABS_RY'] = 0
-        self.state['ABS_RZ'] = 0
+        self.running = True
 
-        while 1:
+        self._reset_state()
+
+        while self.running:
             try:
                 events = inputs.get_gamepad()
                 for event in events:
@@ -36,8 +32,20 @@ class Gamepad:
                 self.state['ABS_RX'] = 0
                 self.state['ABS_RY'] = 0
                 self.state['ABS_RZ'] = 0
-                return
+                break
 
+        self._reset_state()
+
+    def stop(self):
+        self.running = False
+
+    def _reset_state(self):
+        self.state['ABS_X'] = 0
+        self.state['ABS_Y'] = 0
+        self.state['ABS_Z'] = 0
+        self.state['ABS_RX'] = 0
+        self.state['ABS_RY'] = 0
+        self.state['ABS_RZ'] = 0
 
     @staticmethod
     def deadzone(input: float) -> float:
@@ -46,7 +54,6 @@ class Gamepad:
             return 0
         else:
             return (input - sign*0.1) * (10/9)
-
 
     @property
     def x(self):
