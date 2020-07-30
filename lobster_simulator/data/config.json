@@ -1,4 +1,4 @@
 {
-  "simulator_frequency"       : 240
+  "simulator_frequency"       : 240,
   "rotate_camera_with_robot"  : false
 }

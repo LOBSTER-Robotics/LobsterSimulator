@@ -26,21 +26,21 @@ class HighLevelController:
     ]
 
     rate_pids = [
-        PID(p=100000, i=0, d=0, min_value=-8000, max_value=8000),  # PITCH
-        PID(p=100000, i=0, d=0, min_value=-8000, max_value=8000),  # ROLL
-        PID(p=100000, i=0, d=0, min_value=-8000, max_value=8000)  # YAW
+        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # PITCHH
+        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # ROLL
+        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491)   # YAW
     ]
 
     position_pids = [
         PID(p=2, i=0, d=1, min_value=-10, max_value=10),  # X
         PID(p=2, i=0, d=1, min_value=-10, max_value=10),  # Y
-        PID(p=2, i=1, d=0, min_value=-10, max_value=10)  # Z
+        PID(p=2, i=0, d=1, min_value=-10, max_value=10, windup_guard=1)  # Z
     ]
 
     velocity_pids = [
-        PID(p=20000, i=0, d=0, min_value=-4000, max_value=4000),  # X
-        PID(p=20000, i=0, d=0, min_value=-4000, max_value=4000),  # Y
-        PID(p=1000, i=0, d=0, min_value=-4000, max_value=4000)  # Z
+        PID(p=20000/80, i=0, d=0, min_value=-40.2073, max_value=51.48491),  # X
+        PID(p=20000/80, i=0, d=0, min_value=-40.2073, max_value=51.48491),  # Y
+        PID(p=1000/80, i=0, d=0,  min_value=-40.2073, max_value=51.48491)   # Z
     ]
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
@@ -98,9 +98,9 @@ class HighLevelController:
             if self.key_is_down('d', keyboard_events):
                 desired_position[Y] += 0.004
 
-            desired_position[X] += self.gamepad.y / 30
-            desired_position[Y] += self.gamepad.x / 30
-            desired_position[Z] += self.gamepad.z / 30 - self.gamepad.rz / 30
+            desired_position[X] += self.gamepad.y / 40
+            desired_position[Y] += self.gamepad.x / 40
+            desired_position[Z] += self.gamepad.z / 40 - self.gamepad.rz / 40
 
             self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
 
@@ -193,7 +193,7 @@ class HighLevelController:
 
             self.desired_rates[PITCH] = self.orientation_pids[PITCH].output
             self.desired_rates[YAW]   = self.orientation_pids[YAW].output
-            # self.desired_rates[ROLL]  = self.orientation_pids[ROLL].output
+            self.desired_rates[ROLL]  = self.orientation_pids[ROLL].output
 
 
         local_angular_velocity = vec3_rotate_vector_to_local(orientation, angular_velocity)

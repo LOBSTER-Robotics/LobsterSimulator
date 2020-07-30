@@ -43,8 +43,9 @@ class Thruster:
 
         :param dt: Delta time
         """
-
-        if self._desired_thrust > self._theoretical_thrust:
+        if abs(self._desired_thrust - self._theoretical_thrust) <= self._maximum_delta_thrust_per_second * dt.seconds:
+            self._theoretical_thrust = self._desired_thrust
+        elif self._desired_thrust > self._theoretical_thrust:
             self._theoretical_thrust += self._maximum_delta_thrust_per_second * dt.seconds
         elif self._desired_thrust < self._theoretical_thrust:
             self._theoretical_thrust -= self._maximum_delta_thrust_per_second * dt.seconds
@@ -64,6 +65,6 @@ class Thruster:
                         minimum_thrust=0.196133,
                         maximum_forward_thrust=51.48491,
                         maximum_backward_thrust=40.2073,
-                        maximum_delta_thrust_per_second=500)
+                        maximum_delta_thrust_per_second=5000)
 
 
