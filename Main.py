@@ -122,7 +122,9 @@ def main():
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 
-            simulator.get_robot().set_desired_rpm_motors(rpm_motors)
+            # simulator.get_robot().set_desired_rpm_motors(rpm_motors)
+            for i, thruster in enumerate(simulator.get_robot().thrusters.values()):
+                thruster.set_desired_thrust(rpm_motors[i])
 
             simulator.do_step()
 
