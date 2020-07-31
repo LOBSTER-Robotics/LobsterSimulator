@@ -112,14 +112,14 @@ class HighLevelController:
         # self.acceleration_pids[Z].set_target(self.velocity_pids[Z].output)
 
         acceleration = (self.previous_velocity - local_frame_velocity) / dt
-        print(acceleration)
+        # print(acceleration)
         # self.acceleration_pids[X].update(acceleration[X], dt)
         # self.acceleration_pids[Y].update(acceleration[Y], dt)
         # self.acceleration_pids[Z].update(acceleration[Z], dt)
 
         self.previous_velocity = Vec3(local_frame_velocity.array.copy())
 
-        print(self.velocity_pids[X].output, self.velocity_pids[X].target, local_frame_velocity[X])
+        # print(self.velocity_pids[X].output, self.velocity_pids[X].target, local_frame_velocity[X])
 
         for i in range(4):
             self.motor_rpm_outputs[i] = self.velocity_pids[X].output
