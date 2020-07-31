@@ -183,9 +183,23 @@ class PybulletAPI:
         p.applyExternalForce(objectUniqueId, -1, forceObj.asENU(), posObj.asENU(), frame.value)
 
     @staticmethod
+    def changeVisualShapeColor(objectUniqueId: int, color: List[float]):
+        p.changeVisualShape(objectUniqueId=objectUniqueId, linkIndex=-1, rgbaColor=color)
+
+    @staticmethod
     def createVisualSphere(radius, rgbaColor) -> int:
         sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
         return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
+
+    @staticmethod
+    def createVisualPlane(radius, rgbaColor) -> int:
+        shape = p.createVisualShape(p.GEOM_PLANE, radius=radius, rgbaColor=rgbaColor)
+        return p.createMultiBody(0, -1, shape, [0, 0, 0])
+
+    @staticmethod
+    def createVisualCylinder(radius: float, height: float, color: List[float], orientation: Quaternion):
+        shape = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=height, rgbaColor=color)
+        return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation)
 
     @staticmethod
     def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3) -> Tuple[float, Vec3, Vec3]:

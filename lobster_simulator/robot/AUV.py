@@ -6,6 +6,7 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.robot.buoyancyCylinder import BuoyancyCylinder
 from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
@@ -30,8 +31,10 @@ class AUV:
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
         self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 90]),
+                                        Vec3([0, 0, 5]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
+
+        self._buoyancy_cylinder = BuoyancyCylinder(self, 0.2, 1.5, 20)
 
         config_motors = config['motors']
 
@@ -101,6 +104,8 @@ class AUV:
         self._magnetometer.update(time, dt)
         self._dvl.update(time, dt)
 
+        self._buoyancy_cylinder._update()
+
         PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
 
         for i in range(self._motor_count):
@@ -122,7 +127,7 @@ class AUV:
             vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
         # Apply the buoyancy force
-        self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
+        # self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self.apply_damping()
 

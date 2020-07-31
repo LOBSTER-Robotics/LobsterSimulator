@@ -54,7 +54,7 @@ def main():
 
     high_level_controller = HighLevelController(gui)
 
-    desired_location = Vec3([0, 0, 90])
+    desired_location = Vec3([0, 0, 5])
     desired_orientation = [0.0, 0.0, 0.0]
 
     paused = False
@@ -129,7 +129,7 @@ def main():
             previous_weight = 0.99
             cycles_per_second = previous_weight * cycles_per_second + (1-previous_weight)/(time.time() - previous_time)
 
-            print(f'{cycles_per_second:.0f}', end='\r')
+            # print(f'{cycles_per_second:.0f}', end='\r')
             previous_time = time.time()
 
     PybulletAPI.disconnect()
