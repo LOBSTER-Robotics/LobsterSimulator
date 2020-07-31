@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
+
+import numpy as np
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
@@ -9,13 +11,15 @@ from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Translation import *
 
+
 MAGNETIC_FIELD = Vec3([0, 1, 0])
 
 
 class Magnetometer(Sensor):
 
-    def __init__(self, robot: AUV, position: np.array, orientation: np.array, time_step: SimulationTime):
-        super().__init__(robot, position, orientation, time_step)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None,
+                 noise_stds: Union[List[float], float] = None):
+        super().__init__(robot, position=position, orientation=orientation, time_step=time_step, noise_stds=noise_stds)
 
     def _get_real_values(self, dt: SimulationTime):
         robot_orientation = self._robot.get_orientation()
