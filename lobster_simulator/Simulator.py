@@ -5,6 +5,7 @@ import time as t
 
 from pkg_resources import resource_stream
 
+from lobster_simulator.environment.water_surface import WaterSurface
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
@@ -38,11 +39,11 @@ class Simulator:
         self._previous_update_real_time: float = t.perf_counter()  # in seconds
         self._time_step: SimulationTime = SimulationTime(initial_microseconds=time_step)
 
-
         self._cycle = 0
 
         PybulletAPI.initialize(self._time_step, gui)
-        self.water_surface = PybulletAPI.createVisualPlane(10, [0, 0, 1, 0.70])
+        # self.water_surface = PybulletAPI.createVisualPlane(10, [0, 0, 1, 0.70])
+        self.water_surface = WaterSurface(self._time)
 
         self._simulator_frequency_slider = PybulletAPI.addUserDebugParameter("simulation frequency", 10, 1000,
                                                                              1 / self._time_step.microseconds)
@@ -78,6 +79,8 @@ class Simulator:
 
 
         self.robot.update(self._time_step, self._time)
+
+        self.water_surface.update(self._time)
 
         PybulletAPI.stepSimulation()
 
