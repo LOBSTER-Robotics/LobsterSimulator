@@ -1,9 +1,10 @@
 import math
 
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.environment.water_surface import WaterSurface
 from lobster_simulator.robot import AUV
 from lobster_simulator.tools import Translation
-from lobster_simulator.tools.Constants import Z
+from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 
@@ -38,7 +39,7 @@ class BuoyancyCylinder:
 
             PybulletAPI.resetBasePositionAndOrientation(self.dots[i], dot_position)
 
-            if dot_position[Z] > 0:
+            if dot_position[Z] > WaterSurface.height_function(dot_position[X], dot_position[Y]):
                 under_water_count += 1
                 buoyancy_point += self.test_points[i]
                 # PybulletAPI.changeVisualShapeColor(self.dots[i], [0, 0, 1, 0.5])
