@@ -8,6 +8,7 @@ from pkg_resources import resource_filename
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.common.Quaternion import Quaternion
+from lobster_simulator.common.Terrain import Terrain
 from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -37,7 +38,7 @@ def main():
 
     simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
-    PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
+    # PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
 
 
     # Only try to add debug sliders and visualisation when the gui is showing
@@ -54,8 +55,10 @@ def main():
 
     high_level_controller = HighLevelController(gui)
 
-    desired_location = Vec3([0, 0, 5])
+    desired_location = simulator.robot.get_position()
     desired_orientation = [0.0, 0.0, 0.0]
+
+    terrain_loader = Terrain.perlin_noise_terrain(30)
 
     paused = False
 
@@ -71,19 +74,21 @@ def main():
 
         lobster_pos, lobster_orn = simulator.robot.get_position_and_orientation()
 
+        terrain_loader.update(lobster_pos)
+
         desired_location = Translation.vec3_rotate_vector_to_local(lobster_orn, desired_location)
         if ord('q') in keys and keys[ord('q')] == p.KEY_IS_DOWN:
-            desired_location[Z] -= 0.003
+            desired_location[Z] -= 0.004
         if ord('e') in keys and keys[ord('e')] == p.KEY_IS_DOWN:
-            desired_location[Z] += 0.003
+            desired_location[Z] += 0.004
         if ord('w') in keys and keys[ord('w')] == p.KEY_IS_DOWN:
-            desired_location[X] += 0.003
+            desired_location[X] += 0.004
         if ord('s') in keys and keys[ord('s')] == p.KEY_IS_DOWN:
-            desired_location[X] -= 0.003
+            desired_location[X] -= 0.004
         if ord('a') in keys and keys[ord('a')] == p.KEY_IS_DOWN:
-            desired_location[Y] -= 0.003
+            desired_location[Y] -= 0.004
         if ord('d') in keys and keys[ord('d')] == p.KEY_IS_DOWN:
-            desired_location[Y] += 0.003
+            desired_location[Y] += 0.004
         desired_location = Translation.vec3_rotate_vector_to_world(lobster_orn, desired_location)
 
         if ord('j') in keys and keys[ord('j')] == p.KEY_IS_DOWN:
