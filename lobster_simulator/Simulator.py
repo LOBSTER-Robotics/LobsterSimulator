@@ -81,8 +81,6 @@ class Simulator:
 
         self.robot.update(self._time_step, self._time)
 
-        self.water_surface.update(self._time)
-
         PybulletAPI.stepSimulation()
 
         self._cycle += 1

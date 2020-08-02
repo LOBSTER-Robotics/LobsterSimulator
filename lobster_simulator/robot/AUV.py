@@ -6,8 +6,9 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.robot.buoyancyCylinder import BuoyancyCylinder
+from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.DVL import DVL
+from lobster_simulator.tools.Constants import Z
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Thruster import Thruster
@@ -30,16 +31,16 @@ class AUV:
 
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
-        self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, 5]),
+        self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
+                                        Vec3([0, 0, -1]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
-        self._buoyancy_cylinder = BuoyancyCylinder(self, 0.2, 1.5, 20)
+        self._buoyancy = Buoyancy(self, 0.10, 2, 0.05)
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
         for i in range(len(config_thrusters)):
-            self.thrusters[config_thrusters[i]['name']] = Thruster.new_T200(self._id, config_thrusters[i]['name'],
+            self.thrusters[config_thrusters[i]['name']] = Thruster.new_T200(self, config_thrusters[i]['name'],
                                                                             Vec3(config_thrusters[i]['position']),
                                                                             Vec3(config_thrusters[i]['direction']))
 
@@ -50,9 +51,9 @@ class AUV:
         self._motor_count = len(config_thrusters)
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
-        for thruster in self.thrusters.values():
-            self._motor_debug_lines.append(DebugLine(thruster._position, thruster._position,
-                                                     parentIndex=self._id, color=[0, 0, 1]))
+        # for thruster in self.thrusters.values():
+        #     self._motor_debug_lines.append(DebugLine(thruster._position, thruster._position,
+        #                                              parentIndex=self._id, color=[0, 0, 1]))
 
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
@@ -90,27 +91,13 @@ class AUV:
         self._magnetometer.update(time, dt)
         self._dvl.update(time, dt)
 
-        self._buoyancy_cylinder._update()
-
-        PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
+        self._buoyancy._update()
 
         for thruster in self.thrusters.values():
             thruster._update(dt)
 
-
-        # Update debug lines in a max frequency. Check the first line if it can be updated.
-        if self._motor_debug_lines[0].can_update():
-            for i, thruster in enumerate(self.thrusters.values()):
-                self._motor_debug_lines[i].update(thruster._position,
-                                                  thruster._position
-                                                  + thruster._direction * thruster.current_thrust / 100,
-                                                  self._id)
-
         self.up_indicator.update_position(
             vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
-
-        # # Apply the buoyancy force
-        # self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self._apply_damping()
 
@@ -197,6 +184,12 @@ class AUV:
         Applies damping to the robot on its linear and angular velocity.
         See https://docs.lobster-robotics.com/scout/robots/scout-alpha/scout-simulator-model
         """
+
+        # Don't apply damping if the robot is above water
+        # TODO. This creates a unrealistic hard boundary for enabling and disabling damping, so perhaps this should be
+        #  improved in the future.
+        if self.get_position()[Z] < 0:
+            return
 
         velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
         angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())

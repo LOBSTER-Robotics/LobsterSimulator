@@ -30,7 +30,8 @@ def main():
 
     time_step = 4000
 
-    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
+    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, gui=gui,
+                          config={"rotate_camera_with_robot": False})
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -44,7 +45,7 @@ def main():
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
-    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]))
+    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]), position_control=False)
 
     # desired_location = simulator.robot.get_position()
     # desired_orientation = [0.0, 0.0, 0.0]

@@ -85,18 +85,17 @@ class HighLevelController:
         if self.position_control:
             desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
             if self.key_is_down('q', keyboard_events):
-                desired_position[Z] -= 0.004
-
+                desired_position[Z] -= 0.008
             if self.key_is_down('e', keyboard_events):
-                desired_position[Z] += 0.004
+                desired_position[Z] += 0.008
             if self.key_is_down('w', keyboard_events):
-                desired_position[X] += 0.004
+                desired_position[X] += 0.008
             if self.key_is_down('s', keyboard_events):
-                desired_position[X] -= 0.004
+                desired_position[X] -= 0.008
             if self.key_is_down('a', keyboard_events):
-                desired_position[Y] -= 0.004
+                desired_position[Y] -= 0.008
             if self.key_is_down('d', keyboard_events):
-                desired_position[Y] += 0.004
+                desired_position[Y] += 0.008
 
             desired_position[X] += self.gamepad.y / 40
             desired_position[Y] += self.gamepad.x / 40

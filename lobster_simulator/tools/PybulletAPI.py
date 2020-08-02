@@ -13,7 +13,7 @@ import numpy as np
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
-
+from lobster_simulator.tools import Translation
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
@@ -215,7 +215,11 @@ class PybulletAPI:
         return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation)
 
     @staticmethod
-    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3) -> Tuple[float, Vec3, Vec3]:
+    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
+        if object_id != -1:
+            rayFromPosition = Translation.vec3_local_to_world_id(object_id, rayFromPosition)
+            rayToPosition = Translation.vec3_local_to_world_id(object_id, rayToPosition)
+
         _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
