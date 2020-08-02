@@ -12,14 +12,14 @@ class WaterSurface:
 
     @staticmethod
     def height_function(x, y):
-        return math.sin(x / 10 + WaterSurface.time.seconds*5) * 2
-        # return 0
+        # return math.sin(x / 10 + WaterSurface.time.seconds*5) * 2
+        return 0
 
 
     def __init__(self, time: SimulationTime):
 
-        self.point_spacing = 1
-        self.size = 50
+        self.point_spacing = 10
+        self.size = 500
 
         WaterSurface.time = time
 
@@ -27,26 +27,28 @@ class WaterSurface:
 
         self.chunk_size = (self.number_of_points - 1) * self.point_spacing
 
-        height_field_data = self.get_height_field(0, 0)
-        middle = (max(height_field_data) + min(height_field_data)) / 2
-        self.surface_shape = p.createCollisionShape(shapeType=p.GEOM_HEIGHTFIELD,
-                                                    meshScale=[self.point_spacing, self.point_spacing, 1],
-                                                    heightfieldTextureScaling=(self.number_of_points - 1) / 2,
-                                                    collisionFramePosition=[0, 0, 100],
-                                                    heightfieldData=height_field_data,
-                                                    numHeightfieldRows=self.number_of_points,
-                                                    numHeightfieldColumns=self.number_of_points)
+        PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/water_surface.urdf"), Vec3([0, 0, 0]))
 
-        self.terrain = p.createMultiBody(0, self.surface_shape,
-                                         basePosition=Vec3([0, 0,
-                                                            -(middle - 0)]).asENU(),
-                                         baseOrientation=PybulletAPI.getQuaternionFromEuler(
-                                             Vec3([0, 0, math.pi])).asENU())
+        # height_field_data = self.get_height_field(0, 0)
+        # middle = (max(height_field_data) + min(height_field_data)) / 2
+        # self.surface_shape = p.createCollisionShape(shapeType=p.GEOM_HEIGHTFIELD,
+        #                                             meshScale=[self.point_spacing, self.point_spacing, 1],
+        #                                             heightfieldTextureScaling=(self.number_of_points - 1) / 2,
+        #                                             collisionFramePosition=[0, 0, 1000],
+        #                                             heightfieldData=height_field_data,
+        #                                             numHeightfieldRows=self.number_of_points,
+        #                                             numHeightfieldColumns=self.number_of_points)
 
-        print(p.getVisualShapeData(self.surface_shape))
+        # self.terrain = p.createMultiBody(0, self.surface_shape,
+        #                                  basePosition=Vec3([0, 0,
+        #                                                     -(middle - 0)]).asENU(),
+        #                                  baseOrientation=PybulletAPI.getQuaternionFromEuler(
+        #                                      Vec3([0, 0, math.pi])).asENU())
+        #
+        # print(p.getVisualShapeData(self.surface_shape))
 
-        # self.water_texture = p.loadTexture(resource_filename("lobster_simulator", "data/water_texture.png"))
-        self.water_texture = p.loadTexture("heightmaps/gimp_overlay_out.png")
+        self.water_texture = p.loadTexture(resource_filename("lobster_simulator", "data/water_texture.png"))
+        # self.water_texture = p.loadTexture("heightmaps/gimp_overlay_out.png")
 
         p.changeVisualShape(self.water_texture, -1, textureUniqueId=self.water_texture, rgbaColor=[0, 0.3, 1, 0.7])
 

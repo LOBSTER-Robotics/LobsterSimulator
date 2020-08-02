@@ -22,7 +22,7 @@ class BuoyancyCylinder:
         for i in range(number_test_points_x):
             x = -length/2 + (length*i)/(number_test_points_x-1)
 
-            self.dots.append(PybulletAPI.createVisualSphere(radius, [0, 0, 1, 0.5]))
+            # self.dots.append(PybulletAPI.createVisualSphere(radius, [0, 0, 1, 0.5]))
             self.test_points.append(Vec3([x, 0, 0]))
 
     def _update(self):
@@ -37,20 +37,21 @@ class BuoyancyCylinder:
 
             dot_position = Translation.vec3_local_to_world(position, orientation, self.test_points[i])
 
-            PybulletAPI.resetBasePositionAndOrientation(self.dots[i], dot_position)
+            # PybulletAPI.resetBasePositionAndOrientation(self.dots[i], dot_position)
 
             if dot_position[Z] > WaterSurface.height_function(dot_position[X], dot_position[Y]):
                 under_water_count += 1
                 buoyancy_point += self.test_points[i]
                 # PybulletAPI.changeVisualShapeColor(self.dots[i], [0, 0, 1, 0.5])
+
             else:
-                pass
+                print(WaterSurface.height_function(dot_position[X], dot_position[Y]), dot_position[Z])
                 # PybulletAPI.changeVisualShapeColor(self.dots[i], [1, 0, 2, 0.5])
 
         if under_water_count > 0:
             buoyancy_point /= under_water_count
 
-        print(under_water_count, buoyancy_point)
+        # print(under_water_count, buoyancy_point)
 
         # Apply the buoyancy force
         self.robot.apply_force(buoyancy_point, Vec3([0, 0, -(self._buoyancy * under_water_count/self.number_test_points_x)]), relative_direction=False)

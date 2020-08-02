@@ -32,9 +32,6 @@ def main():
 
     simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
 
-    # PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/terrain.urdf"), Vec3([0, 0, 100]))
-
-
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
         desired_pos_sliders = [
@@ -55,7 +52,6 @@ def main():
     terrain_loader = Terrain.perlin_noise_terrain(30)
 
     paused = False
-
 
     cycles = 0
     previous_time = time.time()
@@ -115,9 +111,9 @@ def main():
             simulator.set_time_step(time_step)
 
             velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
-            high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1],
-                                         desired_location,
-                                         PybulletAPI.getQuaternionFromEuler(Vec3(desired_orientation)), time_step/1000000)
+            # high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1],
+            #                              desired_location,
+            #                              PybulletAPI.getQuaternionFromEuler(Vec3(desired_orientation)), time_step/1000000)
 
             rpm_motors = high_level_controller.motor_rpm_outputs
 

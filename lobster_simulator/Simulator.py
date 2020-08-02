@@ -71,10 +71,6 @@ class Simulator:
 
         self._time.add_time_step(self._time_step.microseconds)
 
-        if PybulletAPI.gui():
-            self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
-
-
         self.update_camera_position()
 
 

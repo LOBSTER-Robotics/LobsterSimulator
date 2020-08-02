@@ -66,7 +66,7 @@ class AUV:
         self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
 
         self._max_thrust = 100
-        self._buoyancy: float = 550
+        # self._buoyancy: float = 55000
 
     # TODO: This should in the future be based on the volume of the robot.
     def set_buoyancy(self, value: float):
@@ -126,7 +126,7 @@ class AUV:
         self.up_indicator.update_position(
             vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
-        # Apply the buoyancy force
+        # # Apply the buoyancy force
         # self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self.apply_damping()
