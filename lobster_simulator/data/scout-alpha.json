@@ -2,7 +2,7 @@
   "length"                    : 2.0,
   "diameter"                  : 0.2,
   "center_of_volume"          : [0, 0, 0],
-  "motors"                     : [
+  "thrusters"                     : [
     {
       "name": "left-front",
       "position": [-0.128, 0, 0.299],

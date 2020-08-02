@@ -1,7 +1,7 @@
 
 class PID:
 
-    def __init__(self, p=0, i=0, d=0, min_value=0, max_value=1, windup_guard = 20):
+    def __init__(self, p: float=0, i: float=0, d: float=0, min_value=0, max_value=1, windup_guard = 20):
         self.kp = p
         self.ki = i
         self.kd = d
@@ -10,7 +10,7 @@ class PID:
         self.i_term = 0.0
         self.d_term = 0.0
 
-        self.target = 0
+        self.target = 0.0
         self.previous_error = None
 
         self.int_error = 0.0
@@ -21,8 +21,8 @@ class PID:
 
         self.output = 0
 
-    def update(self, feedback_value, delta_time):
-        error = self.target - feedback_value
+    def update(self, feedback_value: float, delta_time: float):
+        error: float = self.target - feedback_value
         delta_error = 0
         if self.previous_error:
             delta_error = error - self.previous_error
@@ -41,6 +41,11 @@ class PID:
             self.d_term = delta_error / delta_time
 
         self.previous_error = error
+
+        if self.p_term > self.max:
+            self.p_term = self.max
+        elif self.p_term < self.min:
+            self.p_term = self.min
 
         self.output = self.p_term + (self.ki * self.i_term) + (self.kd * self.d_term)
 
