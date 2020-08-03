@@ -26,7 +26,7 @@ class HighLevelController:
     ]
 
     rate_pids = [
-        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # PITCHH
+        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # PITCH
         PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # ROLL
         PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491)   # YAW
     ]
