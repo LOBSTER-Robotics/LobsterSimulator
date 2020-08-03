@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, TYPE_CHECKING
 
 from lobster_simulator.common.Calculations import *
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
