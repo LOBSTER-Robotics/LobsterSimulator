@@ -11,11 +11,8 @@ import pybullet_data
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
-
-if TYPE_CHECKING:
-    pass
-
 from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
 
 
@@ -31,6 +28,7 @@ class PybulletAPI:
 
     KEY_WAS_TRIGGERED = p.KEY_WAS_TRIGGERED
     KEY_IS_DOWN = p.KEY_IS_DOWN
+    DELETE_KEY = p.B3G_DELETE
 
     __instance = None
 
@@ -45,13 +43,11 @@ class PybulletAPI:
             p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
-            p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 0)
+            p.configureDebugVisualizer(p.COV_ENABLE_SHADOWS, 1)
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
         else:
             self._physics_client_id = p.connect(p.DIRECT)
-
-        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)
@@ -193,12 +189,30 @@ class PybulletAPI:
         p.applyExternalForce(objectUniqueId, -1, forceObj.asENU(), posObj.asENU(), frame.value)
 
     @staticmethod
+    def changeVisualShapeColor(objectUniqueId: int, color: List[float]):
+        p.changeVisualShape(objectUniqueId=objectUniqueId, linkIndex=-1, rgbaColor=color)
+
+    @staticmethod
     def createVisualSphere(radius, rgbaColor) -> int:
         sphereShape = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=rgbaColor)
         return p.createMultiBody(0, -1, sphereShape, [0, 0, 0])
 
     @staticmethod
-    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3) -> Tuple[float, Vec3, Vec3]:
+    def createVisualPlane(radius, rgbaColor) -> int:
+        shape = p.createVisualShape(p.GEOM_PLANE, radius=radius, rgbaColor=rgbaColor)
+        return p.createMultiBody(0, -1, shape, [0, 0, 0])
+
+    @staticmethod
+    def createVisualCylinder(radius: float, height: float, color: List[float], orientation: Quaternion):
+        shape = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=height, rgbaColor=color)
+        return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation)
+
+    @staticmethod
+    def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
+        if object_id != -1:
+            rayFromPosition = Translation.vec3_local_to_world_id(object_id, rayFromPosition)
+            rayToPosition = Translation.vec3_local_to_world_id(object_id, rayToPosition)
+
         _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
@@ -206,6 +220,10 @@ class PybulletAPI:
     @staticmethod
     def removeBody(objectUniqueId: int):
         p.removeBody(objectUniqueId)
+
+    @staticmethod
+    def removeUserDebugItem(itemUniqueId: int):
+        p.removeUserDebugItem(itemUniqueId=itemUniqueId)
 
     @staticmethod
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):

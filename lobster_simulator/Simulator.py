@@ -6,7 +6,7 @@ import time as t
 from pkg_resources import resource_stream
 
 from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.tools.DebugVisualization import DebugLine
+from lobster_simulator.environment.water_surface import WaterSurface
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
@@ -20,7 +20,7 @@ class Models(Enum):
 class Simulator:
     robot = None
 
-    def __init__(self, time_step: int, model=Models.SCOUT_ALPHA, config=None, gui=True):
+    def __init__(self, time_step: int, config=None, gui=True):
         """
         Simulator
         :param time_step: duration of a step in microseconds
@@ -45,16 +45,16 @@ class Simulator:
         self._cycle = 0
 
         PybulletAPI.initialize(self._time_step, gui)
+        self.water_surface = WaterSurface(self._time)
 
         self._simulator_frequency_slider = PybulletAPI.addUserDebugParameter("simulation frequency", 10, 1000,
                                                                              1 / self._time_step.microseconds)
         self._buoyancy_force_slider = PybulletAPI.addUserDebugParameter("buoyancyForce", 0, 1000, 550)
 
-        self._model = model
-        self.create_robot(model)
+        self._model = None
+        self.robot_config = None
 
-        self._camera_position = self.robot.get_position()
-
+        self._camera_position = Vec3([0, 0, 0])
 
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
@@ -62,7 +62,7 @@ class Simulator:
     def set_time_step(self, time_step_microseconds: int) -> None:
         """
         Sets the size of the time steps the simulator makes
-        :param time_step: Time step in microseconds
+        :param time_step_microseconds: Time step in microseconds
         """
 
         self._time_step = SimulationTime(time_step_microseconds)
@@ -72,9 +72,6 @@ class Simulator:
         """Progresses the simulation by exactly one time step."""
 
         self._time.add_time_step(self._time_step.microseconds)
-
-        if PybulletAPI.gui():
-            self.robot.set_buoyancy(PybulletAPI.readUserDebugParameter(self._buoyancy_force_slider))
 
         self.update_camera_position()
 
@@ -111,7 +108,7 @@ class Simulator:
         """
         return self.robot
 
-    def create_robot(self, model: Models) -> AUV:
+    def create_robot(self, model: Models = Models.SCOUT_ALPHA, **kwargs) -> AUV:
         """
         Creates a new robot based on the given model.
         :param model: Model of the robot. (Scout-alpha, PTV)
@@ -124,9 +121,12 @@ class Simulator:
             model_config = 'ptv.json'
 
         with resource_stream('lobster_simulator', f'data/{model_config}') as f:
-            lobster_config = json.load(f)
+            self.robot_config = json.load(f)
 
-        self.robot = AUV(lobster_config)
+        # Add extra arguments to the robot config
+        self.robot_config.update(kwargs)
+
+        self.robot = AUV(self.robot_config)
 
         return self.robot
 
@@ -134,4 +134,6 @@ class Simulator:
         """
         Resets the robot using the same configuration.
         """
-        self.create_robot(self._model)
+        # PybulletAPI.removeBody(self.robot._id)
+        self.robot.remove()
+        self.create_robot(self._model, **self.robot_config)

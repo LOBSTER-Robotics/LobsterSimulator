@@ -8,7 +8,7 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="0 0 0"
+        xyz="-0.022195 1.3236E-09 3.3647E-08"
         rpy="0 0 0" />
       <mass
         value="54.954" />
@@ -31,7 +31,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="1 1 1 0.8" />
       </material>
     </visual>
     <collision>

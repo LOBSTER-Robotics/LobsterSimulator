@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, TYPE_CHECKING
 
 from lobster_simulator.common.Calculations import *
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
@@ -137,3 +138,7 @@ class DVL(Sensor):
         velocity = self._robot.get_velocity()
 
         return [distance_to_seafloor, velocity]
+
+    def remove(self):
+        for beam in self.beamVisualizers:
+            beam.remove()

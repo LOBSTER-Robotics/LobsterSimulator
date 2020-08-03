@@ -1,21 +1,20 @@
-import numpy as np
-
 from typing import List, Tuple, Dict
 
+import numpy as np
 from pkg_resources import resource_filename
 
-from lobster_simulator.common.Quaternion import Quaternion
-from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.sensors.DVL import DVL
-from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Thruster import Thruster
+from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.Accelerometer import Accelerometer
+from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.DebugVisualization import DebugLine, DebugSphere
+from lobster_simulator.tools.Constants import Z
+from lobster_simulator.tools.PybulletAPI import Frame
+from lobster_simulator.tools.PybulletAPI import PybulletAPI as p
 from lobster_simulator.tools.Translation import *
 
 
@@ -29,30 +28,26 @@ class AUV:
 
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
-        self._id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/Model_URDF.SLDASM.urdf"),
-                                        Vec3([0, 0, -3]),
-                                        PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
+        self._id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
+                              Vec3([0, 0, -1]),
+                              p.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
+        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
         for i in range(len(config_thrusters)):
-            self.thrusters[config_thrusters[i]['name']] = Thruster.new_T200(self._id, config_thrusters[i]['name'],
+            self.thrusters[config_thrusters[i]['name']] = Thruster.new_T200(self, config_thrusters[i]['name'],
                                                                             Vec3(config_thrusters[i]['position']),
                                                                             Vec3(config_thrusters[i]['direction']))
 
         # Set damping to zero, because default is not zero
-        PybulletAPI.changeDynamics(self._id, linearDamping=0.0, angularDamping=0.0)
+        p.changeDynamics(self._id, linearDamping=0.0, angularDamping=0.0)
 
         self._motor_debug_lines = list()
         self._motor_count = len(config_thrusters)
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
-        for thruster in self.thrusters.values():
-            self._motor_debug_lines.append(DebugLine(thruster._position, thruster._position,
-                                                     parentIndex=self._id, color=[0, 0, 1]))
-
-        self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
@@ -61,7 +56,6 @@ class AUV:
         self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
 
         self._max_thrust = 100
-        self._buoyancy: float = 550
 
     # TODO: This should in the future be based on the volume of the robot.
     def set_buoyancy(self, value: float):
@@ -80,33 +74,16 @@ class AUV:
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
-        lobster_pos, lobster_orn = self.get_position_and_orientation()
-
         self._depth_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)
         self._magnetometer.update(time, dt)
         self._dvl.update(time, dt)
 
-        PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
+        self._buoyancy._update()
 
         for thruster in self.thrusters.values():
             thruster._update(dt)
-
-
-        # Update debug lines in a max frequency. Check the first line if it can be updated.
-        if self._motor_debug_lines[0].can_update():
-            for i, thruster in enumerate(self.thrusters.values()):
-                self._motor_debug_lines[i].update(thruster._position,
-                                                  thruster._position
-                                                  + thruster._direction * thruster.current_thrust / 100,
-                                                  self._id)
-
-        self.up_indicator.update_position(
-            vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
-
-        # Apply the buoyancy force
-        self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
         self._apply_damping()
 
@@ -115,7 +92,7 @@ class AUV:
         Gets both the position and the orientation of the robot.
         :return: Tuple with the position and the orientation.
         """
-        return PybulletAPI.getBasePositionAndOrientation(self._id)
+        return p.getBasePositionAndOrientation(self._id)
 
     def get_position(self) -> Vec3:
         """
@@ -137,10 +114,10 @@ class AUV:
         """
         Gets the linear velocity of the Robot in the World frame.
         """
-        return PybulletAPI.getBaseVelocity(self._id)[0]
+        return p.getBaseVelocity(self._id)[0]
 
     def get_angular_velocity(self):
-        return PybulletAPI.getBaseVelocity(self._id)[1]
+        return p.getBaseVelocity(self._id)[1]
 
     def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
         """
@@ -155,7 +132,7 @@ class AUV:
             force = vec3_rotate_vector_to_local(self.get_orientation(), force)
 
         # Apply the force in the local frame
-        PybulletAPI.applyExternalForce(self._id, force, force_pos, Frame.LINK_FRAME)
+        p.applyExternalForce(self._id, force, force_pos, Frame.LINK_FRAME)
 
     def set_position_and_orientation(self, position: Vec3 = None, orientation: Quaternion = None) -> None:
         """
@@ -168,7 +145,7 @@ class AUV:
         if orientation is None:
             orientation = self.get_orientation()
 
-        PybulletAPI.resetBasePositionAndOrientation(self._id, position, orientation)
+        p.resetBasePositionAndOrientation(self._id, position, orientation)
 
     def set_velocity(self, linear_velocity: Vec3 = None, angular_velocity: Vec3 = None, local_frame=False) -> None:
         """
@@ -186,13 +163,19 @@ class AUV:
             linear_velocity = vec3_rotate_vector_to_world(self.get_orientation(), linear_velocity)
             angular_velocity = vec3_rotate_vector_to_world(self.get_orientation(), angular_velocity)
 
-        PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
+        p.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
 
     def _apply_damping(self):
         """
         Applies damping to the robot on its linear and angular velocity.
         See https://docs.lobster-robotics.com/scout/robots/scout-alpha/scout-simulator-model
         """
+
+        # Don't apply damping if the robot is above water
+        # TODO. This creates a unrealistic hard boundary for enabling and disabling damping, so perhaps this should be
+        #  improved in the future.
+        if self.get_position()[Z] < 0:
+            return
 
         velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
         angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
@@ -205,6 +188,13 @@ class AUV:
         linear_damping_force = Vec3(damping[:3])
         angular_damping_torque = Vec3(damping[3:])
 
-        PybulletAPI.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
-                                       frame=Frame.LINK_FRAME)
-        PybulletAPI.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
+        p.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
+                             frame=Frame.LINK_FRAME)
+        p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
+
+    def remove(self):
+        p.removeBody(self._id)
+        self._dvl.remove()
+        self._buoyancy.remove()
+        for thruster in self.thrusters.values():
+            thruster.remove()

@@ -1,7 +1,8 @@
 import unittest
 
 from lobster_simulator.Simulator import Simulator
-from lobster_simulator.sensors.DVL import SEAFLOOR_DEPTH, DVL, Vec3
+from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.sensors.DVL import SEAFLOOR_DEPTH
 from lobster_simulator.tools.Constants import *
 
 
@@ -9,7 +10,7 @@ class DVLTest(unittest.TestCase):
 
     def test_altitude(self):
         simulator = Simulator(4000, gui=False)
-
+        simulator.create_robot()
         previous_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
 
         for _ in range(100):
@@ -33,6 +34,7 @@ class DVLTest(unittest.TestCase):
 
     def test_velocity(self):
         simulator = Simulator(4000, gui=False)
+        simulator.create_robot()
         simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
 
         previous_velocity = simulator.robot.get_velocity()

@@ -4,8 +4,8 @@ import time
 
 from control.HighLevelController import HighLevelController
 from lobster_simulator.Simulator import Simulator, Models
-from lobster_simulator.common.Terrain import Terrain
 from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.environment.Terrain import Terrain
 from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
@@ -27,7 +27,9 @@ def main():
 
     time_step = 4000
 
-    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, config=None, gui=gui)
+    simulator = Simulator(time_step, gui=gui,
+                          config={"rotate_camera_with_robot": False})
+    simulator.create_robot(Models.SCOUT_ALPHA)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -41,7 +43,7 @@ def main():
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
-    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]))
+    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]), position_control=False)
 
     terrain_loader = Terrain.perlin_noise_terrain(30)
 
@@ -53,8 +55,12 @@ def main():
     
     while True:
         keys = PybulletAPI.getKeyboardEvents()
-        if ord('p') in keys and keys[ord('p')] == PybulletAPI.KEY_WAS_TRIGGERED:
+        if ord('p') in keys and keys[ord('p')] == 3:
             paused = not paused
+        if ord('r') in keys and keys[ord('r')] == 3:
+            simulator.reset_robot()
+        if PybulletAPI.DELETE_KEY in keys and keys[PybulletAPI.DELETE_KEY] == 3:
+            break
 
         lobster_pos, lobster_orn = simulator.robot.get_position_and_orientation()
 
