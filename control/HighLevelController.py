@@ -71,6 +71,7 @@ class HighLevelController:
                                                                         "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
 
         self.gamepad = Gamepad()
+        self.gamepad.start()
 
     def set_target_rate(self, direction, target):
         self.desired_rates[direction] = target

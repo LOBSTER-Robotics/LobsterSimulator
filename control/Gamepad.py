@@ -11,14 +11,20 @@ class Gamepad:
 
         self.state = dict()
         self.running = False
+        self._reset_state()
+
+    def start(self):
+        if self.running:
+            return
 
         thread = threading.Thread(target=self._polling, args=())
         thread.start()  # Start the execution
 
+    def stop(self):
+        self.running = False
+
     def _polling(self):
         self.running = True
-
-        self._reset_state()
 
         while self.running:
             try:
@@ -35,9 +41,6 @@ class Gamepad:
                 break
 
         self._reset_state()
-
-    def stop(self):
-        self.running = False
 
     def _reset_state(self):
         self.state['ABS_X'] = 0
