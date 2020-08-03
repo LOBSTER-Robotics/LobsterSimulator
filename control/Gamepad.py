@@ -25,22 +25,17 @@ class Gamepad:
 
     def _polling(self):
         self.running = True
-
-        while self.running:
-            try:
+        try:
+            while self.running:
                 events = inputs.get_gamepad()
                 for event in events:
                     self.state[event.code] = event.state
-            except RuntimeError:
-                self.state['ABS_X'] = 0
-                self.state['ABS_Y'] = 0
-                self.state['ABS_Z'] = 0
-                self.state['ABS_RX'] = 0
-                self.state['ABS_RY'] = 0
-                self.state['ABS_RZ'] = 0
-                break
 
-        self._reset_state()
+        except RuntimeError:
+            print("Controller Disconnected!")
+
+        finally:
+            self._reset_state()
 
     def _reset_state(self):
         self.state['ABS_X'] = 0
