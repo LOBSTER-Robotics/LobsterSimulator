@@ -9,7 +9,7 @@ class Gamepad:
 
         print(list(inputs.devices))
 
-        self.state = dict()
+        self.state = {}
         self.running = False
         self._reset_state()
 
