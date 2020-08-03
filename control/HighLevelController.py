@@ -45,9 +45,9 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self, gui, desired_position, desired_orientation, position_control=True):
-        self.desired_position: Vec3 = desired_position
-        self.desired_orientation: Vec3 = desired_orientation
+    def __init__(self, gui: bool, desired_position: Vec3, desired_orientation: Vec3, position_control: bool = True):
+        self.desired_position = desired_position
+        self.desired_orientation = desired_orientation
 
         self.relative_yaw = 0
         self.relative_pitch = 0
