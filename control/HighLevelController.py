@@ -17,7 +17,7 @@ class HighLevelController:
     purposes.
     """
 
-    motor_rpm_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
+    motor_thrust_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
         PID(p=2, i=0, d=0, min_value=-100, max_value=100),  # PITCH
@@ -168,13 +168,13 @@ class HighLevelController:
         self.previous_velocity = Vec3(local_frame_velocity.array.copy())
 
         for i in range(4):
-            self.motor_rpm_outputs[i] = self.velocity_pids[X].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[X].output
 
         for i in range(4, 6):
-            self.motor_rpm_outputs[i] = self.velocity_pids[Y].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[Y].output
 
         for i in range(6, 8):
-            self.motor_rpm_outputs[i] = self.velocity_pids[Z].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[Z].output
 
         #
         # Orientation
@@ -210,13 +210,13 @@ class HighLevelController:
         self.rate_pids[ROLL].update(-rates[ROLL], dt)
 
         # Translate world frame angular velocities to local frame angular velocities
-        self.motor_rpm_outputs[0] -= self.rate_pids[PITCH].output
-        self.motor_rpm_outputs[1] += self.rate_pids[PITCH].output
+        self.motor_thrust_outputs[0] -= self.rate_pids[PITCH].output
+        self.motor_thrust_outputs[1] += self.rate_pids[PITCH].output
 
-        self.motor_rpm_outputs[2] += self.rate_pids[YAW].output
-        self.motor_rpm_outputs[3] -= self.rate_pids[YAW].output
+        self.motor_thrust_outputs[2] += self.rate_pids[YAW].output
+        self.motor_thrust_outputs[3] -= self.rate_pids[YAW].output
 
-        self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[6] -= self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[7] += self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[4] += self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[5] -= self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[6] -= self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[7] += self.rate_pids[ROLL].output
