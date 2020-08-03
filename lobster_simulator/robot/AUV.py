@@ -35,7 +35,8 @@ class AUV:
                                         Vec3([0, 0, -1]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
-        self._buoyancy = Buoyancy(self, 0.10, 2, 0.05)
+
+        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyance_resolution'))
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()

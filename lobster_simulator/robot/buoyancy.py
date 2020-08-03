@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 from lobster_simulator.common.Vec3 import Vec3
@@ -10,7 +12,7 @@ from lobster_simulator.tools.PybulletAPI import PybulletAPI
 
 class Buoyancy:
 
-    def __init__(self, robot: 'AUV', radius: float, length: float, resolution: float = 0.1, visualize: bool = False):
+    def __init__(self, robot: 'AUV', radius: float, length: float, resolution: Optional[float] = None, visualize: bool = False):
         self._robot: AUV = robot
 
         self._buoyancy: float = 550
@@ -25,9 +27,14 @@ class Buoyancy:
         self.dot_under_water = list()
         self.test_points = list()
 
-        x_range = np.arange(-length / 2, length / 2, self.resolution)
-        y_range = np.arange(-radius, radius + self.resolution, self.resolution)
-        z_range = np.arange(-radius, radius + self.resolution, self.resolution)
+        if resolution:
+            x_range = np.arange(-length / 2, length / 2, self.resolution)
+            y_range = np.arange(-radius, radius + self.resolution, self.resolution)
+            z_range = np.arange(-radius, radius + self.resolution, self.resolution)
+        else:
+            x_range = range(1)
+            y_range = range(1)
+            z_range = range(1)
 
         total_points = len(x_range) * len(y_range) * len(z_range)
         print(f"Total points to check: {total_points}")
@@ -48,7 +55,11 @@ class Buoyancy:
 
                         if self.visualize:
                             self.dot_under_water.append(True)
-                            self.dots.append(PybulletAPI.createVisualSphere(self.resolution / 4, [0, 0, 1, 1]))
+                            if self.resolution:
+                                sphere_size = self.resolution / 4
+                            else:
+                                sphere_size = 0.05
+                            self.dots.append(PybulletAPI.createVisualSphere(sphere_size, [0, 0, 1, 1]))
 
                         self.test_points.append(Vec3([x, y, z]))
 
