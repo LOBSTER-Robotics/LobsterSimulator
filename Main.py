@@ -3,14 +3,11 @@ import json
 import time
 
 from control.HighLevelController import HighLevelController
-from lobster_simulator.environment.Terrain import Terrain
-from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.tools import Translation
-from lobster_simulator.tools.Constants import *
 from lobster_simulator.Simulator import Simulator, Models
+from lobster_simulator.common.Vec3 import Vec3
+from lobster_simulator.environment.Terrain import Terrain
+from lobster_simulator.tools.Constants import *
 from lobster_simulator.tools.PybulletAPI import PybulletAPI
-
-import pybullet as p
 
 
 def read_config():
