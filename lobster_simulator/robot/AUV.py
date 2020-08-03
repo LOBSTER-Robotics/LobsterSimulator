@@ -193,7 +193,6 @@ class AUV:
         p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
 
     def remove(self):
-        print("Deleting UAV with id", self._id)
         p.removeBody(self._id)
         self._dvl.remove()
         self._buoyancy.remove()

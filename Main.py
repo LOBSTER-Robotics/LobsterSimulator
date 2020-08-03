@@ -58,9 +58,7 @@ def main():
         if ord('p') in keys and keys[ord('p')] == 3:
             paused = not paused
         if ord('r') in keys and keys[ord('r')] == 3:
-            print("robot id", simulator.robot._id)
             simulator.reset_robot()
-            print("after robot id", simulator.robot._id)
         if PybulletAPI.DELETE_KEY in keys and keys[PybulletAPI.DELETE_KEY] == 3:
             break
 
