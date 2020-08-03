@@ -7,8 +7,6 @@ class Gamepad:
 
     def __init__(self):
 
-        print(list(inputs.devices))
-
         self.state = {}
         self.running = False
         self._reset_state()
