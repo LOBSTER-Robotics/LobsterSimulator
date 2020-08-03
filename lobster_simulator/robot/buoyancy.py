@@ -23,9 +23,9 @@ class Buoyancy:
 
         self.visualize = visualize
 
-        self.dots = list()
-        self.dot_under_water = list()
-        self.test_points = list()
+        self.dots = []
+        self.dot_under_water = []
+        self.test_points = []
 
         if resolution:
             x_range = np.arange(-length / 2, length / 2, self.resolution)
@@ -37,7 +37,6 @@ class Buoyancy:
             z_range = range(1)
 
         total_points = len(x_range) * len(y_range) * len(z_range)
-        print(f"Total points to check: {total_points}")
         count = 0
         for x in x_range:
             for y in y_range:
