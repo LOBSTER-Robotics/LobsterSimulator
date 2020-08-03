@@ -3,19 +3,20 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, Dict
-
-import pybullet as p
-import pybullet_data
-from pkg_resources import resource_filename
+from typing import List, Tuple, Dict, TYPE_CHECKING, Optional
 
 import numpy as np
+import pybullet as p
+import pybullet_data
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 
+if TYPE_CHECKING:
+    pass
+
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.Constants import GRAVITY
+from lobster_simulator.tools.Constants import *
 
 
 class Frame(Enum):
@@ -29,6 +30,7 @@ class PybulletAPI:
     """
 
     KEY_WAS_TRIGGERED = p.KEY_WAS_TRIGGERED
+    KEY_IS_DOWN = p.KEY_IS_DOWN
 
     __instance = None
 
@@ -134,14 +136,22 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: Vec3) -> None:
+    def moveCameraToPosition(position: Vec3, orientation: Optional[Quaternion] = None) -> None:
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
 
+            if orientation:
+                orn = PybulletAPI.getEulerFromQuaternion(orientation)
+                yaw = - orn[YAW] * 360 / (2 * math.pi) - 90
+                pitch = orn[ROLL] * 360 / (2 * math.pi) - 20
+            else:
+                yaw = camera_info[8]
+                pitch = camera_info[9]
+
             p.resetDebugVisualizerCamera(
                 cameraDistance=camera_info[10],
-                cameraYaw=camera_info[8],
-                cameraPitch=camera_info[9],
+                cameraYaw=yaw,
+                cameraPitch=pitch,
                 cameraTargetPosition=position.asENU()
             )
 

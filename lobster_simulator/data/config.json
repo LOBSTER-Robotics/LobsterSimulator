@@ -1,5 +1,6 @@
 {
   "simulator_frequency"       : 240,
   "max_rpm_change_per_second" : 100000,
-  "center_of_volume"          : [0, 0, 0]
+  "center_of_volume"          : [0, 0, 0],
+  "rotate_camera_with_robot"  : false
 }
