@@ -108,7 +108,7 @@ class Simulator:
         """
         return self.robot
 
-    def create_robot(self, model: Models, **kwargs) -> AUV:
+    def create_robot(self, model: Models = Models.SCOUT_ALPHA, **kwargs) -> AUV:
         """
         Creates a new robot based on the given model.
         :param model: Model of the robot. (Scout-alpha, PTV)
