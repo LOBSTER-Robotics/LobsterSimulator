@@ -62,7 +62,7 @@ class Simulator:
     def set_time_step(self, time_step_microseconds: int) -> None:
         """
         Sets the size of the time steps the simulator makes
-        :param time_step_microseconds:
+        :param time_step_microseconds: Time step in microseconds
         """
 
         self._time_step = SimulationTime(time_step_microseconds)
