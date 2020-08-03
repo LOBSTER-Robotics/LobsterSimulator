@@ -3,22 +3,16 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, Dict, TYPE_CHECKING
-
-import pybullet as p
-import pybullet_data
-from pkg_resources import resource_filename
+from typing import List, Tuple, Dict
 
 import numpy as np
+import pybullet as p
+import pybullet_data
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.tools import Translation
-
-if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import AUV
-
 from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
 
 
@@ -34,6 +28,7 @@ class PybulletAPI:
 
     KEY_WAS_TRIGGERED = p.KEY_WAS_TRIGGERED
     KEY_IS_DOWN = p.KEY_IS_DOWN
+    DELETE_KEY = p.B3G_DELETE
 
     __instance = None
 
@@ -53,8 +48,6 @@ class PybulletAPI:
 
         else:
             self._physics_client_id = p.connect(p.DIRECT)
-
-        # p.configureDebugVisualizer(p.COV_ENABLE_Y_AXIS_UP)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setTimeStep(time_step.seconds)

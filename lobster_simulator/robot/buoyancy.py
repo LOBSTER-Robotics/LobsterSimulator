@@ -18,10 +18,6 @@ class Buoyancy:
         self.resolution = resolution
 
         pos = Vec3([0, 0, 0])
-        print(PybulletAPI.rayTest(pos + Vec3([0, 1, 0]), pos, object_id=self._robot._id)[0] < 1,
-              PybulletAPI.rayTest(pos + Vec3([0, 0, 1]), pos, object_id=self._robot._id)[0] < 1,
-              PybulletAPI.rayTest(pos + Vec3([0, -1, 0]), pos, object_id=self._robot._id)[0] < 1,
-              PybulletAPI.rayTest(pos + Vec3([0, 0, -1]), pos, object_id=self._robot._id)[0] < 1)
 
         self.visualize = visualize
 
@@ -66,7 +62,6 @@ class Buoyancy:
         # Only do the computationally intensive calculation of the buoyance point and force when the robot is close to
         #  the surface
         if robot_pos[Z] - 1 < WaterSurface.water_height(robot_pos[X], robot_pos[Y]):
-            print("near surface")
             for i in range(len(self.test_points)):
                 position, orientation = self._robot.get_position_and_orientation()
 
