@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from pkg_resources import resource_filename
 
-from lobster_simulator.common.Gamepad import Gamepad
+from control.Gamepad import Gamepad
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -45,9 +45,9 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self, gui, desired_position, desired_orientation, position_control=True):
-        self.desired_position: Vec3 = desired_position
-        self.desired_orientation: Vec3 = desired_orientation
+    def __init__(self, gui: bool, desired_position: Vec3, desired_orientation: Vec3, position_control: bool = True):
+        self.desired_position = desired_position
+        self.desired_orientation = desired_orientation
 
         self.relative_yaw = 0
         self.relative_pitch = 0
@@ -71,6 +71,7 @@ class HighLevelController:
                                                                         "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
 
         self.gamepad = Gamepad()
+        self.gamepad.start()
 
     def set_target_rate(self, direction, target):
         self.desired_rates[direction] = target

@@ -3,20 +3,17 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, Dict, TYPE_CHECKING
-
-import pybullet as p
-import pybullet_data
-from pkg_resources import resource_filename
+from typing import List, Tuple, Dict, TYPE_CHECKING, Optional
 
 import numpy as np
+import pybullet as p
+import pybullet_data
 
 from lobster_simulator.common.Quaternion import Quaternion
 from lobster_simulator.common.Vec3 import Vec3
 
-
 if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import AUV
+    pass
 
 from lobster_simulator.simulation_time import SimulationTime
 from lobster_simulator.tools.Constants import *
@@ -139,14 +136,14 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: Vec3, orientation: Quaternion = None) -> None:
+    def moveCameraToPosition(position: Vec3, orientation: Optional[Quaternion] = None) -> None:
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
 
             if orientation:
                 orn = PybulletAPI.getEulerFromQuaternion(orientation)
-                yaw = - orn[YAW] * 360 / (2*math.pi) - 90
-                pitch = orn[ROLL] * 360 / (2*math.pi) - 20
+                yaw = - orn[YAW] * 360 / (2 * math.pi) - 90
+                pitch = orn[ROLL] * 360 / (2 * math.pi) - 20
             else:
                 yaw = camera_info[8]
                 pitch = camera_info[9]
@@ -205,6 +202,10 @@ class PybulletAPI:
         _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
 
         return hit_fraction, Vec3.fromENU(hit_position), Vec3.fromENU(hit_normal)
+
+    @staticmethod
+    def removeBody(objectUniqueId: int):
+        p.removeBody(objectUniqueId)
 
     @staticmethod
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
