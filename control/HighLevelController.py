@@ -3,6 +3,7 @@ from typing import List, Dict
 from pkg_resources import resource_filename
 
 from control.Gamepad import Gamepad
+from lobster_simulator.tools.PybulletAPI import PybulletAPI
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
