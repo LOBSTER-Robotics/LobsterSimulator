@@ -60,8 +60,10 @@ def main():
     
     while True:
         keys = PybulletAPI.getKeyboardEvents()
-        if ord('p') in keys and keys[ord('p')] == PybulletAPI.KEY_WAS_TRIGGERED:
+        if ord('p') in keys and keys[ord('p')] == 3:
             paused = not paused
+        if PybulletAPI.DELETE_KEY in keys and keys[PybulletAPI.DELETE_KEY] == 3:
+            break
 
         lobster_pos, lobster_orn = simulator.robot.get_position_and_orientation()
 
