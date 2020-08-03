@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, TYPE_CHECKING, Optional
 
 import numpy as np
 import pybullet as p
@@ -132,14 +132,14 @@ class PybulletAPI:
         return p.getKeyboardEvents()
 
     @staticmethod
-    def moveCameraToPosition(position: Vec3, orientation: Quaternion = None) -> None:
+    def moveCameraToPosition(position: Vec3, orientation: Optional[Quaternion] = None) -> None:
         if PybulletAPI.gui():
             camera_info = p.getDebugVisualizerCamera()
 
             if orientation:
                 orn = PybulletAPI.getEulerFromQuaternion(orientation)
-                yaw = - orn[YAW] * 360 / (2*math.pi) - 90
-                pitch = orn[ROLL] * 360 / (2*math.pi) - 20
+                yaw = - orn[YAW] * 360 / (2 * math.pi) - 90
+                pitch = orn[ROLL] * 360 / (2 * math.pi) - 20
             else:
                 yaw = camera_info[8]
                 pitch = camera_info[9]

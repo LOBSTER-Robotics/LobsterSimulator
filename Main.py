@@ -44,9 +44,6 @@ def main():
 
     high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]), position_control=False)
 
-    # desired_location = simulator.robot.get_position()
-    # desired_orientation = [0.0, 0.0, 0.0]
-
     terrain_loader = Terrain.perlin_noise_terrain(30)
 
     paused = False
@@ -72,12 +69,6 @@ def main():
             if gui:
                 time_step = PybulletAPI.readUserDebugParameter(simulator_time_step_slider)
 
-                # desired_location = [
-                #     PybulletAPI.readUserDebugParameter(desired_pos_sliders[0]),
-                #     PybulletAPI.readUserDebugParameter(desired_pos_sliders[1]),
-                #     PybulletAPI.readUserDebugParameter(desired_pos_sliders[2])
-                # ]
-
                 high_level_controller.set_target_rate(ROLL, PybulletAPI.readUserDebugParameter(roll_rate_slider))
 
             simulator.set_time_step(time_step)
@@ -85,11 +76,10 @@ def main():
             velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
             high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1], time_step/1000000)
 
-            rpm_motors = high_level_controller.motor_rpm_outputs
+            thrust_motors = high_level_controller.motor_thrust_outputs
 
-            # simulator.get_robot().set_desired_rpm_motors(rpm_motors)
             for i, thruster in enumerate(simulator.get_robot().thrusters.values()):
-                thruster.set_desired_thrust(rpm_motors[i])
+                thruster.set_desired_thrust(thrust_motors[i])
 
             simulator.do_step()
 

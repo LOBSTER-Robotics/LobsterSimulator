@@ -13,7 +13,6 @@ setuptools.setup(
     install_requires=['pybullet',
                       'numpy',
                       'noise',
-                      'inputs'
                       ],
 
     classifiers=[],

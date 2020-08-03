@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from pkg_resources import resource_filename
 
-from lobster_simulator.common.Gamepad import Gamepad
+from control.Gamepad import Gamepad
 from .PID import PID
 from lobster_simulator.tools import Translation
 from lobster_simulator.tools.Constants import *
@@ -17,7 +17,7 @@ class HighLevelController:
     purposes.
     """
 
-    motor_rpm_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
+    motor_thrust_outputs: List[int] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     orientation_pids = [
         PID(p=2, i=0, d=0, min_value=-100, max_value=100),  # PITCH
@@ -26,7 +26,7 @@ class HighLevelController:
     ]
 
     rate_pids = [
-        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # PITCHH
+        PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # PITCH
         PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491),  # ROLL
         PID(p=100000/80, i=0, d=0, min_value=-(40.2073 + 51.48491), max_value=40.2073 + 51.48491)   # YAW
     ]
@@ -45,9 +45,9 @@ class HighLevelController:
 
     forward_thrust_pid = PID(p=0.1, i=0.4, d=0, min_value=-1, max_value=1)
 
-    def __init__(self, gui, desired_position, desired_orientation, position_control=True):
-        self.desired_position: Vec3 = desired_position
-        self.desired_orientation: Vec3 = desired_orientation
+    def __init__(self, gui: bool, desired_position: Vec3, desired_orientation: Vec3, position_control: bool = True):
+        self.desired_position = desired_position
+        self.desired_orientation = desired_orientation
 
         self.relative_yaw = 0
         self.relative_pitch = 0
@@ -71,6 +71,7 @@ class HighLevelController:
                                                                         "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
 
         self.gamepad = Gamepad()
+        self.gamepad.start()
 
     def set_target_rate(self, direction, target):
         self.desired_rates[direction] = target
@@ -166,13 +167,13 @@ class HighLevelController:
         self.previous_velocity = Vec3(local_frame_velocity.array.copy())
 
         for i in range(4):
-            self.motor_rpm_outputs[i] = self.velocity_pids[X].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[X].output
 
         for i in range(4, 6):
-            self.motor_rpm_outputs[i] = self.velocity_pids[Y].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[Y].output
 
         for i in range(6, 8):
-            self.motor_rpm_outputs[i] = self.velocity_pids[Z].output
+            self.motor_thrust_outputs[i] = self.velocity_pids[Z].output
 
         #
         # Orientation
@@ -208,13 +209,13 @@ class HighLevelController:
         self.rate_pids[ROLL].update(-rates[ROLL], dt)
 
         # Translate world frame angular velocities to local frame angular velocities
-        self.motor_rpm_outputs[0] -= self.rate_pids[PITCH].output
-        self.motor_rpm_outputs[1] += self.rate_pids[PITCH].output
+        self.motor_thrust_outputs[0] -= self.rate_pids[PITCH].output
+        self.motor_thrust_outputs[1] += self.rate_pids[PITCH].output
 
-        self.motor_rpm_outputs[2] += self.rate_pids[YAW].output
-        self.motor_rpm_outputs[3] -= self.rate_pids[YAW].output
+        self.motor_thrust_outputs[2] += self.rate_pids[YAW].output
+        self.motor_thrust_outputs[3] -= self.rate_pids[YAW].output
 
-        self.motor_rpm_outputs[4] += self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[5] -= self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[6] -= self.rate_pids[ROLL].output
-        self.motor_rpm_outputs[7] += self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[4] += self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[5] -= self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[6] -= self.rate_pids[ROLL].output
+        self.motor_thrust_outputs[7] += self.rate_pids[ROLL].output

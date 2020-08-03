@@ -1,43 +1,47 @@
 import threading
-from time import sleep
 
 import inputs
-from inputs import GamePad
 
 
 class Gamepad:
 
     def __init__(self):
 
-        print(list(inputs.devices))
+        self.state = {}
+        self.running = False
+        self._reset_state()
 
-        self.state = dict()
+    def start(self):
+        if self.running:
+            return
 
         thread = threading.Thread(target=self._polling, args=())
         thread.start()  # Start the execution
 
+    def stop(self):
+        self.running = False
+
     def _polling(self):
+        self.running = True
+        try:
+            while self.running:
+                events = inputs.get_gamepad()
+                for event in events:
+                    self.state[event.code] = event.state
+
+        except RuntimeError:
+            print("Controller Disconnected!")
+
+        finally:
+            self._reset_state()
+
+    def _reset_state(self):
         self.state['ABS_X'] = 0
         self.state['ABS_Y'] = 0
         self.state['ABS_Z'] = 0
         self.state['ABS_RX'] = 0
         self.state['ABS_RY'] = 0
         self.state['ABS_RZ'] = 0
-
-        while 1:
-            try:
-                events = inputs.get_gamepad()
-                for event in events:
-                    self.state[event.code] = event.state
-            except RuntimeError:
-                self.state['ABS_X'] = 0
-                self.state['ABS_Y'] = 0
-                self.state['ABS_Z'] = 0
-                self.state['ABS_RX'] = 0
-                self.state['ABS_RY'] = 0
-                self.state['ABS_RZ'] = 0
-                return
-
 
     @staticmethod
     def deadzone(input: float) -> float:
@@ -46,7 +50,6 @@ class Gamepad:
             return 0
         else:
             return (input - sign*0.1) * (10/9)
-
 
     @property
     def x(self):

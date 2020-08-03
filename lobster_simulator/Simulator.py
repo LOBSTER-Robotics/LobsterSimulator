@@ -36,9 +36,6 @@ class Simulator:
 
         self.rotate_camera_with_robot = bool(config['rotate_camera_with_robot'])
 
-        print(self.rotate_camera_with_robot)
-
-
         self._time: SimulationTime = SimulationTime(0)
         self._previous_update_time: SimulationTime = SimulationTime(0)
         self._previous_update_real_time: float = t.perf_counter()  # in seconds
