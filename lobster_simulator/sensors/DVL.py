@@ -138,3 +138,7 @@ class DVL(Sensor):
         velocity = self._robot.get_velocity()
 
         return [distance_to_seafloor, velocity]
+
+    def remove(self):
+        for beam in self.beamVisualizers:
+            beam.remove()

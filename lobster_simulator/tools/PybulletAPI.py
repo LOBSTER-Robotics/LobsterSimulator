@@ -222,6 +222,10 @@ class PybulletAPI:
         p.removeBody(objectUniqueId)
 
     @staticmethod
+    def removeUserDebugItem(itemUniqueId: int):
+        p.removeUserDebugItem(itemUniqueId=itemUniqueId)
+
+    @staticmethod
     def applyExternalTorque(objectUniqueId: int, torqueObj: Vec3, frame: Frame):
         assert isinstance(torqueObj, Vec3)
 

@@ -27,8 +27,9 @@ def main():
 
     time_step = 4000
 
-    simulator = Simulator(time_step, model=Models.SCOUT_ALPHA, gui=gui,
+    simulator = Simulator(time_step, gui=gui,
                           config={"rotate_camera_with_robot": False})
+    simulator.create_robot(Models.SCOUT_ALPHA)
 
     # Only try to add debug sliders and visualisation when the gui is showing
     if gui:
@@ -56,6 +57,10 @@ def main():
         keys = PybulletAPI.getKeyboardEvents()
         if ord('p') in keys and keys[ord('p')] == 3:
             paused = not paused
+        if ord('r') in keys and keys[ord('r')] == 3:
+            print("robot id", simulator.robot._id)
+            simulator.reset_robot()
+            print("after robot id", simulator.robot._id)
         if PybulletAPI.DELETE_KEY in keys and keys[PybulletAPI.DELETE_KEY] == 3:
             break
 

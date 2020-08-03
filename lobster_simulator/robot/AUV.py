@@ -1,22 +1,20 @@
-import numpy as np
-
 from typing import List, Tuple, Dict
 
+import numpy as np
 from pkg_resources import resource_filename
 
-from lobster_simulator.robot.buoyancy import Buoyancy
-from lobster_simulator.sensors.DVL import DVL
-from lobster_simulator.tools.Constants import Z
-from lobster_simulator.tools.PybulletAPI import PybulletAPI as p
-from lobster_simulator.tools.PybulletAPI import Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.robot.Thruster import Thruster
+from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.Accelerometer import Accelerometer
+from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.DebugVisualization import DebugSphere
+from lobster_simulator.tools.Constants import Z
+from lobster_simulator.tools.PybulletAPI import Frame
+from lobster_simulator.tools.PybulletAPI import PybulletAPI as p
 from lobster_simulator.tools.Translation import *
 
 
@@ -31,10 +29,10 @@ class AUV:
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
         self._id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
-                                        Vec3([0, 0, -1]),
-                                        p.getQuaternionFromEuler(Vec3([0, 0, 0])))
+                              Vec3([0, 0, -1]),
+                              p.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
-        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyance_resolution'))
+        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
@@ -50,11 +48,6 @@ class AUV:
         self._motor_count = len(config_thrusters)
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
-        # for thruster in self.thrusters.values():
-        #     self._motor_debug_lines.append(DebugLine(thruster._position, thruster._position,
-        #                                              parentIndex=self._id, color=[0, 0, 1]))
-
-        self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
 
         self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
@@ -63,7 +56,6 @@ class AUV:
         self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
 
         self._max_thrust = 100
-        # self._buoyancy: float = 55000
 
     # TODO: This should in the future be based on the volume of the robot.
     def set_buoyancy(self, value: float):
@@ -82,8 +74,6 @@ class AUV:
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
-        lobster_pos, lobster_orn = self.get_position_and_orientation()
-
         self._depth_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)
@@ -94,9 +84,6 @@ class AUV:
 
         for thruster in self.thrusters.values():
             thruster._update(dt)
-
-        self.up_indicator.update_position(
-            vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
 
         self._apply_damping()
 
@@ -202,5 +189,13 @@ class AUV:
         angular_damping_torque = Vec3(damping[3:])
 
         p.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
-                                       frame=Frame.LINK_FRAME)
+                             frame=Frame.LINK_FRAME)
         p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
+
+    def remove(self):
+        print("Deleting UAV with id", self._id)
+        p.removeBody(self._id)
+        self._dvl.remove()
+        self._buoyancy.remove()
+        for thruster in self.thrusters.values():
+            thruster.remove()

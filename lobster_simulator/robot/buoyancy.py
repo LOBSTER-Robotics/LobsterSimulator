@@ -98,7 +98,9 @@ class Buoyancy:
 
             buoyancy_force = buoyancy_force * under_water_count / len(self.test_points)
 
-
-
         # Apply the buoyancy force
         self._robot.apply_force(buoyancy_point, buoyancy_force, relative_direction=False)
+
+    def remove(self):
+        for dot in self.dots:
+            PybulletAPI.removeBody(dot)

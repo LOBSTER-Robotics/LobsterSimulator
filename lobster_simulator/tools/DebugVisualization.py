@@ -35,6 +35,8 @@ class DebugLine:
         self._id = self._update_debug_line()
         self._latest_update_time = 0
 
+    def remove(self):
+        PybulletAPI.removeUserDebugItem(self._id)
 
     def update(self, from_location: Vec3 = None, to_location: Vec3 = None, frame_id: int = None, color=None) -> None:
         """
