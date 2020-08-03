@@ -194,7 +194,7 @@ class HighLevelController:
 
             self.desired_rates[PITCH] = self.orientation_pids[PITCH].output
             self.desired_rates[YAW]   = self.orientation_pids[YAW].output
-            # self.desired_rates[ROLL]  = self.orientation_pids[ROLL].output
+            self.desired_rates[ROLL]  = self.orientation_pids[ROLL].output
 
 
         local_angular_velocity = vec3_rotate_vector_to_local(orientation, angular_velocity)
