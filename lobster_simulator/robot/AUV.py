@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from pkg_resources import resource_filename
 
@@ -9,7 +9,7 @@ from lobster_simulator.common.Vec3 import Vec3
 from lobster_simulator.sensors.DVL import DVL
 from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
-from lobster_simulator.robot.Motor import Motor
+from lobster_simulator.robot.Thruster import Thruster
 from lobster_simulator.sensors.Accelerometer import Accelerometer
 from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
@@ -33,25 +33,23 @@ class AUV:
                                         Vec3([0, 0, -3]),
                                         PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
-        config_motors = config['motors']
+        config_thrusters = config['thrusters']
 
-        self._motors: List[Motor] = list()
-        for i in range(len(config_motors)):
-            self._motors.append(Motor.new_T200(self._id, config_motors[i]['name'],
-                                               Vec3(config_motors[i]['position']),
-                                               Vec3(config_motors[i]['direction'])))
+        self.thrusters: Dict[str, Thruster] = dict()
+        for i in range(len(config_thrusters)):
+            self.thrusters[config_thrusters[i]['name']] = Thruster.new_T200(self._id, config_thrusters[i]['name'],
+                                                                            Vec3(config_thrusters[i]['position']),
+                                                                            Vec3(config_thrusters[i]['direction']))
 
         # Set damping to zero, because default is not zero
         PybulletAPI.changeDynamics(self._id, linearDamping=0.0, angularDamping=0.0)
 
         self._motor_debug_lines = list()
-        self._motor_count = len(config_motors)
+        self._motor_count = len(config_thrusters)
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
-        for i in range(self._motor_count):
-            self._rpm_motors.append(0)
-            self._desired_rpm_motors.append(0.0)
-            self._motor_debug_lines.append(DebugLine(self._motors[i]._position, self._motors[i]._position,
+        for thruster in self.thrusters.values():
+            self._motor_debug_lines.append(DebugLine(thruster._position, thruster._position,
                                                      parentIndex=self._id, color=[0, 0, 1]))
 
         self.up_indicator = DebugSphere(0.05, [1, 0, 0, 1])
@@ -73,19 +71,8 @@ class AUV:
         """
         self._buoyancy = value
 
-    def set_desired_rpm_motors(self, desired_rpm_motors: List[float]):
-        for i in range(len(desired_rpm_motors)):
-            self._motors[i].set_desired_rpm(desired_rpm_motors[i])
-
-    def set_desired_rpm_motor(self, index: int, desired_rpm: float):
-        self._desired_rpm_motors[index] = desired_rpm
-
-    def set_desired_thrust_motors(self, desired_thrusts: List[float]):
-        for i in range(len(desired_thrusts)):
-            self._motors[i].set_desired_thrust(desired_thrusts[i])
-
-    def set_desired_thrust_motor(self, index: int, desired_thrust: float):
-        self._motors[index].set_desired_thrust(desired_thrust)
+    def get_thruster(self, name: str):
+        return self.thrusters[name]
 
     def update(self, dt: SimulationTime, time: SimulationTime):
         """
@@ -103,20 +90,17 @@ class AUV:
 
         PybulletAPI.rayTest(lobster_pos, lobster_pos + Vec3([0, 0, 200]))
 
-        for i in range(self._motor_count):
-            self._motors[i].update(dt.microseconds)
+        for thruster in self.thrusters.values():
+            thruster._update(dt)
 
-        # Apply forces for the  facing motors
-        for i in range(self._motor_count):
-            self._motors[i].apply_thrust()
 
-            # Update debug lines in a max frequency. Check the first line if it can be updated.
-            if self._motor_debug_lines[0].can_update():
-                for i in range(self._motor_count):
-                    self._motor_debug_lines[i].update(self._motors[i]._position,
-                                                      self._motors[i]._position
-                                                      + self._motors[i]._direction * self._motors[i].get_thrust() / 100,
-                                                      self._id)
+        # Update debug lines in a max frequency. Check the first line if it can be updated.
+        if self._motor_debug_lines[0].can_update():
+            for i, thruster in enumerate(self.thrusters.values()):
+                self._motor_debug_lines[i].update(thruster._position,
+                                                  thruster._position
+                                                  + thruster._direction * thruster.current_thrust / 100,
+                                                  self._id)
 
         self.up_indicator.update_position(
             vec3_local_to_world(self.get_position(), self.get_orientation(), Vec3([-.5, 0, 0.10])))
@@ -124,7 +108,7 @@ class AUV:
         # Apply the buoyancy force
         self.apply_force(self._center_of_volume, Vec3([0, 0, -self._buoyancy]), relative_direction=False)
 
-        self.apply_damping()
+        self._apply_damping()
 
     def get_position_and_orientation(self) -> Tuple[Vec3, Quaternion]:
         """
@@ -204,7 +188,7 @@ class AUV:
 
         PybulletAPI.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
 
-    def apply_damping(self):
+    def _apply_damping(self):
         """
         Applies damping to the robot on its linear and angular velocity.
         See https://docs.lobster-robotics.com/scout/robots/scout-alpha/scout-simulator-model
