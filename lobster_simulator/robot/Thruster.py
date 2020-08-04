@@ -11,8 +11,6 @@ from lobster_simulator.tools.PybulletAPI import PybulletAPI, Frame
 
 class Thruster:
 
-
-
     def __init__(self, robot: AUV, name, position: Vec3, direction: Vec3,
                  minimum_thrust: float,  # Newton
                  maximum_forward_thrust: float,  # Newton
