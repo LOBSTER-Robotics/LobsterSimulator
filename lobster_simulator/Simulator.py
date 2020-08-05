@@ -114,6 +114,8 @@ class Simulator:
         :param model: Model of the robot. (Scout-alpha, PTV)
         :return: Robot instance
         """
+        if self.robot:
+            self.robot.remove()
 
         if model == Models.SCOUT_ALPHA:
             model_config = 'scout-alpha.json'
@@ -134,8 +136,6 @@ class Simulator:
         """
         Resets the robot using the same configuration.
         """
-        # PybulletAPI.removeBody(self.robot._id)
-        self.robot.remove()
         self.create_robot(self._model, **self.robot_config)
 
     def shutdown(self):
