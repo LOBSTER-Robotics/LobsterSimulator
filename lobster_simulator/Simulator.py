@@ -137,3 +137,6 @@ class Simulator:
         # PybulletAPI.removeBody(self.robot._id)
         self.robot.remove()
         self.create_robot(self._model, **self.robot_config)
+
+    def shutdown(self):
+        PybulletAPI.disconnect()

@@ -29,7 +29,7 @@ class AUV:
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
         self._id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
-                              Vec3([0, 0, -1]),
+                              Vec3([0, 0, 2]),
                               p.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
