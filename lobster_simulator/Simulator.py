@@ -5,9 +5,9 @@ import time as t
 
 from pkg_resources import resource_stream
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 from lobster_simulator.robot.AUV import AUV
 from lobster_simulator.simulation_time import SimulationTime
 from enum import Enum, auto
@@ -110,10 +110,12 @@ class Simulator:
 
     def create_robot(self, model: Models = Models.SCOUT_ALPHA, **kwargs) -> AUV:
         """
-        Creates a new robot based on the given model.
+        Creates a new robot based on the given model. If a robot already exists it is overwritten.
         :param model: Model of the robot. (Scout-alpha, PTV)
         :return: Robot instance
         """
+        if self.robot:
+            self.robot.remove()
 
         if model == Models.SCOUT_ALPHA:
             model_config = 'scout-alpha.json'
@@ -134,6 +136,12 @@ class Simulator:
         """
         Resets the robot using the same configuration.
         """
-        # PybulletAPI.removeBody(self.robot._id)
-        self.robot.remove()
         self.create_robot(self._model, **self.robot_config)
+
+    def shutdown(self):
+        """
+        Shuts down the pybullet Simulator. (This is needed when running multiple tests with the simulator because then
+        it doesn't automatically closes in between tests)
+        :return:
+        """
+        PybulletAPI.disconnect()

@@ -1,12 +1,11 @@
 import math
 
-import pytest
 import unittest
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 import numpy as np
 
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class Vec3Test(unittest.TestCase):
@@ -17,7 +16,7 @@ class Vec3Test(unittest.TestCase):
 
             rotation = PybulletAPI.getQuaternionFromEuler(Vec3(np.random.rand(3) * 2 * math.pi))
 
-            numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.array))
+            numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.numpy()))
 
             rotate_method = vec.rotate(rotation)
 

@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 
-from lobster_simulator.common.Quaternion import Quaternion
-from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_common.quaternion import Quaternion
+from lobster_common.vec3 import Vec3
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class CoordinateSystemConversionTest(unittest.TestCase):

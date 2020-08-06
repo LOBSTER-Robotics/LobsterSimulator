@@ -1,10 +1,8 @@
-from lobster_simulator.common.Vec3 import Vec3
-from typing import List
+from lobster_common.vec3 import Vec3
 
 import time
 
-from lobster_simulator.tools import Translation
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class DebugLine:

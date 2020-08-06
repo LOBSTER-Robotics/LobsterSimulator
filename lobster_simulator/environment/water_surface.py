@@ -1,11 +1,9 @@
-import math
-
 import pybullet as p
 from pkg_resources import resource_filename
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class WaterSurface:
