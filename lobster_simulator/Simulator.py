@@ -110,7 +110,7 @@ class Simulator:
 
     def create_robot(self, model: Models = Models.SCOUT_ALPHA, **kwargs) -> AUV:
         """
-        Creates a new robot based on the given model.
+        Creates a new robot based on the given model. If a robot already exists it is overwritten.
         :param model: Model of the robot. (Scout-alpha, PTV)
         :return: Robot instance
         """
@@ -139,4 +139,9 @@ class Simulator:
         self.create_robot(self._model, **self.robot_config)
 
     def shutdown(self):
+        """
+        Shuts down the pybullet Simulator. (This is needed when running multiple tests with the simulator because then
+        it doesn't automatically closes in between tests)
+        :return:
+        """
         PybulletAPI.disconnect()

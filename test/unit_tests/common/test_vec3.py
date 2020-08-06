@@ -16,7 +16,7 @@ class Vec3Test(unittest.TestCase):
 
             rotation = PybulletAPI.getQuaternionFromEuler(Vec3(np.random.rand(3) * 2 * math.pi))
 
-            numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.array))
+            numpy_method = Vec3(rotation.get_rotation_matrix().dot(vec.numpy()))
 
             rotate_method = vec.rotate(rotation)
 
