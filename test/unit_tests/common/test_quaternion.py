@@ -1,12 +1,11 @@
 import math
 
-import pytest
 import unittest
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 import numpy as np
 
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class QuaternionTest(unittest.TestCase):

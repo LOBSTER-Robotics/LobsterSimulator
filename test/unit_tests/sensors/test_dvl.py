@@ -1,7 +1,7 @@
 import unittest
 
 from lobster_simulator.Simulator import Simulator
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 from lobster_simulator.sensors.DVL import SEAFLOOR_DEPTH
 from lobster_simulator.tools.Constants import *
 

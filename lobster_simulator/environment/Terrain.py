@@ -4,9 +4,9 @@ from typing import Callable
 import noise
 import pybullet as p
 
-from lobster_simulator.common.Vec3 import Vec3
-from lobster_simulator.tools.Constants import *
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_common.vec3 import Vec3
+from lobster_common.constants import *
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class Terrain:

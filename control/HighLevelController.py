@@ -3,11 +3,11 @@ from typing import List, Dict
 from pkg_resources import resource_filename
 
 from control.Gamepad import Gamepad
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 from .PID import PID
-from lobster_simulator.tools import Translation
-from lobster_simulator.tools.Constants import *
-from lobster_simulator.tools.Translation import *
+from lobster_simulator.common import Translation
+from lobster_common.constants import *
+from lobster_simulator.common.Translation import *
 
 import numpy as np
 
@@ -165,7 +165,7 @@ class HighLevelController:
         self.velocity_pids[Y].update(local_frame_velocity[Y], dt)
         self.velocity_pids[Z].update(local_frame_velocity[Z], dt)
 
-        self.previous_velocity = Vec3(local_frame_velocity.array.copy())
+        self.previous_velocity = Vec3(local_frame_velocity.numpy().copy())
 
         for i in range(4):
             self.motor_thrust_outputs[i] = self.velocity_pids[X].output

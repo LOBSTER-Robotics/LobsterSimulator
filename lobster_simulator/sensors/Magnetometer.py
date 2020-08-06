@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING, Union
 
-import numpy as np
-
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.Translation import *
+from lobster_simulator.common.Translation import *
 
 
 MAGNETIC_FIELD = Vec3([0, 1, 0])
