@@ -3,17 +3,17 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import List, Tuple, Dict, TYPE_CHECKING, Optional
+from typing import List, Tuple, Dict, Optional
 
 import numpy as np
 import pybullet as p
 import pybullet_data
+from lobster_common.constants import *
+from lobster_common.quaternion import Quaternion
 
-from lobster_simulator.common.Quaternion import Quaternion
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools import Translation
-from lobster_simulator.tools.Constants import *
+from lobster_simulator.common import Translation
 
 
 class Frame(Enum):

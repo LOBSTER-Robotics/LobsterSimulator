@@ -2,12 +2,12 @@ from typing import Optional
 
 import numpy as np
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
 from lobster_simulator.robot import AUV
-from lobster_simulator.tools import Translation
-from lobster_simulator.tools.Constants import *
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common import Translation
+from lobster_common.constants import *
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 
 class Buoyancy:

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 ACCELERATION = 0
 

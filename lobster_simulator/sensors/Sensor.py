@@ -7,13 +7,13 @@ import numpy as np
 
 from lobster_simulator.common.Calculations import interpolate
 from lobster_simulator.common.general_exceptions import ArgumentLengthError
-from lobster_simulator.tools.PybulletAPI import PybulletAPI
+from lobster_simulator.common.PybulletAPI import PybulletAPI
 
 if TYPE_CHECKING:
     from lobster_simulator.robot.AUV import AUV
-    from lobster_simulator.common.Quaternion import Quaternion
+    from lobster_common.quaternion import Quaternion
 
-from lobster_simulator.common.Vec3 import Vec3
+from lobster_common.vec3 import Vec3
 
 from lobster_simulator.simulation_time import SimulationTime
 

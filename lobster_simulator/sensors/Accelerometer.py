@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime, MICROSECONDS_IN_SECONDS
-from lobster_simulator.tools.Constants import GRAVITY
-from lobster_simulator.tools.Translation import *
+from lobster_common.constants import *
+from lobster_simulator.common.Translation import *
 
 
 class Accelerometer(Sensor):

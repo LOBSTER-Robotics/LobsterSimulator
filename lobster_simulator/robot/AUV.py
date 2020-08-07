@@ -12,10 +12,10 @@ from lobster_simulator.sensors.DepthSensor import DepthSensor
 from lobster_simulator.sensors.Gyroscope import Gyroscope
 from lobster_simulator.sensors.Magnetometer import Magnetometer
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.Constants import Z
-from lobster_simulator.tools.PybulletAPI import Frame
-from lobster_simulator.tools.PybulletAPI import PybulletAPI as p
-from lobster_simulator.tools.Translation import *
+from lobster_common.constants import *
+from lobster_simulator.common.PybulletAPI import Frame
+from lobster_simulator.common.PybulletAPI import PybulletAPI as p
+from lobster_simulator.common.Translation import *
 
 
 class AUV:
@@ -29,7 +29,7 @@ class AUV:
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
         self._id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
-                              Vec3([0, 0, -1]),
+                              Vec3([0, 0, 2]),
                               p.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
         self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
@@ -180,7 +180,7 @@ class AUV:
         velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_velocity())
         angular_velocity = vec3_rotate_vector_to_local(self.get_orientation(), self.get_angular_velocity())
 
-        damping = -np.dot(self.damping_matrix, np.concatenate((velocity.array, angular_velocity.array)))
+        damping = -np.dot(self.damping_matrix, np.concatenate((velocity.numpy(), angular_velocity.numpy())))
 
         # Multiply the damping for now to get slightly more accurate results
         damping *= 10

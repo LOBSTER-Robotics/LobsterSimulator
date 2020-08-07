@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from lobster_simulator.sensors.Sensor import Sensor
 from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.tools.Translation import *
+from lobster_simulator.common.Translation import *
 
 MAGNETIC_FIELD = [1, 0, 0]
 
