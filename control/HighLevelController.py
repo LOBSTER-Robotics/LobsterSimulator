@@ -121,13 +121,41 @@ class HighLevelController:
             self.desired_orientation[Y] -= self.gamepad.ry / 200
             self.desired_orientation[Z] += self.gamepad.rx / 200
         else:
-            self.desired_velocity[X] = self.gamepad.y * 10
-            self.desired_velocity[Y] = self.gamepad.x * 10
+            self.desired_velocity = Vec3([0, 0, 0])
+            if self.key_is_down('q', keyboard_events):
+                self.desired_velocity[Z] -= 10
+            if self.key_is_down('e', keyboard_events):
+                self.desired_velocity[Z] += 10
+            if self.key_is_down('w', keyboard_events):
+                self.desired_velocity[X] += 10
+            if self.key_is_down('s', keyboard_events):
+                self.desired_velocity[X] -= 10
+            if self.key_is_down('a', keyboard_events):
+                self.desired_velocity[Y] -= 10
+            if self.key_is_down('d', keyboard_events):
+                self.desired_velocity[Y] += 10
+
+            self.desired_velocity[X] += self.gamepad.y * 10
+            self.desired_velocity[Y] += self.gamepad.x * 10
             # self.desired_velocity[Z] = self.gamepad.z * 3 - self.gamepad.rz * 3
 
-            self.desired_rates[YAW] = -self.gamepad.rx * 2.0
-            self.desired_rates[PITCH] = self.gamepad.ry * 2.0
-            self.desired_rates[ROLL] = self.gamepad.z * 2.0 - self.gamepad.rz * 2.0
+            self.desired_rates = Vec3([0, 0, 0])
+            if self.key_is_down('j', keyboard_events):
+                self.desired_rates[YAW] += 2
+            if self.key_is_down('l', keyboard_events):
+                self.desired_rates[YAW] -= 2
+            if self.key_is_down('u', keyboard_events):
+                self.desired_rates[ROLL] += 2
+            if self.key_is_down('o', keyboard_events):
+                self.desired_rates[ROLL] -= 2
+            if self.key_is_down('i', keyboard_events):
+                self.desired_rates[PITCH] += 2
+            if self.key_is_down('k', keyboard_events):
+                self.desired_rates[PITCH] -= 2
+
+            self.desired_rates[YAW] -= self.gamepad.rx * 2.0
+            self.desired_rates[PITCH] += self.gamepad.ry * 2.0
+            self.desired_rates[ROLL] += self.gamepad.z * 2.0 - self.gamepad.rz * 2.0
 
     def update(self, position: Vec3, orientation: Quaternion, velocity: Vec3, angular_velocity: Vec3, dt):
 
@@ -199,15 +227,15 @@ class HighLevelController:
 
         local_angular_velocity = vec3_rotate_vector_to_local(orientation, angular_velocity)
         roll_rate, pitch_rate, yaw_rate = local_angular_velocity
-        rates = [pitch_rate, roll_rate, yaw_rate]
+        rates = [roll_rate, pitch_rate, yaw_rate]
 
         self.rate_pids[PITCH].set_target(self.desired_rates[PITCH])
         self.rate_pids[YAW].set_target(self.desired_rates[YAW])
         self.rate_pids[ROLL].set_target(self.desired_rates[ROLL])
 
-        self.rate_pids[PITCH].update(-rates[PITCH], dt)
-        self.rate_pids[YAW].update(-rates[YAW], dt)
-        self.rate_pids[ROLL].update(-rates[ROLL], dt)
+        self.rate_pids[ROLL].update(-rates[X], dt)
+        self.rate_pids[PITCH].update(-rates[Y], dt)
+        self.rate_pids[YAW].update(-rates[Z], dt)
 
         # Translate world frame angular velocities to local frame angular velocities
         self.motor_thrust_outputs[0] -= self.rate_pids[PITCH].output
