@@ -81,10 +81,8 @@ def main():
 
             thrust_motors = high_level_controller.motor_thrust_outputs
 
-            # for i, thruster in enumerate(simulator.get_robot().thrusters.values()):
-            #     thruster.set_desired_thrust(thrust_motors[i])
-
-            simulator.get_robot().thrusters['top-front'].set_desired_thrust(30)
+            for i, thruster in enumerate(simulator.get_robot().thrusters.values()):
+                thruster.set_desired_thrust(thrust_motors[i])
 
             simulator.do_step()
 
