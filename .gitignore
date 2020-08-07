@@ -6,3 +6,4 @@ venv/
 __pycache__/
 
 timings_*
+dist/lobster_simulator-0.0.4.tar.gz
