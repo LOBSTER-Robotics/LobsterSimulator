@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='lobster_simulator',
-    version='0.0.3',
+    version='0.0.4',
     description='Simulator for the Lobster uuv',
     url='https://github.com/LOBSTER-Robotics/LobsterSimulator',
     author='Joris Quist',
@@ -14,7 +14,7 @@ setuptools.setup(
                       'numpy',
                       'noise',
                       ],
-
+    dependency_links=['https://github.com/LOBSTER-Robotics/Common.git@v0.0.1'],
     classifiers=[],
 )
 

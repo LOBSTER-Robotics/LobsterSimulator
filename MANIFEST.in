@@ -1,1 +1,1 @@
-include lobster_simulator/data/
+recursive-include lobster_simulator/data *
