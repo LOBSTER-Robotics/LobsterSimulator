@@ -2,9 +2,9 @@ import unittest
 
 from lobster_common.constants import *
 
-from lobster_simulator.Simulator import Simulator
+from lobster_simulator.simulator import Simulator
 from lobster_common.vec3 import Vec3
-from lobster_simulator.sensors.DVL import SEAFLOOR_DEPTH
+from lobster_simulator.sensors.dvl import SEAFLOOR_DEPTH
 
 
 class DVLTest(unittest.TestCase):

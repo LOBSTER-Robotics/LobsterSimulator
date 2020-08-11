@@ -3,11 +3,11 @@ from typing import List, Dict
 from pkg_resources import resource_filename
 
 from control.Gamepad import Gamepad
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 from .PID import PID
-from lobster_simulator.common import Translation
+from lobster_simulator.common import translation
 from lobster_common.constants import *
-from lobster_simulator.common.Translation import *
+from lobster_simulator.common.translation import *
 
 import numpy as np
 
@@ -85,7 +85,7 @@ class HighLevelController:
         keyboard_events = PybulletAPI.getKeyboardEvents()
 
         if self.position_control:
-            desired_position = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
+            desired_position = vec3_rotate_vector_to_local(orientation, self.desired_position)
             if self.key_is_down('q', keyboard_events):
                 desired_position[Z] -= 0.008
             if self.key_is_down('e', keyboard_events):
@@ -103,7 +103,7 @@ class HighLevelController:
             desired_position[Y] += self.gamepad.x / 40
             desired_position[Z] += self.gamepad.z / 40 - self.gamepad.rz / 40
 
-            self.desired_position = Translation.vec3_rotate_vector_to_world(orientation, desired_position)
+            self.desired_position = vec3_rotate_vector_to_world(orientation, desired_position)
 
             if self.key_is_down('j', keyboard_events):
                 self.desired_orientation[Z] -= 0.003
@@ -169,8 +169,8 @@ class HighLevelController:
         # Position
         #
         if self.position_control:
-            local_frame_desired_location = Translation.vec3_rotate_vector_to_local(orientation, self.desired_position)
-            local_frame_location = Translation.vec3_rotate_vector_to_local(orientation, position)
+            local_frame_desired_location = vec3_rotate_vector_to_local(orientation, self.desired_position)
+            local_frame_location = vec3_rotate_vector_to_local(orientation, position)
 
             self.position_pids[X].set_target(local_frame_desired_location[X])
             self.position_pids[Y].set_target(local_frame_desired_location[Y])
@@ -188,7 +188,7 @@ class HighLevelController:
         self.velocity_pids[Y].set_target(self.desired_velocity[Y])
         self.velocity_pids[Z].set_target(self.desired_velocity[Z])
 
-        local_frame_velocity = Translation.vec3_rotate_vector_to_local(orientation, velocity)
+        local_frame_velocity = vec3_rotate_vector_to_local(orientation, velocity)
         self.velocity_pids[X].update(local_frame_velocity[X], dt)
         self.velocity_pids[Y].update(local_frame_velocity[Y], dt)
         self.velocity_pids[Z].update(local_frame_velocity[Z], dt)
