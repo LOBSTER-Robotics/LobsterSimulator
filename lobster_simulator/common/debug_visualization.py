@@ -2,7 +2,7 @@ from lobster_common.vec3 import Vec3
 
 import time
 
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 
 class DebugLine:

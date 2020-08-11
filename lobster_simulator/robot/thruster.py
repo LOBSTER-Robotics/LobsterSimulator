@@ -1,17 +1,17 @@
-from lobster_simulator.common.Calculations import clip
+from lobster_simulator.common.calculations import clip
 from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
-from lobster_simulator.robot import AUV
-from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.common import Translation
+from lobster_simulator.robot import auv
+from lobster_simulator.common.simulation_time import SimulationTime
+from lobster_simulator.common import translation
 from lobster_common.constants import *
-from lobster_simulator.common.DebugVisualization import DebugLine
-from lobster_simulator.common.PybulletAPI import PybulletAPI, Frame
+from lobster_simulator.common.debug_visualization import DebugLine
+from lobster_simulator.common.pybullet_api import PybulletAPI, Frame
 
 
 class Thruster:
 
-    def __init__(self, robot: AUV, name, position: Vec3, direction: Vec3,
+    def __init__(self, robot: auv, name, position: Vec3, direction: Vec3,
                  minimum_thrust: float,  # Newton
                  maximum_forward_thrust: float,  # Newton
                  maximum_backward_thrust: float,  # Newton
@@ -57,7 +57,7 @@ class Thruster:
         self._theoretical_thrust = clip(self._theoretical_thrust, -self._maximum_backward_thrust,
                                         self._maximum_forward_thrust)
 
-        world_position = Translation.vec3_local_to_world_id(self._robot._id, self._position)
+        world_position = translation.vec3_local_to_world_id(self._robot._id, self._position)
         if world_position[Z] > WaterSurface.water_height(world_position[X], world_position[Y]):
 
             PybulletAPI.applyExternalForce(objectUniqueId=self._robot._id,

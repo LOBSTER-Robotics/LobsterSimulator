@@ -4,14 +4,14 @@ from typing import List, TYPE_CHECKING, Union
 
 from lobster_common.quaternion import Quaternion
 from lobster_common.vec3 import Vec3
-from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.common.simulation_time import SimulationTime
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import AUV
+    from lobster_simulator.robot.auv import AUV
 
-from lobster_simulator.sensors.Sensor import Sensor
+from lobster_simulator.sensors.sensor import Sensor
 from lobster_common.constants import *
-from lobster_simulator.common.Translation import vec3_local_to_world_id
+from lobster_simulator.common.translation import vec3_local_to_world_id
 
 
 class DepthSensor(Sensor):

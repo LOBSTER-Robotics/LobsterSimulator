@@ -12,8 +12,8 @@ from lobster_common.constants import *
 from lobster_common.quaternion import Quaternion
 
 from lobster_common.vec3 import Vec3
-from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.common import Translation
+from lobster_simulator.common.simulation_time import SimulationTime
+from lobster_simulator.common import translation
 
 
 class Frame(Enum):
@@ -210,8 +210,8 @@ class PybulletAPI:
     @staticmethod
     def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
         if object_id != -1:
-            rayFromPosition = Translation.vec3_local_to_world_id(object_id, rayFromPosition)
-            rayToPosition = Translation.vec3_local_to_world_id(object_id, rayToPosition)
+            rayFromPosition = translation.vec3_local_to_world_id(object_id, rayFromPosition)
+            rayToPosition = translation.vec3_local_to_world_id(object_id, rayToPosition)
 
         _, _, hit_fraction, hit_position, hit_normal = p.rayTest(rayFromPosition.asENU(), rayToPosition.asENU())[0]
 

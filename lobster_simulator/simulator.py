@@ -7,9 +7,9 @@ from pkg_resources import resource_stream
 
 from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
-from lobster_simulator.common.PybulletAPI import PybulletAPI
-from lobster_simulator.robot.AUV import AUV
-from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.common.pybullet_api import PybulletAPI
+from lobster_simulator.robot.auv import AUV
+from lobster_simulator.common.simulation_time import SimulationTime
 from enum import Enum, auto
 
 class Models(Enum):

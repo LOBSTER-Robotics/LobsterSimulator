@@ -5,17 +5,17 @@ from abc import ABC, abstractmethod
 from typing import List, TYPE_CHECKING, Union, Optional
 import numpy as np
 
-from lobster_simulator.common.Calculations import interpolate
+from lobster_simulator.common.calculations import interpolate
 from lobster_simulator.common.general_exceptions import ArgumentLengthError
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import AUV
+    from lobster_simulator.robot.auv import AUV
     from lobster_common.quaternion import Quaternion
 
 from lobster_common.vec3 import Vec3
 
-from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.common.simulation_time import SimulationTime
 
 
 class Sensor(ABC):

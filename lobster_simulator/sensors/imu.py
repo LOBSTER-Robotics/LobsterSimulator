@@ -5,18 +5,18 @@ from typing import List, TYPE_CHECKING, Union
 import numpy as np
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot import AUV
+    from lobster_simulator.robot import auv
 
-from lobster_simulator.sensors.Sensor import Sensor
-from lobster_simulator.simulation_time import SimulationTime
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.sensors.sensor import Sensor
+from lobster_simulator.common.simulation_time import SimulationTime
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 ACCELERATION = 0
 
 
 class IMU(Sensor):
 
-    def __init__(self, robot: AUV, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime,
+    def __init__(self, robot: auv, position: np.ndarray, orientation: np.ndarray, time_step: SimulationTime,
                  noise_stds: Union[List[float], float]):
         self._previous_linear_velocity = np.array([0, 0, 0])
         super().__init__(robot, position, time_step, orientation, noise_stds)

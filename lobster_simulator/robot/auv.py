@@ -4,18 +4,18 @@ import numpy as np
 from pkg_resources import resource_filename
 
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
-from lobster_simulator.robot.Thruster import Thruster
+from lobster_simulator.robot.thruster import Thruster
 from lobster_simulator.robot.buoyancy import Buoyancy
-from lobster_simulator.sensors.Accelerometer import Accelerometer
-from lobster_simulator.sensors.DVL import DVL
-from lobster_simulator.sensors.DepthSensor import DepthSensor
-from lobster_simulator.sensors.Gyroscope import Gyroscope
-from lobster_simulator.sensors.Magnetometer import Magnetometer
-from lobster_simulator.simulation_time import SimulationTime
+from lobster_simulator.sensors.accelerometer import Accelerometer
+from lobster_simulator.sensors.dvl import DVL
+from lobster_simulator.sensors.pressure_sensor import DepthSensor
+from lobster_simulator.sensors.gyroscope import Gyroscope
+from lobster_simulator.sensors.magnetometer import Magnetometer
+from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_common.constants import *
-from lobster_simulator.common.PybulletAPI import Frame
-from lobster_simulator.common.PybulletAPI import PybulletAPI as p
-from lobster_simulator.common.Translation import *
+from lobster_simulator.common.pybullet_api import Frame
+from lobster_simulator.common.pybullet_api import PybulletAPI as p
+from lobster_simulator.common.translation import *
 
 
 class AUV:

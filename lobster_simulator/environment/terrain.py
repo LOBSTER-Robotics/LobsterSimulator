@@ -6,7 +6,7 @@ import pybullet as p
 
 from lobster_common.vec3 import Vec3
 from lobster_common.constants import *
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 
 class Terrain:
