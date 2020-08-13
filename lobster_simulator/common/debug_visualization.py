@@ -1,6 +1,9 @@
+from lobster_common.quaternion import Quaternion
 from lobster_common.vec3 import Vec3
 
 import time
+
+from pkg_resources import resource_filename
 
 from lobster_simulator.common.pybullet_api import PybulletAPI
 
@@ -78,3 +81,16 @@ class DebugSphere:
 
     def update_position(self, position: Vec3):
         PybulletAPI.resetBasePositionAndOrientation(self.sphereId, posObj=position)
+
+
+class DebugScout:
+
+    def __init__(self, pos: Vec3 = None):
+        if not pos:
+            pos = Vec3([0, 0, 0])
+
+        self.id = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
+                                                                "data/scout-alpha-visual.urdf"), pos)
+
+    def set_position_and_orientation(self, position: Vec3, orientation: Quaternion):
+        PybulletAPI.resetBasePositionAndOrientation(self.id, posObj=position, ornObj=orientation)

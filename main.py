@@ -43,7 +43,7 @@ def main():
 
         simulator_time_step_slider = PybulletAPI.addUserDebugParameter("simulation timestep microseconds", 1000, 500000, 4000)
 
-    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]), position_control=False)
+    high_level_controller = HighLevelController(gui, simulator.robot.get_position(), Vec3([.0, .0, .0]), position_control=True)
 
     terrain_loader = Terrain.perlin_noise_terrain(30)
 

@@ -165,7 +165,6 @@ class PybulletAPI:
         if ornObj is None:
             ornObj = PybulletAPI.getBasePositionAndOrientation(objectUniqueId=objectUniqueId)[1]
 
-
         p.resetBasePositionAndOrientation(objectUniqueId, posObj.asENU(), ornObj.asENU())
 
     @staticmethod

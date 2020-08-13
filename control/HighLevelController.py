@@ -3,6 +3,7 @@ from typing import List, Dict
 from pkg_resources import resource_filename
 
 from control.Gamepad import Gamepad
+from lobster_simulator.common.debug_visualization import DebugScout
 from lobster_simulator.common.pybullet_api import PybulletAPI
 from .PID import PID
 from lobster_simulator.common import translation
@@ -68,8 +69,7 @@ class HighLevelController:
             self.sideward_velocity_slider = PybulletAPI.addUserDebugParameter("sideward", -3, 3, 0)
 
         if self.position_control:
-            self.visualisation = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
-                                                                        "data/scout-alpha-visual.urdf"), Vec3([0, 0, 0]))
+            self.desired_state_visualization = DebugScout(desired_position)
 
         self.gamepad = Gamepad()
         self.gamepad.start()
@@ -162,8 +162,10 @@ class HighLevelController:
         self._update_desired(orientation=orientation)
 
         if self.position_control:
-            PybulletAPI.resetBasePositionAndOrientation(self.visualisation, self.desired_position,
-                                                        PybulletAPI.getQuaternionFromEuler(self.desired_orientation))
+            self.desired_state_visualization.set_position_and_orientation(
+                self.desired_position,
+                PybulletAPI.getQuaternionFromEuler(self.desired_orientation)
+            )
 
         #
         # Position
