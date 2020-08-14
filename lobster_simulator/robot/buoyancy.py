@@ -4,16 +4,16 @@ import numpy as np
 
 from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
-from lobster_simulator.robot import AUV
-from lobster_simulator.common import Translation
+from lobster_simulator.robot import auv
+from lobster_simulator.common import translation
 from lobster_common.constants import *
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 
 class Buoyancy:
 
-    def __init__(self, robot: 'AUV', radius: float, length: float, resolution: Optional[float] = None, visualize: bool = False):
-        self._robot: AUV = robot
+    def __init__(self, robot: 'auv', radius: float, length: float, resolution: Optional[float] = None, visualize: bool = False):
+        self._robot: auv = robot
 
         self._buoyancy: float = 550
 
@@ -75,7 +75,7 @@ class Buoyancy:
             for i in range(len(self.test_points)):
                 position, orientation = self._robot.get_position_and_orientation()
 
-                dot_position = Translation.vec3_local_to_world(position, orientation, self.test_points[i])
+                dot_position = translation.vec3_local_to_world(position, orientation, self.test_points[i])
 
                 if self.visualize:
                     PybulletAPI.resetBasePositionAndOrientation(self.dots[i], dot_position)

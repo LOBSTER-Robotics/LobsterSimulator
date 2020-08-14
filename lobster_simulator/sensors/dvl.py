@@ -4,16 +4,16 @@ import math
 import numpy as np
 from typing import List, TYPE_CHECKING
 
-from lobster_simulator.common.Calculations import *
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.calculations import *
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 if TYPE_CHECKING:
-    from lobster_simulator.robot.AUV import AUV
-from lobster_simulator.sensors.Sensor import Sensor
-from lobster_simulator.simulation_time import *
+    from lobster_simulator.robot.auv import AUV
+from lobster_simulator.sensors.sensor import Sensor
+from lobster_simulator.common.simulation_time import *
 from lobster_common.constants import *
-from lobster_simulator.common.DebugVisualization import DebugLine
-from lobster_simulator.common.Translation import *
+from lobster_simulator.common.debug_visualization import DebugLine
+from lobster_simulator.common.translation import *
 
 SEAFLOOR_DEPTH = 100  # meters
 

@@ -43,12 +43,12 @@ def vec3_rotate_vector_to_local(local_frame_orientation: Quaternion, world_vec: 
 
 
 def vec3_local_to_world_id(local_frame_id: int, local_vec: Vec3) -> Vec3:
-    from lobster_simulator.common.PybulletAPI import PybulletAPI
+    from lobster_simulator.common.pybullet_api import PybulletAPI
     pos, orn = PybulletAPI.getBasePositionAndOrientation(local_frame_id)
     return vec3_local_to_world(pos, orn, local_vec)
 
 
 def vec3_world_to_local_id(local_frame_id: int, world_vec: Vec3) -> Vec3:
-    from lobster_simulator.common.PybulletAPI import PybulletAPI
+    from lobster_simulator.common.pybullet_api import PybulletAPI
     pos, orn = PybulletAPI.getBasePositionAndOrientation(local_frame_id)
     return vec3_world_to_local(pos, orn, world_vec)

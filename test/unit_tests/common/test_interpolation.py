@@ -1,6 +1,6 @@
 import unittest
 
-from lobster_simulator.common.Calculations import interpolate
+from lobster_simulator.common.calculations import interpolate
 
 
 class CommonCalculationsTest(unittest.TestCase):

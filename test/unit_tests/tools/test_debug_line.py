@@ -2,7 +2,7 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from lobster_simulator.common.DebugVisualization import DebugLine
+from lobster_simulator.common.debug_visualization import DebugLine
 
 
 class TestDebugLine(unittest.TestCase):

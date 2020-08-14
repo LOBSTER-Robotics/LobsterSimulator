@@ -3,7 +3,7 @@ import numpy as np
 
 from lobster_common.quaternion import Quaternion
 from lobster_common.vec3 import Vec3
-from lobster_simulator.common.PybulletAPI import PybulletAPI
+from lobster_simulator.common.pybullet_api import PybulletAPI
 
 
 class CoordinateSystemConversionTest(unittest.TestCase):
