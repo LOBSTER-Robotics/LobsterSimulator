@@ -119,6 +119,22 @@ class AUV:
     def get_angular_velocity(self):
         return p.getBaseVelocity(self._id)[1]
 
+    def get_altitude(self) -> float:
+        """
+        Gets the altitude of the auv based on its own reference frame by casting a ray to see where it intersects with
+        terrain. This beam has length 100 so even if the altitude is larger than 100 it will still return 100.
+        """
+        beam_length = 100
+        raytest_endpoint = 2 * Vec3([0, 0, beam_length])
+
+        world_frame_endpoint = vec3_local_to_world(self.get_position(),
+                                                   self.get_orientation(),
+                                                   raytest_endpoint)
+
+        result = p.rayTest(self.get_position(), world_frame_endpoint)
+
+        return result[0] * beam_length
+        
     def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
         """
         Applies a force to the robot (should only be used for testing purposes).
@@ -191,6 +207,26 @@ class AUV:
         p.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
                              frame=Frame.LINK_FRAME)
         p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
+
+    @property
+    def dvl(self):
+        return self._dvl
+
+    @property
+    def accelerometer(self):
+        return self._accelerometer
+
+    @property
+    def gyroscope(self):
+        return self._gyroscope
+
+    @property
+    def magnetometer(self):
+        return self._magnetometer
+
+    @property
+    def pressure_sensor(self):
+        return self._pressure_sensor
 
     def remove(self):
         p.removeBody(self._id)
