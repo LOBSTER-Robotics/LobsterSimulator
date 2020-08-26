@@ -8,7 +8,7 @@ from lobster_simulator.robot.thruster import Thruster
 from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.accelerometer import Accelerometer
 from lobster_simulator.sensors.dvl import DVL
-from lobster_simulator.sensors.pressure_sensor import DepthSensor
+from lobster_simulator.sensors.pressure_sensor import PressureSensor
 from lobster_simulator.sensors.gyroscope import Gyroscope
 from lobster_simulator.sensors.magnetometer import Magnetometer
 from lobster_simulator.common.simulation_time import SimulationTime
@@ -49,7 +49,7 @@ class AUV:
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
 
-        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
+        self._pressure_sensor = PressureSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
         self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000))
         self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
@@ -74,7 +74,7 @@ class AUV:
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
-        self._depth_sensor.update(time, dt)
+        self._pressure_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)
         self._magnetometer.update(time, dt)

@@ -14,7 +14,7 @@ from lobster_common.constants import *
 from lobster_simulator.common.translation import vec3_local_to_world_id
 
 
-class DepthSensor(Sensor):
+class PressureSensor(Sensor):
 
     _KPA_TO_PA = 1000
     _STANDARD_ATMOSPHERE = 101300
@@ -31,7 +31,7 @@ class DepthSensor(Sensor):
         else:
             self._water_density = self._DENSITY_FRESHWATER
 
-        super(DepthSensor, self).__init__(robot, position, time_step, orientation, noise_stds)
+        super(PressureSensor, self).__init__(robot, position, time_step, orientation, noise_stds)
 
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")
