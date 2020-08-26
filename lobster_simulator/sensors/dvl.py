@@ -94,6 +94,8 @@ class DVL(Sensor):
                                                     y2=current_velocity)
 
             # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
+            #  (It probably estimates the least squares plane through the 4 points and calculates the distance to that
+            #  plane, but for now the average of the 4 points is good enough)
             average_interpolated_altitude = float(np.mean(interpolated_altitudes))
 
             interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
@@ -104,9 +106,7 @@ class DVL(Sensor):
                     'vx': interpolated_velocity[X],
                     'vy': interpolated_velocity[Y],
                     'vz': interpolated_velocity[Z],
-                    # TODO check whether the dvl gives the altitude straight down or relative to its orientation
-                    # 'altitude': average_interpolated_altitude,
-                    'altitude': current_distance_to_seafloor,
+                    'altitude': average_interpolated_altitude,
                     'velocity_valid': interpolated_bottom_lock,
                     "format": "json_v1"
                 }
@@ -138,6 +138,14 @@ class DVL(Sensor):
         velocity = self._robot.get_velocity()
 
         return [distance_to_seafloor, velocity]
+
+    def get_altitude(self) -> float:
+        """Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams."""
+        return self.get_last_value()['altitude']
+
+    def get_velocity(self) -> Vec3:
+        """Gives the latest velocity of the robot in the dvl sensor frame."""
+        return Vec3([self.get_last_value()['vx'], self.get_last_value()['vy'], self.get_last_value()['vz']])
 
     def remove(self):
         for beam in self.beamVisualizers:
