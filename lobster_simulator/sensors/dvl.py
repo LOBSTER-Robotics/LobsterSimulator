@@ -76,9 +76,11 @@ class DVL(Sensor):
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot._id)
 
-        self._queue = list()
+        if self._next_sample_time <= time:
+            self._queue = list()
 
         while self._next_sample_time <= time:
+
             interpolated_altitudes = list()
             for i in range(4):
                 interpolated_altitudes.append(interpolate(x=self._next_sample_time.microseconds,
