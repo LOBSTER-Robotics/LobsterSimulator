@@ -91,7 +91,7 @@ class PybulletAPI:
     @staticmethod
     def getMatrixFromQuaternion(quaternion: Quaternion) -> np.ndarray:
 
-        return p.getMatrixFromQuaternion(quaternion.array)
+        return p.getMatrixFromQuaternion(quaternion._data)
 
     @staticmethod
     def gui() -> bool:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple, Optional
 
 from lobster_simulator.common.calculations import *
 from lobster_simulator.common.pybullet_api import PybulletAPI
@@ -48,12 +48,13 @@ class DVL(Sensor):
         self.beamVisualizers = [DebugLine(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], width=2,
                                           parentIndex=self._robot._id) for i in range(4)]
 
+
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
-    def update(self, time: SimulationTime, dt: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime) -> None:
 
         altitudes = list()
 
-        current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
+        actual_altitude, current_velocity  = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
@@ -65,7 +66,7 @@ class DVL(Sensor):
             world_frame_endpoint = vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(),
                                                        auv_frame_endpoint)
 
-            result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
+            result = PybulletAPI.rayTest(self._get_position(), world_frame_endpoint)
 
             altitudes.append(result[0] * 2 * MAXIMUM_ALTITUDE)
 
@@ -106,7 +107,7 @@ class DVL(Sensor):
                     'vx': interpolated_velocity[X],
                     'vy': interpolated_velocity[Y],
                     'vz': interpolated_velocity[Z],
-                    'altitude': average_interpolated_altitude,
+                    'altitude': actual_altitude,
                     'velocity_valid': interpolated_bottom_lock,
                     "format": "json_v1"
                 }
@@ -127,25 +128,41 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-    def get_position(self):
+    def _get_position(self):
+        """Returns the position of the DVL in the world frame."""
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
     def _get_real_values(self, dt: SimulationTime) -> List:
-        location = self.get_position()
 
-        distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
+        altitude = self._robot.get_altitude() - self._sensor_position[Z]
 
         velocity = self._robot.get_velocity()
 
-        return [distance_to_seafloor, velocity]
+        return [altitude, velocity]
 
-    def get_altitude(self) -> float:
-        """Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams."""
-        return self.get_last_value()['altitude']
+    def get_altitude(self) -> Optional[Tuple[float, float]]:
+        """
+        Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams with a timestamp.
+        :return: Tuple where the first value is the time in seconds and the second value is the altitude
+        """
+        last_value = self.get_last_value()
 
-    def get_velocity(self) -> Vec3:
-        """Gives the latest velocity of the robot in the dvl sensor frame."""
-        return Vec3([self.get_last_value()['vx'], self.get_last_value()['vy'], self.get_last_value()['vz']])
+        if last_value is None:
+            return None
+
+        return last_value[0], last_value[1]['altitude']
+
+    def get_velocity(self) -> Optional[Tuple[float, Vec3]]:
+        """
+        Gives the latest velocity of the robot in the dvl sensor frame.
+        :return: Tuple where the first value is the time in seconds and the second value is the velocity
+        """
+        last_value = self.get_last_value()
+
+        if last_value is None:
+            return None
+
+        return last_value[0], Vec3([last_value[1]['vx'], last_value[1]['vy'], last_value[1]['vz']])
 
     def remove(self):
         for beam in self.beamVisualizers:
