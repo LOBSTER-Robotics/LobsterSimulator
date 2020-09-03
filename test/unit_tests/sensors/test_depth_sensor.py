@@ -4,7 +4,7 @@ from lobster_simulator.simulator import Simulator
 from lobster_common.vec3 import Vec3
 
 
-class TestDepthSensor(unittest.TestCase):
+class DepthSensorTest(unittest.TestCase):
 
     def test_pressure(self):
         simulator = Simulator(4000, gui=False)
