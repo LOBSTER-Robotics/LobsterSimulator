@@ -31,7 +31,7 @@ class DVLTest(unittest.TestCase):
 
             # Since the dvl runs at a slower rate than the simulator, it's possible that there is no new data point
             if sensor_data is not None:
-                sensor_altitude = sensor_data['altitude']
+                sensor_altitude = sensor_data[1]['altitude']
 
                 min_altitude = min((actual_altitude, previous_altitude))
                 max_altitude = max((actual_altitude, previous_altitude))
@@ -59,7 +59,7 @@ class DVLTest(unittest.TestCase):
 
             # Since the dvl runs
             if sensor_data:
-                vx, vy, vz = sensor_data['vx'], sensor_data['vy'], sensor_data['vz']
+                vx, vy, vz = sensor_data[1]['vx'], sensor_data[1]['vy'], sensor_data[1]['vz']
 
                 min_vx = min((actual_velocity[X], previous_velocity[X]))
                 max_vx = max((actual_velocity[X], previous_velocity[X]))

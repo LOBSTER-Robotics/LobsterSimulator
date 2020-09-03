@@ -94,27 +94,25 @@ class DVL(Sensor):
                                                     y1=self._previous_velocity,
                                                     y2=current_velocity)
 
-            # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
-            #  (It probably estimates the least squares plane through the 4 points and calculates the distance to that
-            #  plane, but for now the average of the 4 points is good enough)
-            average_interpolated_altitude = float(np.mean(interpolated_altitudes))
-
             interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
 
             self._queue.append(
-                {
-                    'time': self._time_step.milliseconds,
-                    'vx': interpolated_velocity[X],
-                    'vy': interpolated_velocity[Y],
-                    'vz': interpolated_velocity[Z],
-                    'altitude': actual_altitude,
-                    'velocity_valid': interpolated_bottom_lock,
-                    "format": "json_v1"
-                }
+                (
+                    self._next_sample_time.seconds,
+                    {
+                        'time': self._time_step.milliseconds,
+                        'vx': interpolated_velocity[X],
+                        'vy': interpolated_velocity[Y],
+                        'vz': interpolated_velocity[Z],
+                        'altitude': actual_altitude,
+                        'velocity_valid': interpolated_bottom_lock,
+                        "format": "json_v1"
+                    }
+                )
             )
 
             # The timestep of the DVL depends on the altitude (higher altitude is lower frequency)
-            time_step_micros = interpolate(average_interpolated_altitude,
+            time_step_micros = interpolate(actual_altitude,
                                            MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
                                            MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
