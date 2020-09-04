@@ -11,7 +11,7 @@ class DepthSensorTest(unittest.TestCase):
         robot = simulator.create_robot()
         robot.set_position_and_orientation(position=Vec3((0,0,0)))
         simulator.do_step()
-        pressure = robot._depth_sensor.get_pressure()
+        pressure = robot._pressure_sensor.get_pressure()
         # 101.3 = (0 * ((self._water_density * GRAVITY) + self._OFFSET) + self._STANDARD_ATMOSPHERE) / self._KPA_TO_PA
         self.assertAlmostEqual(101.3, pressure)
 
@@ -22,12 +22,12 @@ class DepthSensorTest(unittest.TestCase):
         downwards_velocity = Vec3([0, 0, 1])
         simulator.robot.set_velocity(linear_velocity=downwards_velocity)
         simulator.do_step()
-        previous_pressure = simulator.robot._depth_sensor.get_pressure()
+        previous_pressure = simulator.robot._pressure_sensor.get_pressure()
 
         for _ in range(100):
             simulator.robot.set_velocity(linear_velocity=downwards_velocity)
             simulator.do_step()
-            current_pressure = simulator.robot._depth_sensor.get_pressure()
+            current_pressure = simulator.robot._pressure_sensor.get_pressure()
 
             self.assertLess(previous_pressure, current_pressure)
             previous_pressure = current_pressure
