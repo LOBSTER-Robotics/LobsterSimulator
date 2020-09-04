@@ -36,7 +36,7 @@ class PressureSensor(Sensor):
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")
         # print(vec3_local_to_world_id(self._robot._id, self._position)[2])
-        depth = -vec3_local_to_world_id(self._robot._id, self._sensor_position)[2]
+        depth = vec3_local_to_world_id(self._robot._id, self._sensor_position)[2]
 
         pressure = (depth * ((self._water_density * GRAVITY) + self._OFFSET) + self._STANDARD_ATMOSPHERE) / self._KPA_TO_PA
 
