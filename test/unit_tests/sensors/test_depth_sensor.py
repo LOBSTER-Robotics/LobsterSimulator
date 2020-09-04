@@ -19,13 +19,15 @@ class DepthSensorTest(unittest.TestCase):
         """Move the robot down and assert that the pressure will only increase."""
         simulator = Simulator(4000, gui=False)
         simulator.create_robot()
+        downwards_velocity = Vec3([0, 0, 1])
+        simulator.robot.set_velocity(linear_velocity=downwards_velocity)
+        simulator.do_step()
         previous_pressure = simulator.robot._depth_sensor.get_pressure()
 
-        for _ in range(10000):
-            downwards_velocity = Vec3([0, 0, 1])
+        for _ in range(100):
             simulator.robot.set_velocity(linear_velocity=downwards_velocity)
             simulator.do_step()
             current_pressure = simulator.robot._depth_sensor.get_pressure()
 
-            self.assertLessEqual(previous_pressure, current_pressure)
+            self.assertLess(previous_pressure, current_pressure)
             previous_pressure = current_pressure
