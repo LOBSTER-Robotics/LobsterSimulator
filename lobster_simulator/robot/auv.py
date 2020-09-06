@@ -68,17 +68,17 @@ class AUV:
     def get_thruster(self, name: str):
         return self.thrusters[name]
 
-    def update(self, dt: SimulationTime, time: SimulationTime):
+    def update(self, dt: SimulationTime, current_time: SimulationTime):
         """
         Updates the UUV by the specified time.
         :param dt: dt in microseconds
-        :param time: time in microseconds
+        :param current_time: time in microseconds
         """
-        self._depth_sensor.update(time, dt)
-        self._accelerometer.update(time, dt)
-        self._gyroscope.update(time, dt)
-        self._magnetometer.update(time, dt)
-        self._dvl.update(time, dt)
+        self._depth_sensor.update(current_time, dt)
+        self._accelerometer.update(current_time, dt)
+        self._gyroscope.update(current_time, dt)
+        self._magnetometer.update(current_time, dt)
+        self._dvl.update(current_time, dt)
 
         self._buoyancy._update()
 

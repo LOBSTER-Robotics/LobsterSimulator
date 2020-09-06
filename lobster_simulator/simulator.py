@@ -145,3 +145,10 @@ class Simulator:
         :return:
         """
         PybulletAPI.disconnect()
+
+    def init_sensor_values(self) -> None:
+        """
+        Initializing sensor values by updating with one microsecond.
+        A minimal difference in time is needed so the lowest amount of one is used.
+        """
+        self.robot.update(dt=SimulationTime(1), current_time=SimulationTime(1))
