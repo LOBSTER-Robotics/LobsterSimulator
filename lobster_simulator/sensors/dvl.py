@@ -53,7 +53,7 @@ class DVL(Sensor):
 
         altitudes = list()
 
-        current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
+        current_distance_to_seafloor, current_velocity = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
