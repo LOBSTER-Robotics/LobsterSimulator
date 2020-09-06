@@ -13,8 +13,6 @@ from lobster_simulator.common.translation import *
 
 class Accelerometer(Sensor):
 
-    GRAVITY_VEC = Vec3([0, 0, GRAVITY])
-
     def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
         self._previous_linear_velocity = Vec3([0, 0, 0])
         super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=noise_stds)
@@ -25,11 +23,9 @@ class Accelerometer(Sensor):
 
     def _get_real_values(self, dt: SimulationTime) -> List[Vec3]:
         linear_velocity = self._get_linear_velocity()
-        acceleration = 0
-        if dt.microseconds > 0:
-            acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
+        acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
 
-        acceleration += self.GRAVITY_VEC
+        acceleration += Vec3([0, 0, GRAVITY])
 
         # Rotate the gravity vector to the robot reference frame
         acceleration_local_frame = vec3_rotate_vector_to_local(self._robot.get_orientation(), acceleration)

@@ -2,6 +2,7 @@ import copy
 
 import json
 import time as t
+from typing import Optional
 
 from pkg_resources import resource_stream
 
@@ -12,13 +13,13 @@ from lobster_simulator.robot.auv import AUV
 from lobster_simulator.common.simulation_time import SimulationTime
 from enum import Enum, auto
 
+
 class Models(Enum):
     SCOUT_ALPHA = auto()
     PTV = auto()
 
 
 class Simulator:
-    robot = None
 
     def __init__(self, time_step: int, config=None, gui=True):
         """
@@ -55,6 +56,7 @@ class Simulator:
         self.robot_config = None
 
         self._camera_position = Vec3([0, 0, 0])
+        self._robot: Optional[AUV] = None
 
     def get_time_in_seconds(self) -> float:
         return self._time.seconds
@@ -75,7 +77,7 @@ class Simulator:
 
         self.update_camera_position()
 
-        self.robot.update(self._time_step, self._time)
+        self._robot.update(self._time_step, self._time)
 
         PybulletAPI.stepSimulation()
 
@@ -92,21 +94,22 @@ class Simulator:
         """
         while (self._time + self._time_step).seconds <= time:
             self.do_step()
-            
+
     def update_camera_position(self):
         smoothing = 0.95
-        self._camera_position = smoothing * self._camera_position + (1 - smoothing) * self.robot.get_position()
+        self._camera_position = smoothing * self._camera_position + (1 - smoothing) * self._robot.get_position()
         if self.rotate_camera_with_robot:
-            PybulletAPI.moveCameraToPosition(self._camera_position, self.robot.get_orientation())
+            PybulletAPI.moveCameraToPosition(self._camera_position, self._robot.get_orientation())
         else:
             PybulletAPI.moveCameraToPosition(self._camera_position)
 
-    def get_robot(self) -> AUV:
+    @property
+    def robot(self) -> AUV:
         """
         Gets the current instance of the robot.
         :return: Robot instance
         """
-        return self.robot
+        return self._robot
 
     def create_robot(self, model: Models = Models.SCOUT_ALPHA, **kwargs) -> AUV:
         """
@@ -114,8 +117,8 @@ class Simulator:
         :param model: Model of the robot. (Scout-alpha, PTV)
         :return: Robot instance
         """
-        if self.robot:
-            self.robot.remove()
+        if self._robot:
+            self._robot.remove()
 
         if model == Models.SCOUT_ALPHA:
             model_config = 'scout-alpha.json'
@@ -128,9 +131,9 @@ class Simulator:
         # Add extra arguments to the robot config
         self.robot_config.update(kwargs)
 
-        self.robot = AUV(self.robot_config)
+        self._robot = AUV(self.robot_config)
 
-        return self.robot
+        return self._robot
 
     def reset_robot(self):
         """

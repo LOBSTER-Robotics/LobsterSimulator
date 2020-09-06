@@ -74,6 +74,8 @@ class AUV:
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
+        if dt.microseconds <= 0:
+            raise ValueError(f"time dt can't be less or equal to zero was: {dt}")
         self._depth_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)

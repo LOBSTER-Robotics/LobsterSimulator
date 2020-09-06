@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Dict
 
 from lobster_simulator.common.calculations import *
 from lobster_simulator.common.pybullet_api import PybulletAPI
@@ -131,6 +131,7 @@ class DVL(Sensor):
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
     def _get_real_values(self, dt: SimulationTime) -> List:
+        # Is this still used?
         location = self.get_position()
 
         distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
@@ -142,3 +143,11 @@ class DVL(Sensor):
     def remove(self):
         for beam in self.beamVisualizers:
             beam.remove()
+
+    def get_last_value(self) -> Dict:
+        """
+        Return last value that is {time, vx, vy, vz, altitude, velocity_valid, format}
+        """
+        if len(self._queue) > 0:
+            self.__lastvalue = self._queue[0]
+        return self.__lastvalue
