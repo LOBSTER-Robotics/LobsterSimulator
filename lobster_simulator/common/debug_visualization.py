@@ -8,28 +8,10 @@ import time
 from pkg_resources import resource_filename
 
 from lobster_simulator.common.pybullet_api import PybulletAPI
+from lobster_simulator.common.pybullet_object import PyBulletObject
 
 
-class DebugObject(ABC):
-
-    def __init__(self, object_id):
-        self._object_id = object_id
-
-    def remove(self) -> None:
-        """
-        Removes current object from GUI
-        """
-        PybulletAPI.removeUserDebugItem(self._object_id)
-        self._object_id = None
-
-    @property
-    def object_id(self):
-        if self._object_id is None:
-            print("Trying to get object id but object has been removed or not instantiated")
-        return self._object_id
-
-
-class DebugLine(DebugObject):
+class DebugLine(PyBulletObject):
     """
     Class used to create a debug line in the GUI.
     """
@@ -54,7 +36,7 @@ class DebugLine(DebugObject):
         self._color = color
 
         self._latest_update_time = 0
-
+        self._object_id = -1
         object_id = self._update_debug_line()
         super().__init__(object_id)
 
@@ -93,7 +75,7 @@ class DebugLine(DebugObject):
                                             replaceItemUniqueId=self._object_id)
 
 
-class DebugSphere(DebugObject):
+class DebugSphere(PyBulletObject):
 
     def __init__(self, radius, rgba_color):
         object_id = PybulletAPI.createVisualSphere(radius, rgba_color)
@@ -103,7 +85,7 @@ class DebugSphere(DebugObject):
         PybulletAPI.resetBasePositionAndOrientation(self._object_id, posObj=position)
 
 
-class DebugScout(DebugObject):
+class DebugScout(PyBulletObject):
 
     def __init__(self, pos: Vec3 = None):
         if not pos:
