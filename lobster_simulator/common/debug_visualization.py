@@ -1,3 +1,5 @@
+from abc import ABC
+
 from lobster_common.quaternion import Quaternion
 from lobster_common.vec3 import Vec3
 
@@ -6,9 +8,10 @@ import time
 from pkg_resources import resource_filename
 
 from lobster_simulator.common.pybullet_api import PybulletAPI
+from lobster_simulator.common.pybullet_object import PyBulletObject
 
 
-class DebugLine:
+class DebugLine(PyBulletObject):
     """
     Class used to create a debug line in the GUI.
     """
@@ -32,12 +35,10 @@ class DebugLine:
         self._width = width
         self._color = color
 
-        self._id = -1
-        self._id = self._update_debug_line()
         self._latest_update_time = 0
-
-    def remove(self):
-        PybulletAPI.removeUserDebugItem(self._id)
+        self._object_id = -1
+        object_id = self._update_debug_line()
+        super().__init__(object_id)
 
     def update(self, from_location: Vec3 = None, to_location: Vec3 = None, frame_id: int = None, color=None) -> None:
         """
@@ -56,7 +57,7 @@ class DebugLine:
         if color:
             self._color = color
 
-        self._id = self._update_debug_line()
+        self._object_id = self._update_debug_line()
         self._latest_update_time = time.time()
 
     def can_update(self) -> bool:
@@ -71,26 +72,28 @@ class DebugLine:
                                             lineWidth=self._width,
                                             lineColorRGB=self._color,
                                             parentObjectUniqueId=self.parentIndex,
-                                            replaceItemUniqueId=self._id)
+                                            replaceItemUniqueId=self._object_id)
 
 
-class DebugSphere:
+class DebugSphere(PyBulletObject):
 
     def __init__(self, radius, rgba_color):
-        self.sphereId = PybulletAPI.createVisualSphere(radius, rgba_color)
+        object_id = PybulletAPI.createVisualSphere(radius, rgba_color)
+        super().__init__(object_id)
 
     def update_position(self, position: Vec3):
-        PybulletAPI.resetBasePositionAndOrientation(self.sphereId, posObj=position)
+        PybulletAPI.resetBasePositionAndOrientation(self._object_id, posObj=position)
 
 
-class DebugScout:
+class DebugScout(PyBulletObject):
 
     def __init__(self, pos: Vec3 = None):
         if not pos:
             pos = Vec3([0, 0, 0])
 
-        self.id = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
-                                                                "data/scout-alpha-visual.urdf"), pos)
+        object_id = PybulletAPI.loadURDF(resource_filename("lobster_simulator",
+                                                           "data/scout-alpha-visual.urdf"), pos)
+        super().__init__(object_id)
 
     def set_position_and_orientation(self, position: Vec3, orientation: Quaternion):
-        PybulletAPI.resetBasePositionAndOrientation(self.id, posObj=position, ornObj=orientation)
+        PybulletAPI.resetBasePositionAndOrientation(self._object_id, posObj=position, ornObj=orientation)
