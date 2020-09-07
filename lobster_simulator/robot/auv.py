@@ -134,9 +134,9 @@ class AUV:
 
         result = p.rayTest(self.get_position(), world_frame_endpoint)
 
-        altitude  = result[0] * beam_length
+        altitude = result[0] * beam_length
 
-        if altitude > 50:
+        if altitude >= 100:
             return None
         else:
             return altitude

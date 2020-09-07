@@ -46,13 +46,12 @@ class DVL(Sensor):
         self.beamVisualizers = [DebugLine(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], width=2,
                                           parentIndex=self._robot._id) for i in range(4)]
 
-
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
     def update(self, time: SimulationTime, dt: SimulationTime) -> None:
 
         altitudes = list()
 
-        actual_altitude, current_velocity  = self._get_real_values(dt)
+        actual_altitude, current_velocity = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
@@ -130,7 +129,11 @@ class DVL(Sensor):
 
     def _get_real_values(self, dt: SimulationTime) -> List:
 
-        altitude = self._robot.get_altitude() - self._sensor_position[Z]
+        robot_altitude = self._robot.get_altitude()
+        if robot_altitude is not None:
+            altitude = robot_altitude - self._sensor_position[Z]
+        else:
+            altitude = None
 
         velocity = self._robot.get_velocity()
 
