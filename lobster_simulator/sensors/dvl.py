@@ -15,8 +15,6 @@ from lobster_common.constants import *
 from lobster_simulator.common.debug_visualization import DebugLine
 from lobster_simulator.common.translation import *
 
-SEAFLOOR_DEPTH = 100  # meters
-
 MINIMUM_ALTITUDE = 0.05  # meters
 MAXIMUM_ALTITUDE = 50  # meters
 

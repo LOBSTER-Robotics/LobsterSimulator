@@ -6,8 +6,6 @@ from lobster_simulator.common.pybullet_api import PybulletAPI
 from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_simulator.simulator import Simulator
 from lobster_common.vec3 import Vec3
-from lobster_simulator.sensors.dvl import SEAFLOOR_DEPTH
-
 
 class DVLTest(unittest.TestCase):
 
