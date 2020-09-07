@@ -46,7 +46,7 @@ class DVL(Sensor):
         ]
 
         self.beamVisualizers = [DebugLine(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], width=2,
-                                          parentIndex=self._robot._id) for i in range(4)]
+                                          parentIndex=self._robot.object_id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
     def update(self, time: SimulationTime, dt: SimulationTime):
@@ -74,7 +74,7 @@ class DVL(Sensor):
                 color = RED if altitudes[i] >= MAXIMUM_ALTITUDE else GREEN
 
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
-                                               frame_id=self._robot._id)
+                                               frame_id=self._robot.object_id)
 
         self._queue = list()
 

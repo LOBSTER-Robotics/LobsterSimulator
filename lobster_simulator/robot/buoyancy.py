@@ -12,7 +12,8 @@ from lobster_simulator.common.pybullet_api import PybulletAPI
 
 class Buoyancy:
 
-    def __init__(self, robot: 'auv', radius: float, length: float, resolution: Optional[float] = None, visualize: bool = False):
+    def __init__(self, robot: 'auv', radius: float, length: float, resolution: Optional[float] = None,
+                 visualize: bool = False):
         self._robot: auv = robot
 
         self._buoyancy: float = 550
@@ -44,13 +45,13 @@ class Buoyancy:
                     pos = Vec3([x, y, z])
                     count += 1
                     if count % 1000 == 0:
-                        print(f"{int(count/total_points * 100)}%")
+                        print(f"{int(count / total_points * 100)}%")
 
-                    if np.math.sqrt(y**2 + z**2) < radius and \
-                            PybulletAPI.rayTest(pos + Vec3([0, 1, 0]), pos, object_id=self._robot._id)[0] < 1 and \
-                            PybulletAPI.rayTest(pos + Vec3([0, 0, 1]), pos, object_id=self._robot._id)[0] < 1 and \
-                            PybulletAPI.rayTest(pos + Vec3([0, -1, 0]), pos, object_id=self._robot._id)[0] < 1 and \
-                            PybulletAPI.rayTest(pos + Vec3([0, 0, -1]), pos, object_id=self._robot._id)[0] < 1:
+                    if np.math.sqrt(y ** 2 + z ** 2) < radius and \
+                            PybulletAPI.rayTest(pos + Vec3([0, 1, 0]), pos, object_id=self._robot.object_id)[0] < 1 and \
+                            PybulletAPI.rayTest(pos + Vec3([0, 0, 1]), pos, object_id=self._robot.object_id)[0] < 1 and \
+                            PybulletAPI.rayTest(pos + Vec3([0, -1, 0]), pos, object_id=self._robot.object_id)[0] < 1 and \
+                            PybulletAPI.rayTest(pos + Vec3([0, 0, -1]), pos, object_id=self._robot.object_id)[0] < 1:
 
                         if self.visualize:
                             self.dot_under_water.append(True)
@@ -64,7 +65,7 @@ class Buoyancy:
 
     def _update(self):
         buoyancy_point = Vec3([0, 0, 0])
-        buoyancy_force = Vec3([0, 0, -(self._buoyancy)])
+        buoyancy_force = Vec3([0, 0, -self._buoyancy])
         under_water_count = 0
 
         robot_pos = self._robot.get_position()

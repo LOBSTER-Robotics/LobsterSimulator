@@ -33,7 +33,7 @@ class Thruster:
         # This is needed to be able to only actually start producing thrust once the minimum thrust is exceeded.
         self._theoretical_thrust = 0
 
-        self._motor_debug_line = DebugLine(self._position, self._position, parentIndex=robot._id, color=[0, 0, 1])
+        self._motor_debug_line = DebugLine(self._position, self._position, parentIndex=robot._object_id, color=[0, 0, 1])
 
     def set_desired_thrust(self, desired_thrust: float) -> None:
         self._desired_thrust = clip(desired_thrust, -self._maximum_backward_thrust, self._maximum_forward_thrust)
@@ -57,10 +57,10 @@ class Thruster:
         self._theoretical_thrust = clip(self._theoretical_thrust, -self._maximum_backward_thrust,
                                         self._maximum_forward_thrust)
 
-        world_position = translation.vec3_local_to_world_id(self._robot._id, self._position)
+        world_position = translation.vec3_local_to_world_id(self._robot.object_id, self._position)
         if world_position[Z] > WaterSurface.water_height(world_position[X], world_position[Y]):
 
-            PybulletAPI.applyExternalForce(objectUniqueId=self._robot._id,
+            PybulletAPI.applyExternalForce(objectUniqueId=self._robot.object_id,
                                            forceObj=self._direction * self.current_thrust,
                                            posObj=self._position,
                                            frame=Frame.LINK_FRAME)
@@ -73,7 +73,7 @@ class Thruster:
         self._motor_debug_line.update(self._position,
                                       self._position
                                       + self._direction * self.current_thrust / 100,
-                                      self._robot._id,
+                                      self._robot.object_id,
                                       color=debug_line_color)
 
     def remove(self):
