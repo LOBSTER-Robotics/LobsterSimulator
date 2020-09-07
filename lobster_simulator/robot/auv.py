@@ -121,8 +121,9 @@ class AUV:
 
     def get_altitude(self) -> float:
         """
-        Gets the altitude of the auv based on its own reference frame by casting a ray to see where it intersects with
-        terrain. This beam has length 100 so even if the altitude is larger than 100 it will still return 100.
+        Gets the actual altitude (so not based on the simulated dvl) of the auv in its own reference frame by casting a
+        ray to see where it intersects with terrain. This beam has length 100 so even if the altitude is larger than 100
+        it will still return 100.
         """
         beam_length = 100
         raytest_endpoint = 2 * Vec3([0, 0, beam_length])
