@@ -53,7 +53,6 @@ class DVL(Sensor):
 
         actual_altitude, current_velocity = self._get_real_values(dt)
 
-
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
             # smoothly interpolate between the transition between not having a lock and having a lock
@@ -110,9 +109,12 @@ class DVL(Sensor):
             )
 
             # The timestep of the DVL depends on the altitude (higher altitude is lower frequency)
-            time_step_micros = interpolate(actual_altitude,
-                                           MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
-                                           MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
+            if actual_altitude is None:
+                time_step_micros = MAXIMUM_TIME_STEP.microseconds
+            else:
+                time_step_micros = interpolate(actual_altitude,
+                                               MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
+                                               MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
             time_step_micros = clip(time_step_micros, MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
