@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 import numpy as np
 from pkg_resources import resource_filename
@@ -119,7 +119,7 @@ class AUV:
     def get_angular_velocity(self):
         return p.getBaseVelocity(self._id)[1]
 
-    def get_altitude(self) -> float:
+    def get_altitude(self) -> Optional[float]:
         """
         Gets the actual altitude (so not based on the simulated dvl) of the auv in its own reference frame by casting a
         ray to see where it intersects with terrain. This beam has length 100 so even if the altitude is larger than 100
@@ -134,7 +134,12 @@ class AUV:
 
         result = p.rayTest(self.get_position(), world_frame_endpoint)
 
-        return result[0] * beam_length
+        altitude  = result[0] * beam_length
+
+        if altitude > 50:
+            return None
+        else:
+            return altitude
         
     def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
         """
