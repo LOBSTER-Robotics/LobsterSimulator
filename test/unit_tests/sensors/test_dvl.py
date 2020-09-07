@@ -22,7 +22,8 @@ class DVLTest(unittest.TestCase):
 
         downwards_velocity = Vec3([0, 0, 1])
 
-        for _ in range(100):
+        amount_sensor_updates = 0
+        for _ in range(500):
             simulator.do_step()
             simulator.robot.set_velocity(linear_velocity=downwards_velocity)
 
@@ -31,6 +32,7 @@ class DVLTest(unittest.TestCase):
 
             # Since the dvl runs at a slower rate than the simulator, it's possible that there is no new data point
             if sensor_data is not None:
+                amount_sensor_updates += 1
                 sensor_altitude = sensor_data[1]['altitude']
 
                 min_altitude = min((actual_altitude, previous_altitude))
@@ -43,6 +45,9 @@ class DVLTest(unittest.TestCase):
 
             previous_altitude = actual_altitude
 
+        # If there weren't at least 10 sensor updates the there went something wrong with the test.
+        self.assertGreater(amount_sensor_updates, 10)
+
     def test_velocity(self):
         simulator = Simulator(4000, gui=False)
         simulator.create_robot()
@@ -51,7 +56,8 @@ class DVLTest(unittest.TestCase):
         previous_velocity = simulator.robot.get_velocity()
         simulator.do_step()
 
-        for _ in range(100):
+        amount_sensor_updates = 0
+        for _ in range(500):
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
 
@@ -59,6 +65,7 @@ class DVLTest(unittest.TestCase):
 
             # Since the dvl runs
             if sensor_data:
+                amount_sensor_updates += 1
                 vx, vy, vz = sensor_data[1]['vx'], sensor_data[1]['vy'], sensor_data[1]['vz']
 
                 min_vx = min((actual_velocity[X], previous_velocity[X]))
@@ -80,3 +87,6 @@ class DVLTest(unittest.TestCase):
                 self.assertLessEqual(vz, max_vz)
 
             previous_velocity = Vec3(actual_velocity)
+
+        # If there weren't at least 10 sensor updates the there went something wrong with the test.
+        self.assertGreater(amount_sensor_updates, 10)
