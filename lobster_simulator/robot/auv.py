@@ -210,26 +210,26 @@ class AUV:
         p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
 
     @property
-    def dvl(self):
+    def dvl(self) -> DVL:
         return self._dvl
 
     @property
-    def accelerometer(self):
+    def accelerometer(self) -> Accelerometer:
         return self._accelerometer
 
     @property
-    def gyroscope(self):
+    def gyroscope(self) -> Gyroscope:
         return self._gyroscope
 
     @property
-    def magnetometer(self):
+    def magnetometer(self) -> Magnetometer:
         return self._magnetometer
 
     @property
-    def pressure_sensor(self):
+    def pressure_sensor(self) -> PressureSensor:
         return self._pressure_sensor
 
-    def remove(self):
+    def remove(self) -> None:
         p.removeBody(self._id)
         self._dvl.remove()
         self._buoyancy.remove()
