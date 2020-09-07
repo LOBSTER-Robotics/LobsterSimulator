@@ -131,7 +131,6 @@ class DVL(Sensor):
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
     def _get_real_values(self, dt: SimulationTime) -> List:
-        # Is this still used?
         location = self.get_position()
 
         distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
