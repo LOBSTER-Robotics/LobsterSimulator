@@ -131,7 +131,7 @@ class Simulator:
         # Add extra arguments to the robot config
         self.robot_config.update(kwargs)
 
-        self._robot = AUV(self.robot_config)
+        self._robot = AUV(self._time, self.robot_config)
 
         return self._robot
 

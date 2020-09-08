@@ -16,14 +16,14 @@ from lobster_simulator.common.translation import vec3_local_to_world_id
 
 class DepthSensor(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None,
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None,
                  saltwater=False, noise_stds: Union[List[float], float] = None):
         if saltwater:
             self._water_density = DENSITY_SALTWATER
         else:
             self._water_density = DENSITY_FRESHWATER
 
-        super(DepthSensor, self).__init__(robot, position, time_step, orientation, noise_stds)
+        super(DepthSensor, self).__init__(robot=robot, position=position, time_step=time_step, time=time, orientation=orientation, noise_stds=noise_stds)
 
     def _get_real_values(self, dt: int) -> List[float]:
         # print(f"getting values: {vec3_local_to_world_id(self.pybullet_id, self.position)[2]}")

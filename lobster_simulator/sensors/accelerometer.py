@@ -13,9 +13,9 @@ from lobster_simulator.common.translation import *
 
 class Accelerometer(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
         self._previous_linear_velocity = Vec3([0, 0, 0])
-        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=noise_stds)
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=noise_stds, time=time)
 
     def update(self, time: SimulationTime, dt: SimulationTime):
         super().update(time, dt)

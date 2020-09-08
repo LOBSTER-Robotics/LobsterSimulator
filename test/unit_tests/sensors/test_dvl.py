@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 from lobster_common.constants import *
 
@@ -17,10 +18,10 @@ class DVLTest(unittest.TestCase):
         for _ in range(100):
             simulator.do_step()
             actual_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
-            sensor_data = simulator.robot._dvl.get_last_value()
+            sensor_data_list: List = simulator.robot._dvl.pop_all_values()
 
             # Since the dvl runs
-            if sensor_data:
+            for sensor_data in sensor_data_list:
                 sensor_altitude = sensor_data['altitude']
 
                 min_altitude = min((actual_altitude, previous_altitude))
@@ -44,10 +45,10 @@ class DVLTest(unittest.TestCase):
         for _ in range(100):
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
-            sensor_data = simulator.robot._dvl.get_last_value()
+            sensor_data_list: List = simulator.robot._dvl.pop_all_values()
 
             # Since the dvl runs
-            if sensor_data:
+            for sensor_data in sensor_data_list:
                 vx, vy, vz = sensor_data['vx'], sensor_data['vy'], sensor_data['vz']
 
                 min_vx = min((actual_velocity[X], previous_velocity[X]))

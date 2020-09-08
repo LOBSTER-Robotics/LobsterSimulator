@@ -29,8 +29,8 @@ GREEN = [0, 1, 0]
 
 class DVL(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
-        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None):
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None, time=time)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
@@ -76,10 +76,9 @@ class DVL(Sensor):
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot.object_id)
 
-        self._queue = list()
-
         while self._next_sample_time <= time:
             interpolated_altitudes = list()
+            print(self._next_sample_time.microseconds)
             for i in range(4):
                 interpolated_altitudes.append(interpolate(x=self._next_sample_time.microseconds,
                                                           x1=self._previous_update_time.microseconds,
@@ -142,11 +141,3 @@ class DVL(Sensor):
     def remove(self):
         for beam in self.beamVisualizers:
             beam.remove()
-
-    def get_last_value(self) -> Dict:
-        """
-        Return last value that is {time, vx, vy, vz, altitude, velocity_valid, format}
-        """
-        if len(self._queue) > 0:
-            self.__lastvalue = self._queue[0]
-        return self.__lastvalue

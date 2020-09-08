@@ -15,9 +15,9 @@ MAGNETIC_FIELD = Vec3([0, 1, 0])
 
 class Magnetometer(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None,
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None,
                  noise_stds: Union[List[float], float] = None):
-        super().__init__(robot, position=position, orientation=orientation, time_step=time_step, noise_stds=noise_stds)
+        super().__init__(robot, position=position, orientation=orientation, time_step=time_step, noise_stds=noise_stds, time=time)
 
     def _get_real_values(self, dt: SimulationTime):
         robot_orientation = self._robot.get_orientation()

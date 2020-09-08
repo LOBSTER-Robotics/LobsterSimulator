@@ -20,7 +20,7 @@ from lobster_simulator.common.simulation_time import SimulationTime
 
 class Sensor(ABC):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion,
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion,
                  noise_stds: Optional[Union[List[float], float]]):
         """
         Parameters
@@ -49,8 +49,8 @@ class Sensor(ABC):
 
         self._queue = list()
 
-        self._next_sample_time: SimulationTime = SimulationTime(0)
-        self._previous_update_time: SimulationTime = SimulationTime(0)
+        self._next_sample_time: SimulationTime = SimulationTime(initial_microseconds=time.microseconds)
+        self._previous_update_time: SimulationTime = SimulationTime(initial_microseconds=time.microseconds)
         self._previous_real_value = self._get_real_values(SimulationTime(1))
 
         self.noise_stds = None
@@ -64,9 +64,6 @@ class Sensor(ABC):
         :param dt:
         :param time: Current time in the simulator
         """
-
-        # Empty the queue to prevent it from growing too large.
-        self._queue = list()
 
         real_values = self._get_real_values(dt)
 
@@ -102,11 +99,13 @@ class Sensor(ABC):
         self.noise_stds = noise_stds
 
     def pop_next_value(self):
+        """Pops the oldest sensor value from the list"""
         if len(self._queue) == 0:
             return None
-        return self._queue.pop()
+        return self._queue.pop(0)
 
-    def get_all_values(self):
+    def pop_all_values(self) -> List:
+        """Gives a list with all the sensors values, from oldest to newest."""
         values = self._queue
         self._queue = list()
         return values
@@ -117,7 +116,7 @@ class Sensor(ABC):
     def get_sensor_orientation(self) -> Quaternion:
         return self._sensor_orientation
 
-    def get_last_value(self):
+    def get_latest_value(self):
         if self._queue:
             return self._queue[-1]
 
