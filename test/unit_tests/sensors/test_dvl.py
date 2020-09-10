@@ -37,9 +37,9 @@ class DVLTest(unittest.TestCase):
     def test_velocity(self):
         simulator = Simulator(4000, gui=False)
         simulator.create_robot()
-        simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
 
         previous_velocity = simulator.robot.get_velocity()
+        simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
         simulator.do_step()
 
         for _ in range(100):
