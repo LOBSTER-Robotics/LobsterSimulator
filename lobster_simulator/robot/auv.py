@@ -21,7 +21,7 @@ from lobster_simulator.common.translation import *
 
 class AUV(PyBulletObject):
 
-    def __init__(self, config):
+    def __init__(self, time: SimulationTime, config):
         if config is None:
             raise ArgumentNoneError("config parameter should not be None")
 
@@ -52,11 +52,11 @@ class AUV(PyBulletObject):
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
 
-        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
+        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), time_step=SimulationTime(4000), time=time)
 
         self._max_thrust = 100
 
@@ -77,6 +77,8 @@ class AUV(PyBulletObject):
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
+        if dt.microseconds <= 0:
+            raise ValueError(f"time dt can't be less or equal to zero was: {dt}")
         self._depth_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)

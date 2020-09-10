@@ -45,3 +45,6 @@ class SimulationTime:
         Add time step in microseconds
         """
         self._micro_seconds += time_step
+
+    def __str__(self):
+        return f"<SimulationTime(microseconds:{self._micro_seconds})>"

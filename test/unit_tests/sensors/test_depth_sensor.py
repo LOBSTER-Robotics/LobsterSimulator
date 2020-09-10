@@ -1,5 +1,7 @@
 import unittest
 
+from lobster_common.constants import Z
+
 from lobster_simulator.simulator import Simulator
 from lobster_common.vec3 import Vec3
 
@@ -11,9 +13,12 @@ class DepthSensorTest(unittest.TestCase):
         robot = simulator.create_robot()
         robot.set_position_and_orientation(position=Vec3((0,0,0)))
         simulator.do_step()
+        depth = robot.get_position()[Z]
+        print("depth", depth)
         pressure = robot._depth_sensor.get_pressure()
-        # 101.3 = (0 * ((self._water_density * GRAVITY) + self._OFFSET) + self._STANDARD_ATMOSPHERE) / self._KPA_TO_PA
-        self.assertAlmostEqual(101.3, pressure)
+
+        # Only checking accuracy up to 1 decimal place, since the robot moves a bit during the step
+        self.assertAlmostEqual(101.3, pressure, places=1)
 
     def test_pressure_increases_when_going_down(self):
         """Move the robot down and assert that the pressure will only increase."""
