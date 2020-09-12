@@ -9,8 +9,6 @@ from lobster_simulator.sensors.sensor import Sensor
 from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_simulator.common.translation import *
 
-MAGNETIC_FIELD = [1, 0, 0]
-
 
 class Gyroscope(Sensor):
 
