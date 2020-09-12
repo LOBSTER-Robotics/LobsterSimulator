@@ -8,10 +8,7 @@ if TYPE_CHECKING:
 from lobster_simulator.sensors.sensor import Sensor
 from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_simulator.common.translation import *
-
-
-MAGNETIC_FIELD = Vec3([0, 1, 0])
-
+from lobster_common.constants import MAGNETIC_FIELD
 
 class Magnetometer(Sensor):
 
