@@ -25,7 +25,9 @@ class Accelerometer(Sensor):
         linear_velocity = self._get_linear_velocity()
         acceleration = (linear_velocity - self._previous_linear_velocity) * MICROSECONDS_IN_SECONDS / dt.microseconds
 
-        acceleration += Vec3([0, 0, GRAVITY])
+        # In EDU frame gravity pulls the robot down but when the robot stays in the same position the accelerometer measure an accerelation up.
+        # Converting to the gravity vector to NED
+        acceleration += Vec3.fromENU([0, 0, GRAVITY])
 
         # Rotate the gravity vector to the robot reference frame
         acceleration_local_frame = vec3_rotate_vector_to_local(self._robot.get_orientation(), acceleration)
