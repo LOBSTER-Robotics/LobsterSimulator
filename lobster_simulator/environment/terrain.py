@@ -79,9 +79,11 @@ class Terrain:
                                               numHeightfieldRows=self.points_per_chunk,
                                               numHeightfieldColumns=self.points_per_chunk)
 
+        # todo might refactor this because chunk_y is used for the first axis and chunk_x is used for the second axis
+        #  Issue #51
         terrain = p.createMultiBody(0, terrainShape,
-                                    basePosition=Vec3([-(self.chunk_size * chunk_x + self.chunk_size / 2),
-                                                       (self.chunk_size * chunk_y + self.chunk_size / 2),
+                                    basePosition=Vec3([-(self.chunk_size * chunk_y + self.chunk_size / 2),
+                                                       (self.chunk_size * chunk_x + self.chunk_size / 2),
                                                        -(middle - self.depth)]).asENU(),
                                     baseOrientation=PybulletAPI.getQuaternionFromEuler(Vec3([0, 0, math.pi])).asENU())
 
