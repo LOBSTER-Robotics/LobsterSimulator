@@ -5,8 +5,8 @@ from pkg_resources import resource_filename
 
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
 from lobster_simulator.common.pybullet_object import PyBulletObject
+from lobster_simulator.robot import buoyancy
 from lobster_simulator.robot.thruster import Thruster
-from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.accelerometer import Accelerometer
 from lobster_simulator.sensors.dvl import DVL
 from lobster_simulator.sensors.pressure_sensor import DepthSensor
@@ -35,7 +35,7 @@ class AUV(PyBulletObject):
 
         super().__init__(object_id)
 
-        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
+        self._buoyancy = buoyancy.Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
@@ -85,7 +85,7 @@ class AUV(PyBulletObject):
         self._magnetometer.update(time, dt)
         self._dvl.update(time, dt)
 
-        self._buoyancy._update()
+        self._buoyancy.update()
 
         for thruster in self.thrusters.values():
             thruster._update(dt)
