@@ -94,7 +94,7 @@ class PybulletAPI:
 
     @staticmethod
     def getMatrixFromQuaternion(quaternion: Quaternion) -> np.ndarray:
-
+        # This could be wrong since the quaternion is not converted from NED to ENU
         return p.getMatrixFromQuaternion(quaternion.array)
 
     @staticmethod
@@ -208,7 +208,7 @@ class PybulletAPI:
     @staticmethod
     def createVisualCylinder(radius: float, height: float, color: List[float], orientation: Quaternion):
         shape = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=height, rgbaColor=color)
-        return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation)
+        return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation.asENU())
 
     @staticmethod
     def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
