@@ -59,9 +59,9 @@ class Buoyancy:
                         print(f"{int(count / total_points * 100)}%")
 
                     if np.math.sqrt(y ** 2 + z ** 2) < radius \
-                            and self._check_ray_hits_robot(pos + Vec3([1, 0, 0]), pos) \
+                            and self._check_ray_hits_robot(pos + Vec3([0, 1, 0]), pos) \
                             and self._check_ray_hits_robot(pos + Vec3([0, 0, 1]), pos) \
-                            and self._check_ray_hits_robot(pos + Vec3([-1, 0, 0]), pos) \
+                            and self._check_ray_hits_robot(pos + Vec3([0, -1, 0]), pos) \
                             and self._check_ray_hits_robot(pos + Vec3([0, 0, -1]), pos):
 
                         if self.visualize:
