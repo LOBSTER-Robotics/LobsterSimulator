@@ -14,7 +14,7 @@ setuptools.setup(
                       'numpy',
                       'noise',
                       ],
-    dependency_links=['https://github.com/LOBSTER-Robotics/Common.git@v0.0.5'],
+    dependency_links=['https://github.com/LOBSTER-Robotics/Common.git@v0.0.6'],
     classifiers=[],
 )
 
