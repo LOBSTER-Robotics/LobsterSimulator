@@ -9,7 +9,8 @@
     <inertial>
       <origin
         xyz="0 0 0"
-        rpy="0 0 0" />
+        rpy="0 0 -1.57079632679" />
+        <!-- This needs to be rotated because Pybullet expects ENU and Lobster uses NED. Not 100% sure about this change-->
       <mass
         value="0" />
       <inertia

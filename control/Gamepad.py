@@ -30,7 +30,7 @@ class Gamepad:
                     self.state[event.code] = event.state
 
         except RuntimeError:
-            print("Controller Disconnected!")
+            print("Gamepad controller Disconnected!")
 
         finally:
             self._reset_state()
@@ -49,7 +49,7 @@ class Gamepad:
         if abs(input) < 0.1:
             return 0
         else:
-            return (input - sign*0.1) * (10/9)
+            return (input - sign * 0.1) * (10 / 9)
 
     @property
     def x(self):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Dict
 
 from lobster_simulator.common.calculations import *
 from lobster_simulator.common.pybullet_api import PybulletAPI
@@ -29,8 +29,8 @@ GREEN = [0, 1, 0]
 
 class DVL(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None):
-        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None):
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None, time=time)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
@@ -46,14 +46,14 @@ class DVL(Sensor):
         ]
 
         self.beamVisualizers = [DebugLine(self._sensor_position, self.beam_end_points[i], color=[1, 0, 0], width=2,
-                                          parentIndex=self._robot._id) for i in range(4)]
+                                          parentIndex=self._robot.object_id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
     def update(self, time: SimulationTime, dt: SimulationTime):
 
         altitudes = list()
 
-        current_distance_to_seafloor, current_velocity  = self._get_real_values(dt)
+        current_distance_to_seafloor, current_velocity = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
@@ -74,12 +74,11 @@ class DVL(Sensor):
                 color = RED if altitudes[i] >= MAXIMUM_ALTITUDE else GREEN
 
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
-                                               frame_id=self._robot._id)
-
-        self._queue = list()
+                                               frame_id=self._robot.object_id)
 
         while self._next_sample_time <= time:
             interpolated_altitudes = list()
+            print(self._next_sample_time.microseconds)
             for i in range(4):
                 interpolated_altitudes.append(interpolate(x=self._next_sample_time.microseconds,
                                                           x1=self._previous_update_time.microseconds,

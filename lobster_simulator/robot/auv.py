@@ -4,8 +4,9 @@ import numpy as np
 from pkg_resources import resource_filename
 
 from lobster_simulator.common.general_exceptions import ArgumentNoneError
+from lobster_simulator.common.pybullet_object import PyBulletObject
+from lobster_simulator.robot import buoyancy
 from lobster_simulator.robot.thruster import Thruster
-from lobster_simulator.robot.buoyancy import Buoyancy
 from lobster_simulator.sensors.accelerometer import Accelerometer
 from lobster_simulator.sensors.dvl import DVL
 from lobster_simulator.sensors.pressure_sensor import PressureSensor
@@ -18,9 +19,9 @@ from lobster_simulator.common.pybullet_api import PybulletAPI as p
 from lobster_simulator.common.translation import *
 
 
-class AUV:
+class AUV(PyBulletObject):
 
-    def __init__(self, config):
+    def __init__(self, time: SimulationTime, config):
         if config is None:
             raise ArgumentNoneError("config parameter should not be None")
 
@@ -28,11 +29,13 @@ class AUV:
 
         self.damping_matrix: np.ndarray = np.diag(config['damping_matrix_diag'])
 
-        self._id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
+        object_id = p.loadURDF(resource_filename("lobster_simulator", "data/scout-alpha.urdf"),
                               Vec3([0, 0, 2]),
                               p.getQuaternionFromEuler(Vec3([0, 0, 0])))
 
-        self._buoyancy = Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
+        super().__init__(object_id)
+
+        self._buoyancy = buoyancy.Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
@@ -42,18 +45,18 @@ class AUV:
                                                                             Vec3(config_thrusters[i]['direction']))
 
         # Set damping to zero, because default is not zero
-        p.changeDynamics(self._id, linearDamping=0.0, angularDamping=0.0)
+        p.changeDynamics(self._object_id, linearDamping=0.0, angularDamping=0.0)
 
         self._motor_debug_lines = list()
         self._motor_count = len(config_thrusters)
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
 
-        self._pressure_sensor = PressureSensor(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000))
-        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), SimulationTime(4000))
+        self._pressure_sensor = PressureSensor(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._dvl = DVL(self, Vec3([-.5, 0, 0.10]), time_step=SimulationTime(4000), time=time)
 
         self._max_thrust = 100
 
@@ -74,13 +77,15 @@ class AUV:
         :param dt: dt in microseconds
         :param time: time in microseconds
         """
+        if dt.microseconds <= 0:
+            raise ValueError(f"time dt can't be less or equal to zero was: {dt}")
         self._pressure_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)
         self._magnetometer.update(time, dt)
         self._dvl.update(time, dt)
 
-        self._buoyancy._update()
+        self._buoyancy.update()
 
         for thruster in self.thrusters.values():
             thruster._update(dt)
@@ -92,7 +97,7 @@ class AUV:
         Gets both the position and the orientation of the robot.
         :return: Tuple with the position and the orientation.
         """
-        return p.getBasePositionAndOrientation(self._id)
+        return p.getBasePositionAndOrientation(self._object_id)
 
     def get_position(self) -> Vec3:
         """
@@ -114,10 +119,10 @@ class AUV:
         """
         Gets the linear velocity of the Robot in the World frame.
         """
-        return p.getBaseVelocity(self._id)[0]
+        return p.getBaseVelocity(self._object_id)[0]
 
     def get_angular_velocity(self):
-        return p.getBaseVelocity(self._id)[1]
+        return p.getBaseVelocity(self._object_id)[1]
 
     def get_altitude(self) -> float:
         """
@@ -134,7 +139,7 @@ class AUV:
         result = p.rayTest(self.get_position(), world_frame_endpoint)
 
         return result[0] * beam_length
-        
+
     def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
         """
         Applies a force to the robot (should only be used for testing purposes).
@@ -148,7 +153,7 @@ class AUV:
             force = vec3_rotate_vector_to_local(self.get_orientation(), force)
 
         # Apply the force in the local frame
-        p.applyExternalForce(self._id, force, force_pos, Frame.LINK_FRAME)
+        p.applyExternalForce(self._object_id, force, force_pos, Frame.LINK_FRAME)
 
     def set_position_and_orientation(self, position: Vec3 = None, orientation: Quaternion = None) -> None:
         """
@@ -161,7 +166,7 @@ class AUV:
         if orientation is None:
             orientation = self.get_orientation()
 
-        p.resetBasePositionAndOrientation(self._id, position, orientation)
+        p.resetBasePositionAndOrientation(self._object_id, position, orientation)
 
     def set_velocity(self, linear_velocity: Vec3 = None, angular_velocity: Vec3 = None, local_frame=False) -> None:
         """
@@ -179,7 +184,7 @@ class AUV:
             linear_velocity = vec3_rotate_vector_to_world(self.get_orientation(), linear_velocity)
             angular_velocity = vec3_rotate_vector_to_world(self.get_orientation(), angular_velocity)
 
-        p.resetBaseVelocity(self._id, linear_velocity, angular_velocity)
+        p.resetBaseVelocity(self._object_id, linear_velocity, angular_velocity)
 
     def _apply_damping(self):
         """
@@ -204,9 +209,9 @@ class AUV:
         linear_damping_force = Vec3(damping[:3])
         angular_damping_torque = Vec3(damping[3:])
 
-        p.applyExternalForce(self._id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
+        p.applyExternalForce(self._object_id, forceObj=linear_damping_force, posObj=Vec3([0, 0, 0]),
                              frame=Frame.LINK_FRAME)
-        p.applyExternalTorque(self._id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
+        p.applyExternalTorque(self._object_id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
 
     @property
     def dvl(self):
@@ -229,7 +234,7 @@ class AUV:
         return self._pressure_sensor
 
     def remove(self):
-        p.removeBody(self._id)
+        p.removeBody(self._object_id)
         self._dvl.remove()
         self._buoyancy.remove()
         for thruster in self.thrusters.values():

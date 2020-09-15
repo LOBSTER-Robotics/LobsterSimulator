@@ -9,13 +9,11 @@ from lobster_simulator.sensors.sensor import Sensor
 from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_simulator.common.translation import *
 
-MAGNETIC_FIELD = [1, 0, 0]
-
 
 class Gyroscope(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
-        super().__init__(robot, position, time_step, orientation, noise_stds)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None, noise_stds: Union[List[float], float] = None):
+        super().__init__(robot, position, time_step, time, orientation, noise_stds)
 
     def _get_real_values(self, dt: SimulationTime):
         rotation = self._robot.get_angular_velocity()
