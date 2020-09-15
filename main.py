@@ -76,12 +76,12 @@ def main():
 
             simulator.set_time_step(time_step)
 
-            velocity = PybulletAPI.getBaseVelocity(simulator.robot._id)
+            velocity = PybulletAPI.getBaseVelocity(simulator.robot.object_id)
             high_level_controller.update(lobster_pos, lobster_orn, velocity[0], velocity[1], time_step/1000000)
 
             thrust_motors = high_level_controller.motor_thrust_outputs
 
-            for i, thruster in enumerate(simulator.get_robot().thrusters.values()):
+            for i, thruster in enumerate(simulator.robot.thrusters.values()):
                 thruster.set_desired_thrust(thrust_motors[i])
 
             simulator.do_step()
