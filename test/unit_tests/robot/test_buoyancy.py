@@ -1,7 +1,7 @@
 import json
 import unittest
 from unittest import mock
-from unittest.mock import Mock, MagicMock, ANY
+from unittest.mock import Mock, MagicMock
 
 from lobster_common.constants import Z
 from lobster_common.quaternion import Quaternion
@@ -31,9 +31,9 @@ class BuoyancyTest(unittest.TestCase):
         self.assertGreater(len(buoyancy_obj.test_points), 0)
 
     def test_not_finding_test_points(self):
-        buoyancy.Buoyancy._check_ray_hits_robot = Mock(return_value=False)
-        with self.assertRaises(NoTestPointsCreated):
-            buoyancy.Buoyancy(Mock(), 1, 1)
+        with mock.patch("lobster_simulator.robot.buoyancy.Buoyancy._check_ray_hits_robot", return_value=False):
+            with self.assertRaises(NoTestPointsCreated):
+                buoyancy.Buoyancy(Mock(), 1, 1)
 
     def test_incorrect_radius_raises(self):
         with self.assertRaises(ValueError):
@@ -44,8 +44,8 @@ class BuoyancyTest(unittest.TestCase):
             buoyancy.Buoyancy(Mock(), 1, 0)
 
     def test_finding_test_points_not_raising_error(self):
-        buoyancy.Buoyancy._check_ray_hits_robot = Mock(return_value=True)
-        buoyancy_obj = buoyancy.Buoyancy(Mock(), 1, 1)
+        with mock.patch("lobster_simulator.robot.buoyancy.Buoyancy._check_ray_hits_robot", return_value=True):
+            buoyancy_obj = buoyancy.Buoyancy(Mock(), 1, 1)
         self.assertGreater(len(buoyancy_obj.test_points), 0)
 
     def test_advanced_buoyancy_is_calculated_when_robot_is_close_to_surface(self):
@@ -53,10 +53,8 @@ class BuoyancyTest(unittest.TestCase):
         # Length should be twice as much as distance from robot position to sea surface such that buoyancy will be calculated.
         robot_length = (z_pos + 0.1) * 2
         robot_mock = MagicMock()
-
-        buoyancy.Buoyancy._check_ray_hits_robot = Mock(return_value=True)
-
-        buoyancy_obj = buoyancy.Buoyancy(robot_mock, 0.5, robot_length)
+        with mock.patch("lobster_simulator.robot.buoyancy.Buoyancy._check_ray_hits_robot", return_value=True):
+            buoyancy_obj = buoyancy.Buoyancy(robot_mock, 0.5, robot_length)
 
         robot_mock.apply_force = Mock()
 

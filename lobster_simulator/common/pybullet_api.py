@@ -30,10 +30,14 @@ class PybulletAPI:
     KEY_IS_DOWN = p.KEY_IS_DOWN
     DELETE_KEY = p.B3G_DELETE
 
-    __instance = None
+    _INSTANCE: Optional[PybulletAPI] = None
 
     def __init__(self, time_step: SimulationTime, gui: bool = False):
         self._gui = gui
+
+        if self._INSTANCE is not None:
+            # Instance could already exist when running test, just to be sure resetting it here.
+            p.resetSimulation(self._INSTANCE._physics_client_id)
 
         self._physics_client_id = -1
         if gui:
@@ -58,7 +62,7 @@ class PybulletAPI:
 
     @staticmethod
     def initialize(time_step: SimulationTime, gui: bool) -> None:
-        PybulletAPI.__instance = PybulletAPI(time_step, gui)
+        PybulletAPI._INSTANCE = PybulletAPI(time_step, gui)
 
     @staticmethod
     def changeDynamics(bodyUniqueId: int, linearDamping: float, angularDamping: float) -> None:
@@ -70,7 +74,7 @@ class PybulletAPI:
 
     @staticmethod
     def get_pybullet_id() -> int:
-        return PybulletAPI.__instance._physics_client_id
+        return PybulletAPI._INSTANCE._physics_client_id
 
     @staticmethod
     def loadURDF(file_name: str, base_position: Vec3, base_orientation: Quaternion = None) -> int:
@@ -95,7 +99,7 @@ class PybulletAPI:
 
     @staticmethod
     def gui() -> bool:
-        return PybulletAPI.__instance.is_gui_enabled()
+        return PybulletAPI._INSTANCE.is_gui_enabled()
 
     @staticmethod
     def setTimeStep(time_step: SimulationTime) -> None:
