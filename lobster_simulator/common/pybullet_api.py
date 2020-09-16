@@ -35,7 +35,7 @@ class PybulletAPI:
     def __init__(self, time_step: SimulationTime, gui: bool = False):
         self._gui = gui
 
-        if self._INSTANCE is not None:
+        if self._INSTANCE is not None and p.isConnected(self._INSTANCE._physics_client_id):
             # Instance could already exist when running test, just to be sure resetting it here.
             p.resetSimulation(self._INSTANCE._physics_client_id)
 
