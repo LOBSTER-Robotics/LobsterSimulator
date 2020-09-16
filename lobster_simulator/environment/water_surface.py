@@ -13,7 +13,6 @@ class WaterSurface:
         return 0
 
     def __init__(self, time: SimulationTime):
-
         PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/water_surface.urdf"), Vec3([0, 0, 0]))
 
         self.water_texture = p.loadTexture(resource_filename("lobster_simulator", "data/water_texture.png"))

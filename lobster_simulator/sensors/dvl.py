@@ -29,8 +29,10 @@ GREEN = [0, 1, 0]
 
 class DVL(Sensor):
 
-    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime, orientation: Quaternion = None):
-        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None, time=time)
+    def __init__(self, robot: AUV, position: Vec3, time_step: SimulationTime, time: SimulationTime,
+                 orientation: Quaternion = None):
+        super().__init__(robot, position=position, time_step=time_step, orientation=orientation, noise_stds=None,
+                         time=time)
 
         self._previous_altitudes = [2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE, 2 * MAXIMUM_ALTITUDE,
                                     2 * MAXIMUM_ALTITUDE]
@@ -50,7 +52,6 @@ class DVL(Sensor):
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
     def update(self, time: SimulationTime, dt: SimulationTime):
-
         altitudes = list()
 
         current_distance_to_seafloor, current_velocity = self._get_real_values(dt)
@@ -77,6 +78,7 @@ class DVL(Sensor):
                                                frame_id=self._robot.object_id)
 
         while self._next_sample_time <= time:
+            print("Updated")
             interpolated_altitudes = list()
             print(self._next_sample_time.microseconds)
             for i in range(4):
@@ -86,18 +88,21 @@ class DVL(Sensor):
                                                           y1=self._previous_altitudes[i],
                                                           y2=altitudes[i]))
 
-            interpolated_velocity = interpolate_vec(x=self._next_sample_time.microseconds,
-                                                    x1=self._previous_update_time.microseconds,
-                                                    x2=time.microseconds,
-                                                    y1=self._previous_velocity,
-                                                    y2=current_velocity)
+            interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
+
+            if interpolated_bottom_lock:
+                interpolated_velocity = interpolate_vec(x=self._next_sample_time.microseconds,
+                                                        x1=self._previous_update_time.microseconds,
+                                                        x2=time.microseconds,
+                                                        y1=self._previous_velocity,
+                                                        y2=current_velocity)
+            else:
+                interpolated_velocity = Vec3((0, 0, 0))
 
             # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
             #  (It probably estimates the least squares plane through the 4 points and calculates the distance to that
             #  plane, but for now the average of the 4 points is good enough)
             average_interpolated_altitude = float(np.mean(interpolated_altitudes))
-
-            interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
 
             self._queue.append(
                 {
@@ -126,7 +131,10 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-    def get_position(self):
+    def get_position(self) -> Vec3:
+        """
+        Get position globally. This method could move to sensor class.
+        """
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
     def _get_real_values(self, dt: SimulationTime) -> List:
@@ -140,11 +148,11 @@ class DVL(Sensor):
 
     def get_altitude(self) -> float:
         """Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams."""
-        return self.get_last_value()['altitude']
+        return self.get_latest_value()['altitude']
 
     def get_velocity(self) -> Vec3:
         """Gives the latest velocity of the robot in the dvl sensor frame."""
-        return Vec3([self.get_last_value()['vx'], self.get_last_value()['vy'], self.get_last_value()['vz']])
+        return Vec3([self.get_latest_value()['vx'], self.get_latest_value()['vy'], self.get_latest_value()['vz']])
 
     def remove(self):
         for beam in self.beamVisualizers:

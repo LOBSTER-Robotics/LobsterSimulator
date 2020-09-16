@@ -20,8 +20,9 @@ class DVLTest(unittest.TestCase):
             actual_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
             sensor_data_list: List = simulator.robot._dvl.pop_all_values()
 
-            # Since the dvl runs
             for sensor_data in sensor_data_list:
+                # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
+                self.assertTrue(sensor_data['velocity_valid'])
                 sensor_altitude = sensor_data['altitude']
 
                 min_altitude = min((actual_altitude, previous_altitude))
@@ -49,6 +50,8 @@ class DVLTest(unittest.TestCase):
 
             # Since the dvl runs
             for sensor_data in sensor_data_list:
+                # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
+                self.assertTrue(sensor_data['velocity_valid'])
                 vx, vy, vz = sensor_data['vx'], sensor_data['vy'], sensor_data['vz']
 
                 min_vx = min((actual_velocity[X], previous_velocity[X]))
