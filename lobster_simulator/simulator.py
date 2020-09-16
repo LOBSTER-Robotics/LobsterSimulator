@@ -4,7 +4,7 @@ import json
 import time as t
 from typing import Optional
 
-from pkg_resources import resource_stream
+from pkg_resources import resource_stream, resource_filename
 
 from lobster_common.vec3 import Vec3
 from lobster_simulator.environment.water_surface import WaterSurface
@@ -46,6 +46,7 @@ class Simulator:
         self._cycle = 0
 
         PybulletAPI.initialize(self._time_step, gui)
+
         self.water_surface = WaterSurface(self._time)
 
         self._simulator_frequency_slider = PybulletAPI.addUserDebugParameter("simulation frequency", 10, 1000,
@@ -57,6 +58,13 @@ class Simulator:
 
         self._camera_position = Vec3([0, 0, 0])
         self._robot: Optional[AUV] = None
+
+    def add_ocean_floor(self, depth=100):
+        id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/plane1000.urdf"),
+                                  base_position=Vec3((0, 0, depth)))
+
+        texture = PybulletAPI.loadTexture(resource_filename("lobster_simulator", "data/checker_blue.png"))
+        PybulletAPI.changeVisualShape(id, texture, rgbaColor=[1,1,1,1])
 
     def get_time_in_seconds(self) -> float:
         return self._time.seconds

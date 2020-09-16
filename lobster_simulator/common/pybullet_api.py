@@ -211,6 +211,14 @@ class PybulletAPI:
         return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation.asENU())
 
     @staticmethod
+    def loadTexture(file_name: str) -> int:
+        return p.loadTexture(file_name)
+
+    @staticmethod
+    def changeVisualShape(object_id: int, textureUniqueId, rgbaColor):
+        p.changeVisualShape(object_id, -1, textureUniqueId=textureUniqueId, rgbaColor=rgbaColor)
+
+    @staticmethod
     def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
         if object_id != -1:
             rayFromPosition = translation.vec3_local_to_world_id(object_id, rayFromPosition)
