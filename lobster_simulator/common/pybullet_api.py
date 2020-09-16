@@ -95,7 +95,7 @@ class PybulletAPI:
     @staticmethod
     def getMatrixFromQuaternion(quaternion: Quaternion) -> np.ndarray:
         # This could be wrong since the quaternion is not converted from NED to ENU
-        return p.getMatrixFromQuaternion(quaternion.array)
+        return p.getMatrixFromQuaternion(quaternion._data)
 
     @staticmethod
     def gui() -> bool:

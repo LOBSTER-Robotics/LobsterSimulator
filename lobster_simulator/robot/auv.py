@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 import numpy as np
 from pkg_resources import resource_filename
@@ -9,7 +9,7 @@ from lobster_simulator.robot import buoyancy
 from lobster_simulator.robot.thruster import Thruster
 from lobster_simulator.sensors.accelerometer import Accelerometer
 from lobster_simulator.sensors.dvl import DVL
-from lobster_simulator.sensors.pressure_sensor import DepthSensor
+from lobster_simulator.sensors.pressure_sensor import PressureSensor
 from lobster_simulator.sensors.gyroscope import Gyroscope
 from lobster_simulator.sensors.magnetometer import Magnetometer
 from lobster_simulator.common.simulation_time import SimulationTime
@@ -52,7 +52,7 @@ class AUV(PyBulletObject):
         self._rpm_motors = list()
         self._desired_rpm_motors: List[float] = list()
 
-        self._depth_sensor = DepthSensor(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
+        self._pressure_sensor = PressureSensor(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
         self._accelerometer = Accelerometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
         self._gyroscope = Gyroscope(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
         self._magnetometer = Magnetometer(self, Vec3([1, 0, 0]), SimulationTime(4000), time=time)
@@ -79,7 +79,7 @@ class AUV(PyBulletObject):
         """
         if dt.microseconds <= 0:
             raise ValueError(f"time dt can't be less or equal to zero was: {dt}")
-        self._depth_sensor.update(time, dt)
+        self._pressure_sensor.update(time, dt)
         self._accelerometer.update(time, dt)
         self._gyroscope.update(time, dt)
         self._magnetometer.update(time, dt)
@@ -124,6 +124,28 @@ class AUV(PyBulletObject):
     def get_angular_velocity(self):
         return p.getBaseVelocity(self._object_id)[1]
 
+    def get_altitude(self) -> Optional[float]:
+        """
+        Gets the actual altitude (so not based on the simulated dvl) of the auv in its own reference frame by casting a
+        ray to see where it intersects with terrain. This beam has length 100 so even if the altitude is larger than 100
+        it will still return 100.
+        """
+        beam_length = 100
+        raytest_endpoint = 2 * Vec3([0, 0, beam_length])
+
+        world_frame_endpoint = vec3_local_to_world(self.get_position(),
+                                                   self.get_orientation(),
+                                                   raytest_endpoint)
+
+        result = p.rayTest(self.get_position(), world_frame_endpoint)
+
+        altitude = result[0] * beam_length
+
+        if altitude >= 100:
+            return None
+        else:
+            return altitude
+        
     def apply_force(self, force_pos: Vec3, force: Vec3, relative_direction: bool = True) -> None:
         """
         Applies a force to the robot (should only be used for testing purposes).
@@ -197,7 +219,27 @@ class AUV(PyBulletObject):
                              frame=Frame.LINK_FRAME)
         p.applyExternalTorque(self._object_id, torqueObj=angular_damping_torque, frame=Frame.LINK_FRAME)
 
-    def remove(self):
+    @property
+    def dvl(self) -> DVL:
+        return self._dvl
+
+    @property
+    def accelerometer(self) -> Accelerometer:
+        return self._accelerometer
+
+    @property
+    def gyroscope(self) -> Gyroscope:
+        return self._gyroscope
+
+    @property
+    def magnetometer(self) -> Magnetometer:
+        return self._magnetometer
+
+    @property
+    def pressure_sensor(self) -> PressureSensor:
+        return self._pressure_sensor
+
+    def remove(self) -> None:
         p.removeBody(self._object_id)
         self._dvl.remove()
         self._buoyancy.remove()

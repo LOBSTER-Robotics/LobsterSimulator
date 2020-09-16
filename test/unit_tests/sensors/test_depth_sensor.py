@@ -15,7 +15,7 @@ class DepthSensorTest(unittest.TestCase):
         simulator.do_step()
         depth = robot.get_position()[Z]
         print("depth", depth)
-        pressure = robot._depth_sensor.get_pressure()
+        pressure = robot.pressure_sensor.get_pressure()
 
         # Only checking accuracy up to 1 decimal place, since the robot moves a bit during the step
         self.assertAlmostEqual(101.3, pressure, places=1)
@@ -27,12 +27,12 @@ class DepthSensorTest(unittest.TestCase):
         downwards_velocity = Vec3([0, 0, 1])
         simulator.robot.set_velocity(linear_velocity=downwards_velocity)
         simulator.do_step()
-        previous_pressure = simulator.robot._depth_sensor.get_pressure()
+        previous_pressure = simulator.robot.pressure_sensor.get_pressure()
 
         for _ in range(100):
             simulator.robot.set_velocity(linear_velocity=downwards_velocity)
             simulator.do_step()
-            current_pressure = simulator.robot._depth_sensor.get_pressure()
+            current_pressure = simulator.robot.pressure_sensor.get_pressure()
 
             self.assertLess(previous_pressure, current_pressure)
             previous_pressure = current_pressure
