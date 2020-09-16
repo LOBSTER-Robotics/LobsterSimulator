@@ -26,12 +26,12 @@ class DVLTest(unittest.TestCase):
             simulator.robot.set_velocity(linear_velocity=downwards_velocity)
 
             actual_altitude = simulator.robot._dvl._get_real_values(dt)[0]
-            sensor_data = simulator.robot._dvl.get_last_value()
+            sensor_data = simulator.robot._dvl.get_latest_value()
 
             # Since the dvl runs at a slower rate than the simulator, it's possible that there is no new data point
             if sensor_data is not None:
                 # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
-                self.assertTrue(sensor_data['velocity_valid'])
+                self.assertTrue(sensor_data[1]['velocity_valid'])
 
                 amount_sensor_updates += 1
                 sensor_altitude = sensor_data[1]['altitude']
@@ -50,7 +50,7 @@ class DVLTest(unittest.TestCase):
         self.assertGreater(amount_sensor_updates, 10)
 
     def test_velocity(self):
-        simulator = Simulator(4000, gui=False)
+        simulator = Simulator(4000, gui=True)
         simulator.create_robot()
         simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
 
@@ -62,12 +62,13 @@ class DVLTest(unittest.TestCase):
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
 
-            sensor_data = simulator.robot._dvl.get_last_value()
+            sensor_data = simulator.robot._dvl.get_latest_value()
 
             # Since the dvl runs
             if sensor_data:
                 # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
-                self.assertTrue(sensor_data['velocity_valid'])
+                # todo not yet fully working
+                self.assertTrue(sensor_data[1]['velocity_valid'])
 
                 amount_sensor_updates += 1
                 vx, vy, vz = sensor_data[1]['vx'], sensor_data[1]['vy'], sensor_data[1]['vz']
