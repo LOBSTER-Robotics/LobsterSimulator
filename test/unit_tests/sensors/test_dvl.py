@@ -50,24 +50,27 @@ class DVLTest(unittest.TestCase):
         self.assertGreater(amount_sensor_updates, 10)
 
     def test_velocity(self):
-        simulator = Simulator(4000, gui=True)
+        simulator = Simulator(4000, gui=False)
+        PybulletAPI.loadURDF("plane.urdf", Vec3([0, 0, 30]))
         simulator.create_robot()
         simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
 
-        previous_velocity = simulator.robot.get_velocity()
         simulator.do_step()
+
+        previous_velocity = simulator.robot.get_velocity()
 
         amount_sensor_updates = 0
         for _ in range(500):
+            simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
 
-            sensor_data = simulator.robot._dvl.get_latest_value()
+            sensor_data = simulator.robot.dvl.get_latest_value()
 
             # Since the dvl runs
             if sensor_data:
+
                 # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
-                # todo not yet fully working
                 self.assertTrue(sensor_data[1]['velocity_valid'])
 
                 amount_sensor_updates += 1
