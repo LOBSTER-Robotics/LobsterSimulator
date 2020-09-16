@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import math
-import numpy as np
-from typing import List, TYPE_CHECKING, Dict
+from typing import List, TYPE_CHECKING, Optional
 
 from lobster_simulator.common.calculations import *
 from lobster_simulator.common.pybullet_api import PybulletAPI
@@ -14,8 +13,6 @@ from lobster_simulator.common.simulation_time import *
 from lobster_common.constants import *
 from lobster_simulator.common.debug_visualization import DebugLine
 from lobster_simulator.common.translation import *
-
-SEAFLOOR_DEPTH = 100  # meters
 
 MINIMUM_ALTITUDE = 0.05  # meters
 MAXIMUM_ALTITUDE = 50  # meters
@@ -51,10 +48,11 @@ class DVL(Sensor):
                                           parentIndex=self._robot.object_id) for i in range(4)]
 
     # The dvl doesn't use the base sensor update method, because it has a variable frequency which is not supported.
-    def update(self, time: SimulationTime, dt: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime) -> None:
+
         altitudes = list()
 
-        current_distance_to_seafloor, current_velocity = self._get_real_values(dt)
+        actual_altitude, current_velocity = self._get_real_values(dt)
 
         for i in range(4):
             # The raytest endpoint is twice as far as the range of the dvl, because this makes it possible to
@@ -66,7 +64,7 @@ class DVL(Sensor):
             world_frame_endpoint = vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(),
                                                        auv_frame_endpoint)
 
-            result = PybulletAPI.rayTest(self.get_position(), world_frame_endpoint)
+            result = PybulletAPI.rayTest(self._get_position(), world_frame_endpoint)
 
             altitudes.append(result[0] * 2 * MAXIMUM_ALTITUDE)
 
@@ -77,49 +75,48 @@ class DVL(Sensor):
                 self.beamVisualizers[i].update(self._sensor_position, self.beam_end_points[i], color=color,
                                                frame_id=self._robot.object_id)
 
+        self._queue = list()
+
         while self._next_sample_time <= time:
-            print("Updated")
             interpolated_altitudes = list()
-            print(self._next_sample_time.microseconds)
             for i in range(4):
                 interpolated_altitudes.append(interpolate(x=self._next_sample_time.microseconds,
                                                           x1=self._previous_update_time.microseconds,
                                                           x2=time.microseconds,
                                                           y1=self._previous_altitudes[i],
                                                           y2=altitudes[i]))
-
             interpolated_bottom_lock = all(i < MAXIMUM_ALTITUDE for i in interpolated_altitudes)
-
             if interpolated_bottom_lock:
                 interpolated_velocity = interpolate_vec(x=self._next_sample_time.microseconds,
-                                                        x1=self._previous_update_time.microseconds,
-                                                        x2=time.microseconds,
-                                                        y1=self._previous_velocity,
-                                                        y2=current_velocity)
+                                                    x1=self._previous_update_time.microseconds,
+                                                    x2=time.microseconds,
+                                                    y1=self._previous_velocity,
+                                                    y2=current_velocity)
             else:
                 interpolated_velocity = Vec3((0, 0, 0))
 
-            # TODO: check if the DVL indeed gives the altitude as the average of the 4 altitudes
-            #  (It probably estimates the least squares plane through the 4 points and calculates the distance to that
-            #  plane, but for now the average of the 4 points is good enough)
-            average_interpolated_altitude = float(np.mean(interpolated_altitudes))
-
             self._queue.append(
-                {
-                    'time': self._time_step.milliseconds,
-                    'vx': interpolated_velocity[X],
-                    'vy': interpolated_velocity[Y],
-                    'vz': interpolated_velocity[Z],
-                    'altitude': average_interpolated_altitude,
-                    'velocity_valid': interpolated_bottom_lock,
-                    "format": "json_v1"
-                }
+                (
+                    self._next_sample_time.seconds,
+                    {
+                        'time': self._time_step.milliseconds,
+                        'vx': interpolated_velocity[X],
+                        'vy': interpolated_velocity[Y],
+                        'vz': interpolated_velocity[Z],
+                        'altitude': actual_altitude,
+                        'velocity_valid': interpolated_bottom_lock,
+                        "format": "json_v1"
+                    }
+                )
             )
 
             # The timestep of the DVL depends on the altitude (higher altitude is lower frequency)
-            time_step_micros = interpolate(average_interpolated_altitude,
-                                           MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
-                                           MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
+            if actual_altitude is None:
+                time_step_micros = MAXIMUM_TIME_STEP.microseconds
+            else:
+                time_step_micros = interpolate(actual_altitude,
+                                               MINIMUM_ALTITUDE, MAXIMUM_ALTITUDE,
+                                               MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
             time_step_micros = clip(time_step_micros, MINIMUM_TIME_STEP.microseconds, MAXIMUM_TIME_STEP.microseconds)
 
@@ -131,28 +128,45 @@ class DVL(Sensor):
         self._previous_altitudes = altitudes
         self._previous_velocity = current_velocity
 
-    def get_position(self) -> Vec3:
-        """
-        Get position globally. This method could move to sensor class.
-        """
+    def _get_position(self):
+        """Returns the position of the DVL in the world frame."""
         return vec3_local_to_world(self._robot.get_position(), self._robot.get_orientation(), self._sensor_position)
 
     def _get_real_values(self, dt: SimulationTime) -> List:
-        location = self.get_position()
 
-        distance_to_seafloor = SEAFLOOR_DEPTH - location[Z]
+        robot_altitude = self._robot.get_altitude()
+        if robot_altitude is not None:
+            altitude = robot_altitude - self._sensor_position[Z]
+        else:
+            altitude = None
 
         velocity = self._robot.get_velocity()
 
-        return [distance_to_seafloor, velocity]
+        return [altitude, velocity]
 
-    def get_altitude(self) -> float:
-        """Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams."""
-        return self.get_latest_value()['altitude']
+    def get_altitude(self) -> Optional[(float, float)]:
+        """
+        Gives the latest altitude as an average of the 4 altitudes meassured by the 4 beams with a timestamp.
+        :return: Tuple where the first value is the time in seconds and the second value is the altitude
+        """
+        last_value = self.get_latest_value()
 
-    def get_velocity(self) -> Vec3:
-        """Gives the latest velocity of the robot in the dvl sensor frame."""
-        return Vec3([self.get_latest_value()['vx'], self.get_latest_value()['vy'], self.get_latest_value()['vz']])
+        if last_value is None:
+            return None
+
+        return last_value[0], last_value[1]['altitude']
+
+    def get_velocity(self) -> Optional[(float, Vec3)]:
+        """
+        Gives the latest velocity of the robot in the dvl sensor frame.
+        :return: Tuple where the first value is the time in seconds and the second value is the velocity
+        """
+        last_value = self.get_latest_value()
+
+        if last_value is None:
+            return None
+
+        return last_value[0], Vec3([last_value[1]['vx'], last_value[1]['vy'], last_value[1]['vz']])
 
     def remove(self):
         for beam in self.beamVisualizers:

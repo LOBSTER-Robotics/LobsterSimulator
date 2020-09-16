@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, TYPE_CHECKING, Union, Optional
+from typing import List, TYPE_CHECKING, Union, Optional, Tuple, Any
 import numpy as np
 
 from lobster_simulator.common.calculations import interpolate
@@ -57,13 +57,16 @@ class Sensor(ABC):
         if noise_stds:
             self.set_noise(noise_stds)
 
-    def update(self, time: SimulationTime, dt: SimulationTime):
+    def update(self, time: SimulationTime, dt: SimulationTime) -> None:
         """
         Updates a sensor, by generating new outputs by interpolating between values on the current and previous time
         step
         :param dt:
         :param time: Current time in the simulator
         """
+
+        # Empty the queue to prevent it from growing too large.
+        self._queue: List[(float, Any)] = list()
 
         real_values = self._get_real_values(dt)
 
@@ -82,13 +85,13 @@ class Sensor(ABC):
 
                 value_outputs.append(value)
 
-            self._queue.append(value_outputs)
+            self._queue.append((self._next_sample_time.seconds, value_outputs))
             self._next_sample_time += self._time_step
 
         self._previous_real_value = real_values
         self._previous_update_time = SimulationTime(time.microseconds)
 
-    def set_noise(self, noise_stds: Union[List[float], float]):
+    def set_noise(self, noise_stds: Union[List[float], float]) -> None:
         if not isinstance(noise_stds, List):
             noise_stds = [noise_stds]
 
@@ -98,25 +101,30 @@ class Sensor(ABC):
 
         self.noise_stds = noise_stds
 
-    def pop_next_value(self):
+    def pop_next_value(self) -> Optional[Tuple[float, Any]]:
         """Pops the oldest sensor value from the list"""
         if len(self._queue) == 0:
             return None
         return self._queue.pop(0)
 
-    def pop_all_values(self) -> List:
+    def pop_all_values(self) -> List[Tuple[float, Any]]:
         """Gives a list with all the sensors values, from oldest to newest."""
         values = self._queue
         self._queue = list()
         return values
 
-    def get_sensor_position(self) -> Vec3:
+    @property
+    def sensor_position(self) -> Vec3:
+        """
+        Local sensor position relative to the robot.
+        """
         return self._sensor_position
 
-    def get_sensor_orientation(self) -> Quaternion:
+    @property
+    def sensor_orientation(self) -> Quaternion:
         return self._sensor_orientation
 
-    def get_latest_value(self):
+    def get_latest_value(self) -> Optional[Tuple[float, Any]]:
         if self._queue:
             return self._queue[-1]
 

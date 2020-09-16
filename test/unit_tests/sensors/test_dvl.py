@@ -1,29 +1,40 @@
 import unittest
-from typing import List
 
 from lobster_common.constants import *
 
+from lobster_simulator.common.pybullet_api import PybulletAPI
+from lobster_simulator.common.simulation_time import SimulationTime
 from lobster_simulator.simulator import Simulator
 from lobster_common.vec3 import Vec3
-from lobster_simulator.sensors.dvl import SEAFLOOR_DEPTH
-
 
 class DVLTest(unittest.TestCase):
 
     def test_altitude(self):
+        dt = SimulationTime(4000)
         simulator = Simulator(4000, gui=False)
+        # Load a plane so that the DVL works
+        PybulletAPI.loadURDF("plane.urdf", Vec3([0, 0, 30]))
         simulator.create_robot()
-        previous_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
+        simulator.do_step()
+        previous_altitude = simulator.robot._dvl._get_real_values(dt)[0]
 
-        for _ in range(100):
+        downwards_velocity = Vec3([0, 0, 1])
+
+        amount_sensor_updates = 0
+        for _ in range(500):
             simulator.do_step()
-            actual_altitude = SEAFLOOR_DEPTH - simulator.robot._dvl.get_position()[2]
-            sensor_data_list: List = simulator.robot._dvl.pop_all_values()
+            simulator.robot.set_velocity(linear_velocity=downwards_velocity)
 
-            for sensor_data in sensor_data_list:
+            actual_altitude = simulator.robot._dvl._get_real_values(dt)[0]
+            sensor_data = simulator.robot._dvl.get_last_value()
+
+            # Since the dvl runs at a slower rate than the simulator, it's possible that there is no new data point
+            if sensor_data is not None:
                 # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
                 self.assertTrue(sensor_data['velocity_valid'])
-                sensor_altitude = sensor_data['altitude']
+
+                amount_sensor_updates += 1
+                sensor_altitude = sensor_data[1]['altitude']
 
                 min_altitude = min((actual_altitude, previous_altitude))
                 max_altitude = max((actual_altitude, previous_altitude))
@@ -35,24 +46,31 @@ class DVLTest(unittest.TestCase):
 
             previous_altitude = actual_altitude
 
+        # If there weren't at least 10 sensor updates the there went something wrong with the test.
+        self.assertGreater(amount_sensor_updates, 10)
+
     def test_velocity(self):
         simulator = Simulator(4000, gui=False)
         simulator.create_robot()
+        simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
 
         previous_velocity = simulator.robot.get_velocity()
-        simulator.robot.set_velocity(linear_velocity=Vec3([1, 1, 1]))
         simulator.do_step()
 
-        for _ in range(100):
+        amount_sensor_updates = 0
+        for _ in range(500):
             actual_velocity = simulator.robot.get_velocity()
             simulator.do_step()
-            sensor_data_list: List = simulator.robot._dvl.pop_all_values()
+
+            sensor_data = simulator.robot._dvl.get_last_value()
 
             # Since the dvl runs
-            for sensor_data in sensor_data_list:
+            if sensor_data:
                 # Velocity_valid should always be true otherwise the dvl is too far away from the surface and this test wouldn't work.
                 self.assertTrue(sensor_data['velocity_valid'])
-                vx, vy, vz = sensor_data['vx'], sensor_data['vy'], sensor_data['vz']
+
+                amount_sensor_updates += 1
+                vx, vy, vz = sensor_data[1]['vx'], sensor_data[1]['vy'], sensor_data[1]['vz']
 
                 min_vx = min((actual_velocity[X], previous_velocity[X]))
                 max_vx = max((actual_velocity[X], previous_velocity[X]))
@@ -73,3 +91,6 @@ class DVLTest(unittest.TestCase):
                 self.assertLessEqual(vz, max_vz)
 
             previous_velocity = Vec3(actual_velocity)
+
+        # If there weren't at least 10 sensor updates the there went something wrong with the test.
+        self.assertGreater(amount_sensor_updates, 10)
