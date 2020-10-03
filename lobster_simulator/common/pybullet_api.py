@@ -215,7 +215,13 @@ class PybulletAPI:
         return p.loadTexture(file_name)
 
     @staticmethod
-    def changeVisualShape(object_id: int, textureUniqueId, rgbaColor):
+    def changeVisualShape(object_id: int, textureUniqueId: int, rgbaColor: List[float]):
+        """
+        Changes the texture and color of an object.
+        :param object_id: Object that you want to change.
+        :param textureUniqueId: Id of the texture you want to give the object.
+        :param rgbaColor: List of 4 floats in the range [0, 1] that apply extra colour over the texture.
+        """
         p.changeVisualShape(object_id, -1, textureUniqueId=textureUniqueId, rgbaColor=rgbaColor)
 
     @staticmethod
