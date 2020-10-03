@@ -16,11 +16,18 @@ class SimulatorTest(unittest.TestCase):
 
         simulator = Simulator(4000, gui=False)
 
+        temp_load = PybulletAPI.loadURDF
+        temp_change_visual_shape = PybulletAPI.changeVisualShape
+
         PybulletAPI.loadURDF = Mock()
         PybulletAPI.changeVisualShape = Mock()
 
         simulator.add_ocean_floor(100)
 
 
-        PybulletAPI.loadURDF.assert_called_twice()
+        PybulletAPI.loadURDF.assert_called_once()
         PybulletAPI.changeVisualShape.assert_called_once()
+
+        # Putting the original functions back, there might be a better way to do this.
+        PybulletAPI.loadURDF = temp_load
+        PybulletAPI.changeVisualShape = temp_change_visual_shape
