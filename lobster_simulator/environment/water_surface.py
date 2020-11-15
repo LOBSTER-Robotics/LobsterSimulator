@@ -1,4 +1,3 @@
-import pybullet as p
 from pkg_resources import resource_filename
 
 from lobster_common.vec3 import Vec3
@@ -13,8 +12,8 @@ class WaterSurface:
         return 0
 
     def __init__(self, time: SimulationTime):
-        PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/water_surface.urdf"), Vec3([0, 0, 0]))
+        water_id = PybulletAPI.loadURDF(resource_filename("lobster_simulator", "data/water_surface.urdf"), Vec3([0, 0, 0]))
 
-        self.water_texture = p.loadTexture(resource_filename("lobster_simulator", "data/water_texture.png"))
+        self.water_texture = PybulletAPI.loadTexture(resource_filename("lobster_simulator", "data/water_texture.png"))
 
-        p.changeVisualShape(self.water_texture, -1, textureUniqueId=self.water_texture, rgbaColor=[0, 0.3, 1, 0.5])
+        PybulletAPI.changeVisualShape(water_id, textureUniqueId=self.water_texture, rgbaColor=[0, 0.3, 1, 0.5])

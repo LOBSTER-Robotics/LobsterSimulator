@@ -211,6 +211,20 @@ class PybulletAPI:
         return p.createMultiBody(0, -1, shape, basePosition=[0, 0, 0], baseOrientation=orientation.asENU())
 
     @staticmethod
+    def loadTexture(file_name: str) -> int:
+        return p.loadTexture(file_name)
+
+    @staticmethod
+    def changeVisualShape(object_id: int, textureUniqueId: int, rgbaColor: List[float]):
+        """
+        Changes the texture and color of an object.
+        :param object_id: Object that you want to change.
+        :param textureUniqueId: Id of the texture you want to give the object.
+        :param rgbaColor: List of 4 floats in the range [0, 1] that apply extra colour over the texture.
+        """
+        p.changeVisualShape(object_id, -1, textureUniqueId=textureUniqueId, rgbaColor=rgbaColor)
+
+    @staticmethod
     def rayTest(rayFromPosition: Vec3, rayToPosition: Vec3, object_id=-1) -> Tuple[float, Vec3, Vec3]:
         if object_id != -1:
             rayFromPosition = translation.vec3_local_to_world_id(object_id, rayFromPosition)
