@@ -1,7 +1,7 @@
 {
-  "length"                    : 2.0,
-  "diameter"                  : 0.2,
-  "center_of_volume"          : [0, 0, 0],
+  "buoyancy_length"      : 1.8,
+  "buoyancy_radius"      : 0.1,
+  "center_of_volume"     : [0, 0, 0],
   "thrusters"                     : [
     {
       "name": "bottom-front",

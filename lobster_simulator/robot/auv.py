@@ -35,7 +35,11 @@ class AUV(PyBulletObject):
 
         super().__init__(object_id)
 
-        self._buoyancy = buoyancy.Buoyancy(self, 0.10, 2, resolution=config.get('buoyancy_resolution'))
+        self._buoyancy = buoyancy.Buoyancy(self,
+                                           radius=config.get('buoyancy_radius'),
+                                           length=config.get('buoyancy_length'),
+                                           resolution=config.get('buoyancy_resolution'))
+
         config_thrusters = config['thrusters']
 
         self.thrusters: Dict[str, Thruster] = dict()
