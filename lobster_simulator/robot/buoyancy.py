@@ -3,6 +3,8 @@ from typing import Optional
 import numpy as np
 
 from lobster_common.vec3 import Vec3
+
+from lobster_simulator.common.debug_visualization import DebugSphere
 from lobster_simulator.environment.water_surface import WaterSurface
 from lobster_simulator.robot import auv
 from lobster_simulator.common import translation
@@ -12,8 +14,8 @@ from lobster_simulator.common.pybullet_api import PybulletAPI
 
 class Buoyancy:
 
-    def __init__(self, robot: 'auv', radius: float, length: float, resolution: Optional[float] = None,
-                 visualize: bool = False):
+    def __init__(self, robot: 'auv', radius: float, length: float, resolution: Optional[float] = 0.05,
+                 visualize: bool = True):
         if radius <= 0:
             raise ValueError("Radius should be bigger than zero")
         if length <= 0:
@@ -36,11 +38,11 @@ class Buoyancy:
         self.dot_under_water = []
         self.test_points = []
 
-        if resolution:
+        if self.resolution:
             # Expects that the robot has a cylindrical shape.
-            x_range = np.arange(-length / 2, length / 2, self.resolution)
-            y_range = np.arange(-radius, radius + self.resolution, self.resolution)
-            z_range = np.arange(-radius, radius + self.resolution, self.resolution)
+            x_range = np.arange(-self._length / 2, self._length / 2, self.resolution)
+            y_range = np.arange(-self._radius, self._radius + self.resolution, self.resolution)
+            z_range = np.arange(-self._radius, self._radius + self.resolution, self.resolution)
         else:
             x_range = range(1)
             y_range = range(1)
@@ -58,11 +60,10 @@ class Buoyancy:
                     if count % 1000 == 0:
                         print(f"{int(count / total_points * 100)}%")
 
-                    if np.math.sqrt(y ** 2 + z ** 2) < radius \
-                            and self._check_ray_hits_robot(pos + Vec3([0, 1, 0]), pos) \
-                            and self._check_ray_hits_robot(pos + Vec3([0, 0, 1]), pos) \
-                            and self._check_ray_hits_robot(pos + Vec3([0, -1, 0]), pos) \
-                            and self._check_ray_hits_robot(pos + Vec3([0, 0, -1]), pos):
+                    # TODO Joris: To make the estimation of which points lie inside the robot,
+                    #  _check_ray_hits_robot should be used. However this broke for some reason and I can't really find
+                    #  why. That is why now a simple cylinder shape is used. Which is good enough for now. (Issue #54)
+                    if np.math.sqrt(y ** 2 + z ** 2) < self._radius:
 
                         if self.visualize:
                             self.dot_under_water.append(True)
@@ -73,6 +74,7 @@ class Buoyancy:
                             self.dots.append(PybulletAPI.createVisualSphere(sphere_size, [0, 0, 1, 1]))
 
                         self.test_points.append(Vec3([x, y, z]))
+
         if len(self.test_points) == 0:
             raise NoTestPointsCreated(f"No buoyancy test points where created with robot: {robot}, radius: {radius},"
                                       f" length: {length}"
